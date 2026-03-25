@@ -66,9 +66,8 @@
 			<a href="#features" onclick={(e) => scrollTo(e, 'features')}>Features</a>
 			<a href="#groups" onclick={(e) => scrollTo(e, 'groups')}>Groups</a>
 			<a href="#widgets" onclick={(e) => scrollTo(e, 'widgets')}>Widgets</a>
-			<a href="#download" class="nav-cta" onclick={(e) => scrollTo(e, 'download')}>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-				Download
+			<a href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693" class="nav-cta app-store-badge">
+				<img src="/app/grid-life/app-store-badge.svg" alt="Download on the App Store">
 			</a>
 		</div>
 	</nav>
@@ -86,9 +85,8 @@
 		<p class="hero-sub">Grid Life turns your countdowns, habits, and streaks into something you can see, share, and hold each other to.</p>
 
 		<div class="hero-actions">
-			<a href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693" class="btn-primary">
-				<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-				Download for iOS
+			<a href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693" class="app-store-badge">
+				<img src="/app/grid-life/app-store-badge.svg" alt="Download on the App Store">
 			</a>
 			<a href="#features" class="btn-secondary" onclick={(e) => scrollTo(e, 'features')}>See features</a>
 		</div>
@@ -272,9 +270,8 @@
 		<div class="reveal">
 			<h2>Every day counts.<br><em>Make them visible.</em></h2>
 			<p>Countdowns, habits, streaks, and friends — all in one beautifully simple app.</p>
-			<a href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693" class="btn-primary" style="font-size:1rem;padding:16px 36px;">
-				<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-				Download for iOS
+			<a href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693" class="app-store-badge">
+				<img src="/app/grid-life/app-store-badge.svg" alt="Download on the App Store">
 			</a>
 		</div>
 	</section>
@@ -285,9 +282,8 @@
 			<span>&copy; 2026 LongShot Digital O&Uuml;</span>
 		</div>
 		<div class="footer-links">
-			<a href="/app/grid-life/privacy">Privacy Policy</a>
-			<a href="/app/grid-life/terms">Terms of Service</a>
-			<a href="mailto:info@lsdigital.ee">Contact</a>
+			<a href="/app/grid-life/legal">Legal</a>
+			<a href="mailto:info+gridlifeapp@lsdigital.ee">Contact</a>
 		</div>
 	</footer>
 
@@ -419,24 +415,19 @@
 	.nav-cta {
 		display: inline-flex;
 		align-items: center;
-		gap: 6px;
-		padding: 10px 20px;
-		background: var(--ink);
-		color: #fff !important;
-		border-radius: 100px;
-		font-size: 0.82rem !important;
-		font-weight: 500 !important;
-		transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+		padding: 0 !important;
+		background: none !important;
+		transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
 	}
 
 	.nav-cta:hover {
 		transform: translateY(-1px);
-		box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 	}
 
-	.nav-cta svg {
-		width: 14px;
-		height: 14px;
+	.nav-cta img {
+		height: 36px;
+		width: auto;
+		display: block;
 	}
 
 	/* ── Hero ── */
@@ -521,29 +512,19 @@
 		animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
 	}
 
-	.btn-primary {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 14px 28px;
-		background: var(--ink);
-		color: #fff;
-		border-radius: 100px;
-		font-family: var(--sans);
-		font-size: 0.9rem;
-		font-weight: 500;
-		text-decoration: none;
-		transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+	.app-store-badge {
+		display: inline-block;
+		transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 
-	.btn-primary:hover {
+	.app-store-badge:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 8px 28px rgba(0,0,0,0.15);
 	}
 
-	.btn-primary svg {
-		width: 16px;
-		height: 16px;
+	.app-store-badge img {
+		height: 48px;
+		width: auto;
+		display: block;
 	}
 
 	.btn-secondary {
