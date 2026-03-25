@@ -146,7 +146,7 @@
 	.apps-menu {
 		position: fixed;
 		top: 24px;
-		left: 24px;
+		right: 24px;
 		z-index: 1000;
 	}
 
@@ -181,7 +181,7 @@
 	.apps-dropdown {
 		position: absolute;
 		top: 54px;
-		left: 0;
+		right: 0;
 		min-width: 260px;
 		background: rgba(255, 253, 249, 0.75);
 		backdrop-filter: blur(40px) saturate(180%);
