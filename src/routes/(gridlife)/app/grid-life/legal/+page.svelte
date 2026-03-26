@@ -20,6 +20,24 @@
 	</section>
 
 	<section class="legal-cards">
+		<a href="mailto:info+gridlifeapp@lsdigital.ee" class="legal-card">
+			<div class="card-icon">
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><path
+						d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+					/><polyline points="22,6 12,13 2,6" /></svg
+				>
+			</div>
+			<h2>Support</h2>
+			<p>For questions, feedback, or support requests, reach out and we'll get back to you.</p>
+			<span class="card-link">info+gridlifeapp@lsdigital.ee</span>
+		</a>
 		<a href="/app/grid-life/privacy" class="legal-card">
 			<div class="card-icon">
 				<svg
@@ -134,9 +152,9 @@
 
 	.legal-cards {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		grid-template-columns: 1fr;
 		gap: 24px;
-		max-width: 720px;
+		max-width: 1080px;
 		margin: 0 auto;
 		padding: 0 clamp(24px, 6vw, 80px) clamp(80px, 12vh, 140px);
 	}
@@ -198,6 +216,12 @@
 		font-size: 0.85rem;
 		font-weight: 500;
 		color: var(--accent);
+	}
+
+	@media (min-width: 640px) {
+		.legal-cards {
+			grid-template-columns: repeat(3, 1fr);
+		}
 	}
 
 	footer {
