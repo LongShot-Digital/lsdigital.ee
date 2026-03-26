@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 
 	let formVisible = $state(true);
 	let formSuccess = $state(false);
 	let appsOpen = $state(false);
 
-	function handleSubmit(e) {
+	function handleSubmit(e: Event) {
 		e.preventDefault();
 		formVisible = false;
 		formSuccess = true;
@@ -15,8 +15,8 @@
 		appsOpen = !appsOpen;
 	}
 
-	function closeApps(e) {
-		if (!e.target.closest('.apps-menu')) {
+	function closeApps(e: Event) {
+		if (!(e.target as HTMLElement).closest('.apps-menu')) {
 			appsOpen = false;
 		}
 	}
@@ -26,7 +26,7 @@
 			(entries) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
-						entry.target.style.animationPlayState = 'running';
+						(entry.target as HTMLElement).style.animationPlayState = 'running';
 						observer.unobserve(entry.target);
 					}
 				});
@@ -34,7 +34,7 @@
 			{ threshold: 0.15 }
 		);
 
-		document.querySelectorAll('.anim-up, .anim-fade, .anim-scale').forEach((el) => {
+		document.querySelectorAll<HTMLElement>('.anim-up, .anim-fade, .anim-scale').forEach((el) => {
 			if (el.getBoundingClientRect().top > window.innerHeight * 0.85) {
 				el.style.animationPlayState = 'paused';
 				observer.observe(el);
@@ -49,32 +49,41 @@
 
 <div class="apps-menu">
 	<button class="apps-trigger" onclick={toggleApps} aria-label="Our apps">
-		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-			<rect x="3" y="3" width="7" height="7" rx="1.5"/>
-			<rect x="14" y="3" width="7" height="7" rx="1.5"/>
-			<rect x="3" y="14" width="7" height="7" rx="1.5"/>
-			<rect x="14" y="14" width="7" height="7" rx="1.5"/>
+		<svg
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="1.5"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+		>
+			<rect x="3" y="3" width="7" height="7" rx="1.5" />
+			<rect x="14" y="3" width="7" height="7" rx="1.5" />
+			<rect x="3" y="14" width="7" height="7" rx="1.5" />
+			<rect x="14" y="14" width="7" height="7" rx="1.5" />
 		</svg>
 	</button>
 
 	{#if appsOpen}
-	<div class="apps-dropdown">
-		<span class="apps-label">Our Apps</span>
-		<a href="/app/grid-life" class="apps-item">
-			<img src="/app/grid-life/app-icon.png" alt="Grid Life" class="apps-item-icon">
-			<div class="apps-item-text">
-				<span class="apps-item-name">Grid Life</span>
-				<span class="apps-item-desc">Habits, streaks & countdowns</span>
-			</div>
-		</a>
-	</div>
+		<div class="apps-dropdown">
+			<span class="apps-label">Our Apps</span>
+			<a href="/app/grid-life" class="apps-item">
+				<img src="/app/grid-life/app-icon.png" alt="Grid Life" class="apps-item-icon" />
+				<div class="apps-item-text">
+					<span class="apps-item-name">Grid Life</span>
+					<span class="apps-item-desc">Habits, streaks & countdowns</span>
+				</div>
+			</a>
+		</div>
 	{/if}
 </div>
 
 <section class="hero">
 	<div class="hero-content">
-		<h1 class="hero-headline anim-up d2">We build apps<br>that <em>feel</em> right.</h1>
-		<p class="hero-sub anim-up d3">iOS apps, built lean and launched loud. v1 is never the finish line.</p>
+		<h1 class="hero-headline anim-up d2">We build apps<br />that <em>feel</em> right.</h1>
+		<p class="hero-sub anim-up d3">
+			iOS apps, built lean and launched loud. v1 is never the finish line.
+		</p>
 	</div>
 	<div class="scroll-hint anim-fade d5">
 		<div class="arrow"></div>
@@ -87,17 +96,26 @@
 		<div class="pillar anim-scale d1">
 			<div class="pillar-number">01</div>
 			<h3 class="pillar-title">Design &amp; Prototyping</h3>
-			<p class="pillar-desc">From concept to interactive prototype. We shape ideas into interfaces that feel intuitive and look unmistakably premium.</p>
+			<p class="pillar-desc">
+				From concept to interactive prototype. We shape ideas into interfaces that feel intuitive
+				and look unmistakably premium.
+			</p>
 		</div>
 		<div class="pillar anim-scale d2">
 			<div class="pillar-number">02</div>
 			<h3 class="pillar-title">iOS Development</h3>
-			<p class="pillar-desc">Native Swift and SwiftUI. Built for the Apple ecosystem from the ground up — no shortcuts, no cross-platform compromises.</p>
+			<p class="pillar-desc">
+				Native Swift and SwiftUI. Built for the Apple ecosystem from the ground up — no shortcuts,
+				no cross-platform compromises.
+			</p>
 		</div>
 		<div class="pillar anim-scale d3">
 			<div class="pillar-number">03</div>
 			<h3 class="pillar-title">Launch &amp; Iterate</h3>
-			<p class="pillar-desc">App Store strategy, analytics, and ongoing refinement. We don't disappear after launch — we help find the right audience.</p>
+			<p class="pillar-desc">
+				App Store strategy, analytics, and ongoing refinement. We don't disappear after launch — we
+				help find the right audience.
+			</p>
 		</div>
 	</div>
 </section>
@@ -126,19 +144,19 @@
 	<h2 class="contact-headline anim-up">Have something in mind?</h2>
 	<p class="contact-sub anim-up">Tell us about your idea. We'd love to hear it.</p>
 	{#if formVisible}
-	<form class="contact-form anim-up d1" onsubmit={handleSubmit}>
-		<div class="form-row">
-			<input type="text" name="name" placeholder="Name" required>
-			<input type="email" name="email" placeholder="Email" required>
-		</div>
-		<textarea name="message" placeholder="Tell us about your project..." required></textarea>
-		<button type="submit" class="submit-btn">Send Message</button>
-	</form>
+		<form class="contact-form anim-up d1" onsubmit={handleSubmit}>
+			<div class="form-row">
+				<input type="text" name="name" placeholder="Name" required />
+				<input type="email" name="email" placeholder="Email" required />
+			</div>
+			<textarea name="message" placeholder="Tell us about your project..." required></textarea>
+			<button type="submit" class="submit-btn">Send Message</button>
+		</form>
 	{/if}
 	{#if formSuccess}
-	<div class="form-success visible">
-		<p>Thank you — we'll be in touch soon.</p>
-	</div>
+		<div class="form-success visible">
+			<p>Thank you — we'll be in touch soon.</p>
+		</div>
 	{/if}
 </section>
 
@@ -188,7 +206,9 @@
 		-webkit-backdrop-filter: blur(40px) saturate(180%);
 		border: 1px solid rgba(0, 0, 0, 0.08);
 		border-radius: 16px;
-		box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+		box-shadow:
+			0 12px 48px rgba(0, 0, 0, 0.12),
+			0 0 0 0.5px rgba(0, 0, 0, 0.04);
 		padding: 8px;
 		animation: dropIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 	}

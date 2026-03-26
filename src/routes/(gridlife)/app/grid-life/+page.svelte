@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 
 	let activeTab = $state('countdowns');
@@ -28,7 +28,7 @@
 			observer.observe(el);
 		});
 
-		const navEl = document.querySelector('.gl nav');
+		const navEl = document.querySelector<HTMLElement>('.gl nav');
 		const onScroll = () => {
 			if (navEl) {
 				navEl.style.boxShadow = window.scrollY > 50 ? '0 2px 20px rgba(0,0,0,0.06)' : 'none';
@@ -42,7 +42,7 @@
 		};
 	});
 
-	function scrollTo(e, id) {
+	function scrollTo(e: Event, id: string) {
 		e.preventDefault();
 		const el = document.getElementById(id);
 		if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -51,23 +51,28 @@
 
 <svelte:head>
 	<title>Grid Life — Habits, Streaks & Countdowns</title>
-	<meta name="description" content="Grid Life turns your habits, streaks, and countdowns into something beautiful. Track progress, challenge friends, and make every day visible.">
+	<meta
+		name="description"
+		content="Grid Life turns your habits, streaks, and countdowns into something beautiful. Track progress, challenge friends, and make every day visible."
+	/>
 </svelte:head>
 
 <div class="gl">
-
 	<!-- Navigation -->
 	<nav>
 		<a href="/app/grid-life" class="nav-logo">
-			<img src="/app/grid-life/app-icon.png" alt="Grid Life" class="nav-logo-icon">
+			<img src="/app/grid-life/app-icon.png" alt="Grid Life" class="nav-logo-icon" />
 			<span class="nav-logo-text">Grid Life</span>
 		</a>
 		<div class="nav-links">
 			<a href="#features" onclick={(e) => scrollTo(e, 'features')}>Features</a>
 			<a href="#groups" onclick={(e) => scrollTo(e, 'groups')}>Groups</a>
 			<a href="#widgets" onclick={(e) => scrollTo(e, 'widgets')}>Widgets</a>
-			<a href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693" class="nav-cta app-store-badge">
-				<img src="/app/grid-life/app-store-badge.svg" alt="Download on the App Store">
+			<a
+				href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693"
+				class="nav-cta app-store-badge"
+			>
+				<img src="/app/grid-life/app-store-badge.svg" alt="Download on the App Store" />
 			</a>
 		</div>
 	</nav>
@@ -80,19 +85,30 @@
 
 		<span class="hero-badge">Now on the App Store</span>
 
-		<h1>Track habits.<br>Build streaks.<br><em>Challenge friends.</em></h1>
+		<h1>Track habits.<br />Build streaks.<br /><em>Challenge friends.</em></h1>
 
-		<p class="hero-sub">Grid Life turns your countdowns, habits, and streaks into something you can see, share, and hold each other to.</p>
+		<p class="hero-sub">
+			Grid Life turns your countdowns, habits, and streaks into something you can see, share, and
+			hold each other to.
+		</p>
 
 		<div class="hero-actions">
-			<a href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693" class="app-store-badge">
-				<img src="/app/grid-life/app-store-badge.svg" alt="Download on the App Store">
+			<a
+				href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693"
+				class="app-store-badge"
+			>
+				<img src="/app/grid-life/app-store-badge.svg" alt="Download on the App Store" />
 			</a>
-			<a href="#features" class="btn-secondary" onclick={(e) => scrollTo(e, 'features')}>See features</a>
+			<a href="#features" class="btn-secondary" onclick={(e) => scrollTo(e, 'features')}
+				>See features</a
+			>
 		</div>
 
 		<div class="hero-phone">
-			<img src="/app/grid-life/hero.png" alt="Grid Life countdown view showing marathon training progress">
+			<img
+				src="/app/grid-life/hero.png"
+				alt="Grid Life countdown view showing marathon training progress"
+			/>
 		</div>
 	</section>
 
@@ -108,94 +124,133 @@
 				<button
 					class="feature-tab"
 					class:active={activeTab === tab.id}
-					onclick={() => activeTab = tab.id}
-				>{tab.label}</button>
+					onclick={() => (activeTab = tab.id)}>{tab.label}</button
+				>
 			{/each}
 		</div>
 
 		<!-- Countdowns Panel -->
 		{#if activeTab === 'countdowns'}
-		<div class="feature-panel active">
-			<div class="feature-text">
-				<h3>Count down to what matters</h3>
-				<p>Turn any stretch of time into a beautiful dot grid. Every filled dot is a day done. Every empty dot is a day ahead. One glance and you know exactly where you stand.</p>
-				<div class="feature-detail">
-					<div class="feature-detail-icon">&#8728;</div>
-					<span class="feature-detail-text">Trips, race days, product launches, graduation — if it has a start and an end, Grid Life makes it visual.</span>
+			<div class="feature-panel active">
+				<div class="feature-text">
+					<h3>Count down to what matters</h3>
+					<p>
+						Turn any stretch of time into a beautiful dot grid. Every filled dot is a day done.
+						Every empty dot is a day ahead. One glance and you know exactly where you stand.
+					</p>
+					<div class="feature-detail">
+						<div class="feature-detail-icon">&#8728;</div>
+						<span class="feature-detail-text"
+							>Trips, race days, product launches, graduation — if it has a start and an end, Grid
+							Life makes it visual.</span
+						>
+					</div>
+				</div>
+				<div class="feature-phone">
+					<img src="/app/grid-life/feature-countdowns.png" alt="Countdown dot grid" />
 				</div>
 			</div>
-			<div class="feature-phone">
-				<img src="/app/grid-life/feature-countdowns.png" alt="Countdown dot grid">
-			</div>
-		</div>
 		{/if}
 
 		<!-- Habits Panel -->
 		{#if activeTab === 'habits'}
-		<div class="feature-panel active">
-			<div class="feature-text">
-				<h3>Build routines that stick</h3>
-				<p>Set daily, weekly, or monthly goals. Add sub-habits to break big goals into smaller pieces. Check in with a tap, track your completion rate, and see your progress build over time.</p>
-				<div class="feature-detail">
-					<div class="feature-detail-icon">&#10003;</div>
-					<span class="feature-detail-text">Sub-habits like "Run 5km", "Read 15min", "Meditate" — all tracked in one Space with progress bars and weekly goals.</span>
+			<div class="feature-panel active">
+				<div class="feature-text">
+					<h3>Build routines that stick</h3>
+					<p>
+						Set daily, weekly, or monthly goals. Add sub-habits to break big goals into smaller
+						pieces. Check in with a tap, track your completion rate, and see your progress build
+						over time.
+					</p>
+					<div class="feature-detail">
+						<div class="feature-detail-icon">&#10003;</div>
+						<span class="feature-detail-text"
+							>Sub-habits like "Run 5km", "Read 15min", "Meditate" — all tracked in one Space with
+							progress bars and weekly goals.</span
+						>
+					</div>
+				</div>
+				<div class="feature-phone">
+					<img
+						src="/app/grid-life/feature-habits.png"
+						alt="Habit tracking with sub-habits and progress ring"
+					/>
 				</div>
 			</div>
-			<div class="feature-phone">
-				<img src="/app/grid-life/feature-habits.png" alt="Habit tracking with sub-habits and progress ring">
-			</div>
-		</div>
 		{/if}
 
 		<!-- Streaks Panel -->
 		{#if activeTab === 'streaks'}
-		<div class="feature-panel active">
-			<div class="feature-text">
-				<h3>Don't break the chain</h3>
-				<p>Start a streak, check in daily, and watch the dots fill in. Miss a day and it resets. Simple, visual, and just enough pressure to keep you going.</p>
-				<div class="feature-detail">
-					<div class="feature-detail-icon">&#128293;</div>
-					<span class="feature-detail-text">Your current streak, longest streak, and weekly check-in view — all on one screen.</span>
+			<div class="feature-panel active">
+				<div class="feature-text">
+					<h3>Don't break the chain</h3>
+					<p>
+						Start a streak, check in daily, and watch the dots fill in. Miss a day and it resets.
+						Simple, visual, and just enough pressure to keep you going.
+					</p>
+					<div class="feature-detail">
+						<div class="feature-detail-icon">&#128293;</div>
+						<span class="feature-detail-text"
+							>Your current streak, longest streak, and weekly check-in view — all on one screen.</span
+						>
+					</div>
+				</div>
+				<div class="feature-phone">
+					<img
+						src="/app/grid-life/feature-streaks.png"
+						alt="Streak tracking with fire emoji dots"
+					/>
 				</div>
 			</div>
-			<div class="feature-phone">
-				<img src="/app/grid-life/feature-streaks.png" alt="Streak tracking with fire emoji dots">
-			</div>
-		</div>
 		{/if}
 
 		<!-- Progress Panel -->
 		{#if activeTab === 'progress'}
-		<div class="feature-panel active">
-			<div class="feature-text">
-				<h3>Know where you stand</h3>
-				<p>See all your Spaces at a glance — active countdowns, habit completion rates, and streak lengths. Total days tracked, progress bars, and a summary that keeps you focused.</p>
-				<div class="feature-detail">
-					<div class="feature-detail-icon">&#9632;</div>
-					<span class="feature-detail-text">Breakdown by type: Countdowns, Habits, Streaks — each with its own progress bar and percentage.</span>
+			<div class="feature-panel active">
+				<div class="feature-text">
+					<h3>Know where you stand</h3>
+					<p>
+						See all your Spaces at a glance — active countdowns, habit completion rates, and streak
+						lengths. Total days tracked, progress bars, and a summary that keeps you focused.
+					</p>
+					<div class="feature-detail">
+						<div class="feature-detail-icon">&#9632;</div>
+						<span class="feature-detail-text"
+							>Breakdown by type: Countdowns, Habits, Streaks — each with its own progress bar and
+							percentage.</span
+						>
+					</div>
+				</div>
+				<div class="feature-phone">
+					<img
+						src="/app/grid-life/feature-progress.png"
+						alt="Progress summary showing all spaces"
+					/>
 				</div>
 			</div>
-			<div class="feature-phone">
-				<img src="/app/grid-life/feature-progress.png" alt="Progress summary showing all spaces">
-			</div>
-		</div>
 		{/if}
 
 		<!-- Milestones Panel -->
 		{#if activeTab === 'milestones'}
-		<div class="feature-panel active">
-			<div class="feature-text">
-				<h3>Mark the days that matter</h3>
-				<p>Add milestones to any Space. See them on a calendar, plan ahead, and look back at what you've accomplished. Perfect for training plans, project deadlines, and personal goals.</p>
-				<div class="feature-detail">
-					<div class="feature-detail-icon">&#128197;</div>
-					<span class="feature-detail-text">Calendar view with milestones across all your Spaces. Tap any day to add notes and track completion.</span>
+			<div class="feature-panel active">
+				<div class="feature-text">
+					<h3>Mark the days that matter</h3>
+					<p>
+						Add milestones to any Space. See them on a calendar, plan ahead, and look back at what
+						you've accomplished. Perfect for training plans, project deadlines, and personal goals.
+					</p>
+					<div class="feature-detail">
+						<div class="feature-detail-icon">&#128197;</div>
+						<span class="feature-detail-text"
+							>Calendar view with milestones across all your Spaces. Tap any day to add notes and
+							track completion.</span
+						>
+					</div>
+				</div>
+				<div class="feature-phone">
+					<img src="/app/grid-life/feature-milestones.png" alt="Milestones calendar view" />
 				</div>
 			</div>
-			<div class="feature-phone">
-				<img src="/app/grid-life/feature-milestones.png" alt="Milestones calendar view">
-			</div>
-		</div>
 		{/if}
 	</section>
 
@@ -204,7 +259,7 @@
 		<div class="groups-inner">
 			<div class="groups-visual reveal">
 				<div class="groups-mockup">
-					<img src="/app/grid-life/groups.png" alt="Progress and groups view">
+					<img src="/app/grid-life/groups.png" alt="Progress and groups view" />
 					<div class="float-card card-1">
 						<strong>Emma</strong> just checked in &#128170;
 					</div>
@@ -216,7 +271,11 @@
 			<div class="groups-text reveal">
 				<p class="section-label" style="text-align:left;">Friend Groups</p>
 				<h2>Hold each other accountable</h2>
-				<p>Create a group, invite your friends, and compete on shared goals. A live leaderboard keeps everyone honest — whether it's a fitness challenge, a no-sugar streak, or a daily reading habit.</p>
+				<p>
+					Create a group, invite your friends, and compete on shared goals. A live leaderboard keeps
+					everyone honest — whether it's a fitness challenge, a no-sugar streak, or a daily reading
+					habit.
+				</p>
 				<div class="groups-features">
 					<div class="groups-feature-item">
 						<span class="icon">&#128101;</span>
@@ -244,10 +303,13 @@
 		<div class="reveal">
 			<p class="section-label">Always Visible</p>
 			<h2>Widgets that belong on your Home Screen</h2>
-			<p>Small, medium, and large widgets. Automated lock screen wallpapers via Shortcuts. Your progress, always one glance away.</p>
+			<p>
+				Small, medium, and large widgets. Automated lock screen wallpapers via Shortcuts. Your
+				progress, always one glance away.
+			</p>
 		</div>
 		<div class="widgets-image reveal">
-			<img src="/app/grid-life/widgets.png" alt="Grid Life widgets on iPhone home screen">
+			<img src="/app/grid-life/widgets.png" alt="Grid Life widgets on iPhone home screen" />
 		</div>
 	</section>
 
@@ -268,10 +330,13 @@
 			</svg>
 		</div>
 		<div class="reveal">
-			<h2>Every day counts.<br><em>Make them visible.</em></h2>
+			<h2>Every day counts.<br /><em>Make them visible.</em></h2>
 			<p>Countdowns, habits, streaks, and friends — all in one beautifully simple app.</p>
-			<a href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693" class="app-store-badge">
-				<img src="/app/grid-life/app-store-badge.svg" alt="Download on the App Store">
+			<a
+				href="https://apps.apple.com/us/app/grid-life-make-it-count/id6759627693"
+				class="app-store-badge"
+			>
+				<img src="/app/grid-life/app-store-badge.svg" alt="Download on the App Store" />
 			</a>
 		</div>
 	</section>
@@ -286,21 +351,20 @@
 			<a href="mailto:info+gridlifeapp@lsdigital.ee">Contact</a>
 		</div>
 	</footer>
-
 </div>
 
 <style>
 	/* ── Scoped Grid Life Theme ── */
 	.gl {
-		--bg: #FAF8F5;
-		--bg-warm: #F5EFE6;
-		--bg-cream: #EDE5D8;
-		--ink: #1A1714;
-		--ink-soft: #3D3730;
-		--ink-muted: #8A8278;
-		--ink-faint: #B5AEA4;
-		--accent: #F5A623;
-		--accent-warm: #E8942A;
+		--bg: #faf8f5;
+		--bg-warm: #f5efe6;
+		--bg-cream: #ede5d8;
+		--ink: #1a1714;
+		--ink-soft: #3d3730;
+		--ink-muted: #8a8278;
+		--ink-faint: #b5aea4;
+		--accent: #f5a623;
+		--accent-warm: #e8942a;
 		--accent-glow: rgba(245, 166, 35, 0.15);
 		--accent-soft: rgba(245, 166, 35, 0.08);
 		--card-bg: rgba(255, 253, 249, 0.6);
@@ -333,22 +397,39 @@
 
 	/* ── Animations ── */
 	@keyframes fadeUp {
-		from { opacity: 0; transform: translateY(32px); }
-		to { opacity: 1; transform: translateY(0); }
+		from {
+			opacity: 0;
+			transform: translateY(32px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 	@keyframes fadeIn {
-		from { opacity: 0; }
-		to { opacity: 1; }
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
 	}
 	@keyframes float {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-8px); }
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-8px);
+		}
 	}
 
 	.reveal {
 		opacity: 0;
 		transform: translateY(32px);
-		transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+		transition:
+			opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+			transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 	:global(.reveal.visible) {
 		opacity: 1;
@@ -369,7 +450,7 @@
 		background: rgba(250, 248, 245, 0.8);
 		backdrop-filter: blur(20px);
 		-webkit-backdrop-filter: blur(20px);
-		border-bottom: 1px solid rgba(0,0,0,0.04);
+		border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 		transition: all 0.3s ease;
 	}
 
@@ -410,7 +491,9 @@
 		transition: color 0.2s;
 	}
 
-	.nav-links a:hover { color: var(--ink); }
+	.nav-links a:hover {
+		color: var(--ink);
+	}
 
 	.nav-cta {
 		display: inline-flex;
@@ -545,7 +628,7 @@
 
 	.btn-secondary:hover {
 		background: var(--card-bg);
-		border-color: rgba(0,0,0,0.1);
+		border-color: rgba(0, 0, 0, 0.1);
 	}
 
 	.hero-phone {
@@ -557,7 +640,9 @@
 	.hero-phone img {
 		width: min(320px, 70vw);
 		border-radius: 36px;
-		box-shadow: 0 30px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+		box-shadow:
+			0 30px 80px rgba(0, 0, 0, 0.12),
+			0 0 0 1px rgba(0, 0, 0, 0.04);
 	}
 
 	.hero-phone::after {
@@ -568,7 +653,7 @@
 		transform: translateX(-50%);
 		width: 80%;
 		height: 40px;
-		background: radial-gradient(ellipse, rgba(0,0,0,0.08) 0%, transparent 70%);
+		background: radial-gradient(ellipse, rgba(0, 0, 0, 0.08) 0%, transparent 70%);
 	}
 
 	/* ── Features Tabs Section ── */
@@ -628,7 +713,7 @@
 	}
 
 	.feature-tab:hover {
-		border-color: rgba(0,0,0,0.12);
+		border-color: rgba(0, 0, 0, 0.12);
 		color: var(--ink-soft);
 		transform: translateY(-1px);
 	}
@@ -637,7 +722,7 @@
 		background: var(--ink);
 		color: #fff;
 		border-color: var(--ink);
-		box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 	}
 
 	.feature-panel {
@@ -714,7 +799,9 @@
 	.feature-phone img {
 		width: min(280px, 60vw);
 		border-radius: 32px;
-		box-shadow: 0 24px 64px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04);
+		box-shadow:
+			0 24px 64px rgba(0, 0, 0, 0.1),
+			0 0 0 1px rgba(0, 0, 0, 0.04);
 		transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 
@@ -751,7 +838,7 @@
 	.groups-mockup img {
 		width: 100%;
 		border-radius: 32px;
-		box-shadow: 0 24px 64px rgba(0,0,0,0.1);
+		box-shadow: 0 24px 64px rgba(0, 0, 0, 0.1);
 	}
 
 	.float-card {
@@ -761,8 +848,8 @@
 		backdrop-filter: blur(16px);
 		-webkit-backdrop-filter: blur(16px);
 		border-radius: 14px;
-		box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-		border: 1px solid rgba(0,0,0,0.04);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+		border: 1px solid rgba(0, 0, 0, 0.04);
 		font-family: var(--sans);
 		font-size: 0.8rem;
 		color: var(--ink-soft);
@@ -866,7 +953,9 @@
 		margin: 0 auto;
 		border-radius: 36px;
 		overflow: hidden;
-		box-shadow: 0 30px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+		box-shadow:
+			0 30px 80px rgba(0, 0, 0, 0.12),
+			0 0 0 1px rgba(0, 0, 0, 0.04);
 	}
 
 	.widgets-image img {
@@ -921,7 +1010,7 @@
 	/* ── Footer ── */
 	footer {
 		padding: clamp(40px, 6vh, 60px) clamp(24px, 6vw, 80px);
-		border-top: 1px solid rgba(0,0,0,0.06);
+		border-top: 1px solid rgba(0, 0, 0, 0.06);
 		max-width: 1100px;
 		margin: 0 auto;
 		display: flex;
@@ -954,34 +1043,64 @@
 		transition: color 0.2s;
 	}
 
-	.footer-links a:hover { color: var(--ink); }
+	.footer-links a:hover {
+		color: var(--ink);
+	}
 
 	/* ── Responsive ── */
 	@media (max-width: 768px) {
-		nav { padding: 12px 20px; }
-		.nav-links a:not(.nav-cta) { display: none; }
+		nav {
+			padding: 12px 20px;
+		}
+		.nav-links a:not(.nav-cta) {
+			display: none;
+		}
 
 		.feature-panel.active {
 			grid-template-columns: 1fr;
 			text-align: center;
 		}
 
-		.feature-text { align-items: center; }
-		.feature-text p { max-width: 100%; }
-		.feature-phone { order: -1; }
-		.feature-detail { justify-content: center; }
+		.feature-text {
+			align-items: center;
+		}
+		.feature-text p {
+			max-width: 100%;
+		}
+		.feature-phone {
+			order: -1;
+		}
+		.feature-detail {
+			justify-content: center;
+		}
 
 		.groups-inner {
 			grid-template-columns: 1fr;
 			text-align: center;
 		}
 
-		.groups-text p { max-width: 100%; margin-left: auto; margin-right: auto; }
-		.groups-features { align-items: center; }
-		.groups-visual { order: -1; }
+		.groups-text p {
+			max-width: 100%;
+			margin-left: auto;
+			margin-right: auto;
+		}
+		.groups-features {
+			align-items: center;
+		}
+		.groups-visual {
+			order: -1;
+		}
 
-		.float-card.card-1 { right: -10px; top: 26%; }
-		.float-card.card-2 { left: auto; right: -10px; top: 33%; bottom: auto; }
+		.float-card.card-1 {
+			right: -10px;
+			top: 26%;
+		}
+		.float-card.card-2 {
+			left: auto;
+			right: -10px;
+			top: 33%;
+			bottom: auto;
+		}
 
 		footer {
 			flex-direction: column;
@@ -991,8 +1110,15 @@
 	}
 
 	@media (max-width: 480px) {
-		.feature-tabs { gap: 6px; }
-		.feature-tab { padding: 10px 18px; font-size: 0.82rem; }
-		.hero-actions { flex-direction: column; }
+		.feature-tabs {
+			gap: 6px;
+		}
+		.feature-tab {
+			padding: 10px 18px;
+			font-size: 0.82rem;
+		}
+		.hero-actions {
+			flex-direction: column;
+		}
 	}
 </style>

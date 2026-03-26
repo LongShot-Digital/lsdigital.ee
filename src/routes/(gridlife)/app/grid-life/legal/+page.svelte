@@ -1,12 +1,15 @@
 <svelte:head>
 	<title>Legal — Grid Life</title>
-	<meta name="description" content="Privacy Policy and Terms & Conditions for Grid Life by LongShot Digital.">
+	<meta
+		name="description"
+		content="Privacy Policy and Terms & Conditions for Grid Life by LongShot Digital."
+	/>
 </svelte:head>
 
 <div class="legal">
 	<nav>
 		<a href="/app/grid-life" class="nav-logo">
-			<img src="/app/grid-life/app-icon.png" alt="Grid Life" class="nav-logo-icon">
+			<img src="/app/grid-life/app-icon.png" alt="Grid Life" class="nav-logo-icon" />
 			<span class="nav-logo-text">Grid Life</span>
 		</a>
 	</nav>
@@ -19,7 +22,14 @@
 	<section class="legal-cards">
 		<a href="/app/grid-life/privacy" class="legal-card">
 			<div class="card-icon">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg
+				>
 			</div>
 			<h2>Privacy Policy</h2>
 			<p>How we handle your data — spoiler: everything stays on your device.</p>
@@ -27,7 +37,19 @@
 		</a>
 		<a href="/app/grid-life/terms" class="legal-card">
 			<div class="card-icon">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline
+						points="14 2 14 8 20 8"
+					/><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline
+						points="10 9 9 9 8 9"
+					/></svg
+				>
 			</div>
 			<h2>Terms & Conditions</h2>
 			<p>The rules of the road for using Grid Life.</p>
@@ -45,11 +67,11 @@
 	:root {
 		--sans: 'DM Sans', system-ui, -apple-system, sans-serif;
 		--serif: 'Fraunces', Georgia, serif;
-		--bg: #FAF8F5;
-		--ink: #1A1714;
-		--ink-soft: #3D3730;
-		--ink-muted: #8A8279;
-		--accent: #E8A83E;
+		--bg: #faf8f5;
+		--ink: #1a1714;
+		--ink-soft: #3d3730;
+		--ink-muted: #8a8279;
+		--accent: #e8a83e;
 	}
 
 	.legal {
