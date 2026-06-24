@@ -29,26 +29,30 @@
 </svelte:head>
 
 <div class="pc">
-	<!-- ──────── Navigation ──────── -->
+	<!-- ──────── Navigation ────────
+	     Outer <nav> is full-width with the background + safe-area padding.
+	     Inner .nav-inner is the constrained 1100px flex row of content. -->
 	<nav>
-		<a class="logo" href="/app/par-car">
-			<img src="/app/par-car/app-icon.png" alt="Par Car" class="logo-icon" />
-			<span class="logo-text">
-				<span>PAR</span>
-				<span class="flag">
-					<svg viewBox="0 0 30 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-						<rect x="13" y="6" width="3" height="48" fill="#C5392C" />
-						<path d="M16 8 L28 14 L16 20 Z" fill="#C5392C" />
-					</svg>
+		<div class="nav-inner">
+			<a class="logo" href="/app/par-car">
+				<img src="/app/par-car/app-icon.png" alt="Par Car" class="logo-icon" />
+				<span class="logo-text">
+					<span>PAR</span>
+					<span class="flag">
+						<svg viewBox="0 0 30 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+							<rect x="13" y="6" width="3" height="48" fill="#C5392C" />
+							<path d="M16 8 L28 14 L16 20 Z" fill="#C5392C" />
+						</svg>
+					</span>
+					<span>CAR</span>
 				</span>
-				<span>CAR</span>
-			</span>
-		</a>
-		<div class="nav-links">
-			<a href="#how" onclick={(e) => scrollTo(e, 'how')}>How it works</a>
-			<a href="#clubs" onclick={(e) => scrollTo(e, 'clubs')}>For clubs</a>
-			<a href="#pricing" onclick={(e) => scrollTo(e, 'pricing')}>Pricing</a>
-			<a href="#contact" onclick={(e) => scrollTo(e, 'contact')} class="nav-cta">Talk to us</a>
+			</a>
+			<div class="nav-links">
+				<a href="#how" onclick={(e) => scrollTo(e, 'how')}>How it works</a>
+				<a href="#clubs" onclick={(e) => scrollTo(e, 'clubs')}>For clubs</a>
+				<a href="#pricing" onclick={(e) => scrollTo(e, 'pricing')}>Pricing</a>
+				<a href="#contact" onclick={(e) => scrollTo(e, 'contact')} class="nav-cta">Talk to us</a>
+			</div>
 		</div>
 	</nav>
 
@@ -325,34 +329,32 @@
 	}
 
 	/* ────────── Navigation ────────── */
+	/* Outer <nav>: full-bleed sticky bar with the background + safe-area
+	   padding. Stays at top of viewport while scrolling; the opaque
+	   background fully covers content behind it (including the iPhone
+	   safe area at the top, which previously let content peek through). */
 	.pc nav {
 		position: sticky;
 		top: 0;
 		z-index: 50;
+		width: 100%;
 		background: rgba(255, 255, 255, 0.92);
 		backdrop-filter: saturate(180%) blur(14px);
 		-webkit-backdrop-filter: saturate(180%) blur(14px);
 		border-bottom: 1px solid var(--line);
 		transition: box-shadow 0.25s ease;
+		padding-top: env(safe-area-inset-top, 0);
 	}
-	.pc nav > :global(*) {
-		font-family: 'Inter', system-ui, sans-serif;
-	}
-	.pc nav {
-		max-width: none;
-		display: block;
-	}
-	.pc nav .logo {
-		display: inline-flex;
-	}
-	/* Inner flex container */
-	.pc nav {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+
+	/* Inner row: constrained width + the actual flex layout. */
+	.pc .nav-inner {
 		max-width: 1100px;
 		margin: 0 auto;
 		padding: 18px 32px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
 	}
 	.pc .logo {
 		display: flex;
