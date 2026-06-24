@@ -74,6 +74,13 @@
 					<span class="apps-item-desc">Habits, streaks & countdowns</span>
 				</div>
 			</a>
+			<a href="/app/par-car" class="apps-item">
+				<img src="/app/par-car/app-icon.png" alt="Par Car" class="apps-item-icon" />
+				<div class="apps-item-text">
+					<span class="apps-item-name">Par Car</span>
+					<span class="apps-item-desc">Premium car care, while you play</span>
+				</div>
+			</a>
 		</div>
 	{/if}
 </div>
