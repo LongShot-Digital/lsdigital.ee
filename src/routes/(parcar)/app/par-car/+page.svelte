@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
+	// ─── Sticky-nav scroll state ────────────────────────────────────
 	let scrolled = $state(false);
 
 	onMount(() => {
@@ -17,6 +19,75 @@
 		const el = document.getElementById(id);
 		if (el) el.scrollIntoView({ behavior: 'smooth' });
 	}
+
+	// ─── Interactive phone simulator ────────────────────────────────
+	// Mirrors the real iOS app flow: Home → Pick → Confirm → Booked
+	type PhoneScreen = 'home' | 'pick' | 'confirm' | 'booked';
+	type TierKey = 'express' | 'full' | 'signature';
+
+	interface Tier {
+		key: TierKey;
+		name: string;
+		duration: string;
+		price: number;
+		blurb: string;
+	}
+
+	const tiers: Tier[] = [
+		{
+			key: 'express',
+			name: 'Express Exterior',
+			duration: '~30 min',
+			price: 45,
+			blurb: 'Hand wash, wheels, tire shine.'
+		},
+		{
+			key: 'full',
+			name: 'Full Valet',
+			duration: '~60 min',
+			price: 85,
+			blurb: 'Interior + exterior detail.'
+		},
+		{
+			key: 'signature',
+			name: 'Signature Detail',
+			duration: '~90 min',
+			price: 140,
+			blurb: 'Full detail + paint sealant.'
+		}
+	];
+
+	let phoneScreen = $state<PhoneScreen>('home');
+	let phoneTier = $state<TierKey>('full');
+
+	let selectedTier = $derived(tiers.find((t) => t.key === phoneTier)!);
+
+	function selectTier(k: TierKey) {
+		phoneTier = k;
+	}
+	function goToPick() {
+		phoneScreen = 'pick';
+	}
+	function goToConfirm() {
+		phoneScreen = 'confirm';
+	}
+	function goToBooked() {
+		phoneScreen = 'booked';
+	}
+	function restartPhone() {
+		phoneScreen = 'home';
+		phoneTier = 'full';
+	}
+
+	// ─── Earnings calculator ─────────────────────────────────────────
+	let calcWashes = $state(200);
+	let calcTicket = $state(85);
+
+	let monthlySpend = $derived(calcWashes * calcTicket);
+	let monthlyClub = $derived(Math.round(monthlySpend * 0.2));
+	let annualClub = $derived(monthlyClub * 12);
+
+	const fmt = (n: number) => n.toLocaleString('en-US');
 </script>
 
 <svelte:head>
@@ -28,10 +99,7 @@
 </svelte:head>
 
 <div class="pc">
-	<!-- ──────── Navigation ────────
-	     Outer <nav> is full-bleed sticky bar. Transparent at top of the
-	     page, gains a translucent cream background + subtle shadow only
-	     after the user has scrolled past the hero (40 px). -->
+	<!-- ──────── Navigation ──────── -->
 	<nav class:scrolled>
 		<div class="nav-inner">
 			<a class="logo" href="/app/par-car">
@@ -56,7 +124,7 @@
 		</div>
 	</nav>
 
-	<!-- ──────── Hero ──────── -->
+	<!-- ──────── Hero with interactive phone ──────── -->
 	<section class="hero" id="top">
 		<div class="container">
 			<div class="hero-grid">
@@ -76,32 +144,188 @@
 							>See how it works</a
 						>
 					</div>
+					<p class="hero-hint">↗ Tap through the demo on the right to see the member's flow.</p>
 				</div>
+
+				<!-- Interactive phone — mirrors the real iOS app -->
 				<div class="hero-visual">
-					<div class="phone">
+					<div class="phone" aria-label="Par Car app demo">
 						<div class="phone-screen">
-							<div class="phone-icon">
-								<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-									<path
-										d="M50 13 C50 13 74 45 74 62 A24 24 0 1 1 26 62 C26 45 50 13 50 13 Z"
-										fill="#F1ECE1"
-									/>
-									<rect x="47" y="47" width="1.9" height="28" fill="#1C1A16" />
-									<path d="M48.9 48 L62 52 L48.9 56 Z" fill="#1C1A16" />
-								</svg>
-							</div>
-							<span class="phone-line">
-								<span>PAR</span>
-								<span class="fl">
-									<svg viewBox="0 0 30 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-										<rect x="13" y="6" width="3" height="48" fill="#C5392C" />
-										<path d="M16 8 L28 14 L16 20 Z" fill="#C5392C" />
+							<!-- Status bar (decorative) -->
+							<div class="status-bar">
+								<span>9:41</span>
+								<span class="status-icons">
+									<svg viewBox="0 0 16 10" aria-hidden="true">
+										<rect x="0" y="3" width="3" height="7" rx="0.5" fill="currentColor" />
+										<rect x="4.5" y="2" width="3" height="8" rx="0.5" fill="currentColor" />
+										<rect x="9" y="1" width="3" height="9" rx="0.5" fill="currentColor" />
+										<rect x="13.5" y="0" width="2.5" height="10" rx="0.5" fill="currentColor" />
+									</svg>
+									<svg viewBox="0 0 22 10" aria-hidden="true">
+										<rect
+											x="0"
+											y="0.5"
+											width="18"
+											height="9"
+											rx="2"
+											stroke="currentColor"
+											stroke-width="1"
+											fill="none"
+										/>
+										<rect x="2" y="2.5" width="14" height="5" rx="1" fill="currentColor" />
+										<rect x="19" y="3" width="2" height="4" rx="0.5" fill="currentColor" />
 									</svg>
 								</span>
-								<span>CAR</span>
-							</span>
-							<div class="phone-body">Premium car care<br />While you play</div>
-							<div class="phone-cta">Book a wash →</div>
+							</div>
+
+							{#if phoneScreen === 'home'}
+								<div class="screen" transition:fade={{ duration: 180 }}>
+									<div class="screen-brand">
+										<span>PAR</span>
+										<span class="fl">
+											<svg viewBox="0 0 30 60" aria-hidden="true">
+												<rect x="13" y="6" width="3" height="48" fill="#C5392C" />
+												<path d="M16 8 L28 14 L16 20 Z" fill="#C5392C" />
+											</svg>
+										</span>
+										<span>CAR</span>
+									</div>
+									<div class="screen-greet">Welcome back, Jaan</div>
+
+									<div class="tee-card">
+										<div class="tee-eyebrow">YOUR TEE TIME · TODAY</div>
+										<div class="tee-time">11:36 AM</div>
+										<div class="tee-meta">MAARDU GOLF CLUB · 4 PLAYERS</div>
+										<button class="tee-cta" onclick={goToPick}>Book a wash →</button>
+									</div>
+
+									<div class="vehicle-mini">
+										<div class="vehicle-paint"></div>
+										<div class="vehicle-info">
+											<div class="vehicle-name">Range Rover</div>
+											<div class="vehicle-meta">Velar · OB Black</div>
+										</div>
+									</div>
+								</div>
+							{:else if phoneScreen === 'pick'}
+								<div class="screen" transition:fade={{ duration: 180 }}>
+									<div class="screen-nav">
+										<button class="back" onclick={() => (phoneScreen = 'home')}
+											aria-label="Back">←</button
+										>
+										<span>Pick a wash</span>
+									</div>
+
+									<div class="tier-list">
+										{#each tiers as t}
+											<button
+												class="tier-card"
+												class:selected={phoneTier === t.key}
+												onclick={() => selectTier(t.key)}
+											>
+												<div class="tier-top">
+													<div>
+														<div class="tier-name">{t.name}</div>
+														<div class="tier-meta">{t.duration}</div>
+													</div>
+													<div class="tier-price">€{t.price}</div>
+												</div>
+												<div class="tier-blurb">{t.blurb}</div>
+												{#if phoneTier === t.key}
+													<div class="tier-check">
+														<svg viewBox="0 0 12 10" aria-hidden="true">
+															<polyline
+																points="1,5 4.5,8.5 11,1.5"
+																fill="none"
+																stroke="currentColor"
+																stroke-width="2"
+																stroke-linecap="round"
+																stroke-linejoin="round"
+															/>
+														</svg>
+													</div>
+												{/if}
+											</button>
+										{/each}
+									</div>
+
+									<button class="screen-cta" onclick={goToConfirm}>Continue →</button>
+								</div>
+							{:else if phoneScreen === 'confirm'}
+								<div class="screen" transition:fade={{ duration: 180 }}>
+									<div class="screen-nav">
+										<button
+											class="back"
+											onclick={() => (phoneScreen = 'pick')}
+											aria-label="Back">←</button
+										>
+										<span>Confirm wash</span>
+									</div>
+
+									<div class="confirm-summary">
+										<div class="cs-eyebrow">YOUR WASH</div>
+										<div class="cs-name">{selectedTier.name}</div>
+										<div class="cs-meta">{selectedTier.duration} · €{selectedTier.price}</div>
+									</div>
+
+									<div class="form-rows">
+										<div class="form-row">
+											<span class="fr-lbl">Vehicle</span>
+											<span class="fr-val">Range Rover Velar</span>
+										</div>
+										<div class="form-row">
+											<span class="fr-lbl">Parking spot</span>
+											<span class="fr-val">Row B · #14</span>
+										</div>
+										<div class="form-row">
+											<span class="fr-lbl">Key drop</span>
+											<span class="fr-val">Bag staff</span>
+										</div>
+										<div class="form-row">
+											<span class="fr-lbl">Return by</span>
+											<span class="fr-val">3:45 PM</span>
+										</div>
+									</div>
+
+									<button class="screen-cta" onclick={goToBooked}>
+										Confirm & pay €{selectedTier.price}
+									</button>
+								</div>
+							{:else if phoneScreen === 'booked'}
+								<div class="screen" transition:fade={{ duration: 180 }}>
+									<div class="booked-stage">
+										<div class="check-circle">
+											<svg viewBox="0 0 24 24" aria-hidden="true">
+												<polyline
+													points="5,12 10,17 19,7"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2.4"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+												/>
+											</svg>
+										</div>
+										<div class="booked-title">You're all set</div>
+										<div class="booked-sub">
+											We've got your {selectedTier.name.toLowerCase()} booked for today.
+										</div>
+
+										<div class="booked-card">
+											<div class="bc-row">
+												<span class="fr-lbl">Tee time</span>
+												<span class="fr-val">11:36 AM</span>
+											</div>
+											<div class="bc-row">
+												<span class="fr-lbl">Charged</span>
+												<span class="fr-val accent">€{selectedTier.price}</span>
+											</div>
+										</div>
+
+										<button class="restart" onclick={restartPhone}>↻ Run demo again</button>
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</div>
@@ -140,8 +364,8 @@
 					<h3>Walk off 18 to a clean car.</h3>
 					<p>
 						You get a text the moment it's ready. Keys are back at the bag stand. Tip the crew and
-						rate the wash from your phone — that's it.</p
-					>
+						rate the wash from your phone — that's it.
+					</p>
 				</div>
 			</div>
 		</div>
@@ -202,24 +426,66 @@
 					</div>
 				</div>
 
-				<div class="numbers-stack">
-					<div class="num-card">
-						<div class="lbl">Projected monthly amenity revenue to the club</div>
-						<div class="val accent">€6,960</div>
+				<!-- Interactive calculator (replaces the speculative number stack) -->
+				<aside class="calculator">
+					<div class="calc-eyebrow">EARNINGS CALCULATOR</div>
+					<h4>Try numbers from your own club</h4>
+					<p class="calc-intro">
+						The club keeps 20% of every wash. Drag the sliders to see what that looks like at your
+						volume.
+					</p>
+
+					<div class="calc-row">
+						<div class="calc-label">
+							<span>Washes per month</span>
+							<span class="calc-val">{calcWashes}</span>
+						</div>
+						<input
+							type="range"
+							min="20"
+							max="500"
+							step="10"
+							bind:value={calcWashes}
+							aria-label="Washes per month"
+						/>
+						<div class="calc-scale"><span>20</span><span>500</span></div>
 					</div>
-					<div class="num-card">
-						<div class="lbl">Projected year-one earnings</div>
-						<div class="val">€83,500</div>
+
+					<div class="calc-row">
+						<div class="calc-label">
+							<span>Average ticket</span>
+							<span class="calc-val">€{calcTicket}</span>
+						</div>
+						<input
+							type="range"
+							min="45"
+							max="140"
+							step="5"
+							bind:value={calcTicket}
+							aria-label="Average ticket price in euros"
+						/>
+						<div class="calc-scale"><span>€45</span><span>€140</span></div>
 					</div>
-					<div class="num-card">
-						<div class="lbl">Member adoption in first 90 days</div>
-						<div class="val">41%</div>
+
+					<div class="calc-result">
+						<div class="calc-result-row primary">
+							<span class="lbl">Club share / month</span>
+							<span class="val">€{fmt(monthlyClub)}</span>
+						</div>
+						<div class="calc-result-row">
+							<span class="lbl">Club share / year</span>
+							<span class="val">€{fmt(annualClub)}</span>
+						</div>
+						<div class="calc-result-row dim">
+							<span class="lbl">Total member spend / month</span>
+							<span class="val">€{fmt(monthlySpend)}</span>
+						</div>
 					</div>
-					<div class="num-card">
-						<div class="lbl">Club capital required · Staff hours</div>
-						<div class="val">€0</div>
-					</div>
-				</div>
+
+					<p class="calc-note">
+						Illustrative only. Real numbers depend on actual member adoption at your club.
+					</p>
+				</aside>
 			</div>
 		</div>
 	</section>
@@ -258,7 +524,7 @@
 		</div>
 	</section>
 
-	<!-- ──────── Final CTA (the one dark moment on the page) ──────── -->
+	<!-- ──────── Final CTA (the one dark moment) ──────── -->
 	<section class="final-cta" id="contact">
 		<div class="container">
 			<div class="section-eyebrow gold">TALK TO US</div>
@@ -271,8 +537,8 @@
 			<div class="hero-ctas centered">
 				<a
 					class="btn btn-primary"
-					href="mailto:info+parcar@lsdigital.ee?subject=Par%20Car%20%C2%B7%20Partnership%20enquiry"
-					>Email info+parcar@lsdigital.ee</a
+					href="mailto:info@lsdigital.ee?subject=Par%20Car%20%C2%B7%20Partnership%20enquiry"
+					>Email info@lsdigital.ee</a
 				>
 				<a class="btn btn-secondary" href="/">More about LongShot Digital</a>
 			</div>
@@ -281,29 +547,22 @@
 
 	<!-- ──────── Footer ──────── -->
 	<footer>
-		<div class="footer-meta">© 2026 LongShot Digital OÜ · Tallinn</div>
+		<div class="footer-meta">
+			© 2026 LongShot Digital OÜ · Reg. 17437669 · Tallinn
+		</div>
 		<div class="footer-links">
 			<a href="/">LSD</a>
 			<a href="/app/grid-life">Grid Life</a>
 			<a href="/app/par-car/legal">Legal</a>
-			<a href="mailto:info+parcar@lsdigital.ee">Contact</a>
+			<a href="mailto:info@lsdigital.ee">info@lsdigital.ee</a>
 		</div>
 	</footer>
 </div>
 
 <style>
 	/* ════════════════════════════════════════════════════════════════
-	   Design discipline (the redesign rules):
-	   · ONE base background everywhere — warm cream. No section-by-section
-	     colour shifts except the single dark final-CTA (the dramatic moment).
-	   · Panels (cards, tiers, KPI numbers) sit on cream as warm-white
-	     surfaces with thin hairline borders. No solid colour blocks behind
-	     entire sections.
-	   · Red used sparingly: brand flag, italic emphasis in headlines (the
-	     "voice" moments), the one accented KPI, the in-phone CTA.
-	     Section eyebrows, list numbers, etc. go to neutral grey.
-	   · Nav is transparent at top of page; only becomes opaque cream +
-	     blur + subtle shadow after the user scrolls past the hero.
+	   Design rules: single cream background; warm-white panels for
+	   "objects"; red used sparingly; dark final-CTA as the one shift.
 	   ════════════════════════════════════════════════════════════════ */
 
 	.pc {
@@ -311,8 +570,8 @@
 		--ink-2: #595650;
 		--ink-3: #9a948a;
 		--cream: #f1ece1;
-		--cream-deep: #ebe5d6; /* hairline rule */
-		--paper: #faf6ee; /* warm white panels */
+		--cream-deep: #ebe5d6;
+		--paper: #faf6ee;
 		--line: rgba(28, 26, 22, 0.08);
 		--red: #c5392c;
 		--gold: #b89456;
@@ -356,7 +615,6 @@
 		border-bottom-color: var(--line);
 		box-shadow: 0 1px 24px rgba(28, 26, 22, 0.04);
 	}
-
 	.pc .nav-inner {
 		max-width: 1100px;
 		margin: 0 auto;
@@ -366,7 +624,6 @@
 		justify-content: space-between;
 		gap: 16px;
 	}
-
 	.pc .logo {
 		display: flex;
 		align-items: center;
@@ -403,7 +660,6 @@
 		height: 100%;
 		display: block;
 	}
-
 	.pc .nav-links {
 		display: flex;
 		align-items: center;
@@ -419,8 +675,6 @@
 	.pc .nav-links a:hover {
 		color: var(--ink);
 	}
-
-	/* Pill CTA — much less template-y than a sharp rectangle */
 	.pc .nav-cta {
 		background: var(--ink);
 		color: var(--cream);
@@ -486,6 +740,14 @@
 	.pc .hero-ctas.centered {
 		justify-content: center;
 	}
+	.pc .hero-hint {
+		margin-top: 22px;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 11px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--ink-3);
+	}
 	.pc .btn {
 		display: inline-flex;
 		align-items: center;
@@ -496,6 +758,8 @@
 		text-decoration: none;
 		border-radius: 999px;
 		transition: all 0.15s;
+		border: 1px solid transparent;
+		cursor: pointer;
 	}
 	.pc .btn-primary {
 		background: var(--ink);
@@ -515,7 +779,7 @@
 		color: var(--cream);
 	}
 
-	/* Hero phone visual */
+	/* ─────────────────────── Phone (interactive) ─────────────────────── */
 	.pc .hero-visual {
 		display: flex;
 		justify-content: center;
@@ -534,11 +798,11 @@
 	.pc .phone::before {
 		content: '';
 		position: absolute;
-		top: 18px;
+		top: 14px;
 		left: 50%;
 		transform: translateX(-50%);
-		width: 90px;
-		height: 22px;
+		width: 92px;
+		height: 24px;
 		background: #0a0a0c;
 		border-radius: 999px;
 		z-index: 5;
@@ -548,59 +812,424 @@
 		height: 100%;
 		background: var(--cream);
 		border-radius: 36px;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.pc .status-bar {
+		position: absolute;
+		top: 14px;
+		left: 0;
+		right: 0;
+		padding: 0 28px;
+		height: 22px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		font-family: 'Inter', sans-serif;
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--ink);
+		z-index: 4;
+	}
+	.pc .status-icons {
+		display: inline-flex;
+		gap: 6px;
+		align-items: center;
+		color: var(--ink);
+	}
+	.pc .status-icons svg {
+		height: 10px;
+		width: auto;
+	}
+
+	/* Common screen styles */
+	.pc .screen {
+		position: absolute;
+		inset: 0;
+		padding: 56px 18px 18px;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 24px;
-		padding: 60px 24px;
+		gap: 14px;
 	}
-	.pc .phone-icon {
-		width: 84px;
-		height: 84px;
-		background: var(--ink);
-		border-radius: 20px;
+
+	/* Common nav bar inside screens */
+	.pc .screen-nav {
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+		gap: 14px;
+		padding-bottom: 4px;
 	}
-	.pc .phone-icon svg {
-		width: 56%;
-		height: 56%;
+	.pc .screen-nav .back {
+		width: 28px;
+		height: 28px;
+		border: none;
+		background: transparent;
+		font-size: 20px;
+		line-height: 1;
+		color: var(--ink);
+		cursor: pointer;
+		padding: 0;
 	}
-	.pc .phone-line {
-		font-family: 'Spectral', Georgia, serif;
+	.pc .screen-nav span {
+		font-family: 'Spectral', serif;
+		font-size: 16px;
 		font-weight: 500;
-		font-size: 18px;
+		color: var(--ink);
+	}
+
+	/* ─── Home screen ─── */
+	.pc .screen-brand {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 14px;
 		letter-spacing: 0.18em;
 		color: var(--ink);
 		display: inline-flex;
 		align-items: center;
 		gap: 0.42em;
 	}
-	.pc .phone-body {
-		font-size: 11px;
-		color: var(--ink-3);
-		font-family: 'JetBrains Mono', monospace;
-		letter-spacing: 0.15em;
-		text-transform: uppercase;
-		text-align: center;
+	.pc .screen-brand .fl {
+		width: 0.42em;
+		height: 1em;
 	}
-	.pc .phone-cta {
-		margin-top: 8px;
+	.pc .screen-brand .fl svg {
+		width: 100%;
+		height: 100%;
+		display: block;
+	}
+	.pc .screen-greet {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 18px;
+		color: var(--ink);
+		letter-spacing: -0.01em;
+	}
+	.pc .tee-card {
+		background: var(--ink);
+		color: var(--cream);
+		padding: 18px;
+		border-radius: 14px;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+	.pc .tee-eyebrow {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.2em;
+		color: rgba(241, 236, 225, 0.6);
+		font-weight: 600;
+	}
+	.pc .tee-time {
+		font-family: 'Spectral', serif;
+		font-weight: 400;
+		font-size: 32px;
+		letter-spacing: -0.02em;
+		line-height: 1;
+	}
+	.pc .tee-meta {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.16em;
+		color: rgba(241, 236, 225, 0.5);
+		font-weight: 600;
+		margin-bottom: 8px;
+	}
+	.pc .tee-cta {
 		background: var(--red);
 		color: var(--cream);
-		padding: 10px 18px;
+		border: none;
+		padding: 10px 14px;
+		border-radius: 999px;
 		font-size: 12px;
 		font-weight: 600;
-		border-radius: 999px;
+		font-family: 'Inter', sans-serif;
+		cursor: pointer;
+		transition: background 0.15s, transform 0.1s;
+		align-self: flex-start;
+	}
+	.pc .tee-cta:hover {
+		background: #a32a1e;
+	}
+	.pc .tee-cta:active {
+		transform: scale(0.96);
+	}
+	.pc .vehicle-mini {
+		display: flex;
+		gap: 10px;
+		align-items: center;
+		background: var(--paper);
+		border: 1px solid var(--line);
+		padding: 12px;
+		border-radius: 12px;
+		margin-top: auto;
+	}
+	.pc .vehicle-paint {
+		width: 36px;
+		height: 36px;
+		border-radius: 8px;
+		background: linear-gradient(135deg, #1c1a16 0%, #2a2722 100%);
+		flex-shrink: 0;
+	}
+	.pc .vehicle-name {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 13px;
+		color: var(--ink);
+	}
+	.pc .vehicle-meta {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.14em;
+		color: var(--ink-3);
+		font-weight: 600;
+		text-transform: uppercase;
 	}
 
-	/* ─────────────────────── Sections (all on cream) ─────────────────────── */
+	/* ─── Pick screen ─── */
+	.pc .tier-list {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin-top: 4px;
+	}
+	.pc .tier-card {
+		position: relative;
+		background: var(--paper);
+		border: 1.5px solid var(--line);
+		border-radius: 12px;
+		padding: 12px;
+		text-align: left;
+		cursor: pointer;
+		font-family: inherit;
+		transition: border-color 0.15s, transform 0.1s;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.pc .tier-card:hover {
+		border-color: rgba(28, 26, 22, 0.2);
+	}
+	.pc .tier-card:active {
+		transform: scale(0.98);
+	}
+	.pc .tier-card.selected {
+		border-color: var(--red);
+		background: rgba(197, 57, 44, 0.04);
+	}
+	.pc .tier-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+	}
+	.pc .tier-name {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 13px;
+		color: var(--ink);
+	}
+	.pc .tier-meta {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.14em;
+		color: var(--ink-3);
+		font-weight: 600;
+		text-transform: uppercase;
+	}
+	.pc .tier-price {
+		font-family: 'JetBrains Mono', monospace;
+		font-weight: 600;
+		font-size: 16px;
+		color: var(--ink);
+		letter-spacing: -0.02em;
+	}
+	.pc .tier-blurb {
+		font-size: 10px;
+		color: var(--ink-2);
+		line-height: 1.4;
+	}
+	.pc .tier-check {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		width: 16px;
+		height: 16px;
+		background: var(--red);
+		color: var(--cream);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.pc .tier-check svg {
+		width: 9px;
+		height: auto;
+	}
+
+	/* Shared bottom CTA */
+	.pc .screen-cta {
+		margin-top: auto;
+		background: var(--ink);
+		color: var(--cream);
+		border: none;
+		padding: 12px;
+		border-radius: 12px;
+		font-size: 13px;
+		font-weight: 600;
+		font-family: 'Inter', sans-serif;
+		cursor: pointer;
+		transition: background 0.15s, transform 0.1s;
+	}
+	.pc .screen-cta:hover {
+		background: #000;
+	}
+	.pc .screen-cta:active {
+		transform: scale(0.98);
+	}
+
+	/* ─── Confirm screen ─── */
+	.pc .confirm-summary {
+		background: var(--paper);
+		border: 1px solid var(--line);
+		padding: 12px;
+		border-radius: 12px;
+	}
+	.pc .cs-eyebrow {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.18em;
+		color: var(--ink-3);
+		font-weight: 600;
+		margin-bottom: 4px;
+	}
+	.pc .cs-name {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 16px;
+		color: var(--ink);
+	}
+	.pc .cs-meta {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		letter-spacing: 0.14em;
+		color: var(--ink-3);
+		font-weight: 600;
+		margin-top: 2px;
+	}
+	.pc .form-rows {
+		display: flex;
+		flex-direction: column;
+	}
+	.pc .form-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 10px 0;
+		border-bottom: 1px solid var(--line);
+	}
+	.pc .form-row:last-child {
+		border-bottom: none;
+	}
+	.pc .fr-lbl {
+		font-size: 11px;
+		color: var(--ink-3);
+		font-weight: 500;
+	}
+	.pc .fr-val {
+		font-size: 12px;
+		color: var(--ink);
+		font-weight: 500;
+	}
+	.pc .fr-val.accent {
+		color: var(--red);
+		font-family: 'JetBrains Mono', monospace;
+		font-weight: 600;
+	}
+
+	/* ─── Booked screen ─── */
+	.pc .booked-stage {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: 12px;
+		padding-top: 30px;
+		height: 100%;
+	}
+	.pc .check-circle {
+		width: 64px;
+		height: 64px;
+		background: var(--red);
+		color: var(--cream);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+	.pc .check-circle svg {
+		width: 32px;
+		height: 32px;
+	}
+	@keyframes pop {
+		0% {
+			transform: scale(0.6);
+			opacity: 0;
+		}
+		100% {
+			transform: scale(1);
+			opacity: 1;
+		}
+	}
+	.pc .booked-title {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 22px;
+		color: var(--ink);
+		letter-spacing: -0.01em;
+	}
+	.pc .booked-sub {
+		font-size: 12px;
+		color: var(--ink-2);
+		max-width: 200px;
+		line-height: 1.4;
+	}
+	.pc .booked-card {
+		width: 100%;
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: 12px;
+		padding: 12px;
+		margin-top: 6px;
+	}
+	.pc .bc-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 6px 0;
+	}
+	.pc .restart {
+		margin-top: auto;
+		background: transparent;
+		color: var(--ink-2);
+		border: none;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		cursor: pointer;
+		padding: 8px;
+		transition: color 0.15s;
+	}
+	.pc .restart:hover {
+		color: var(--ink);
+	}
+
+	/* ─────────────────────── Sections ─────────────────────── */
 	.pc section {
 		padding: 96px 0;
-		border-top: 1px solid var(--cream-deep); /* hairline between sections */
+		border-top: 1px solid var(--cream-deep);
 	}
 	.pc .hero,
 	.pc .final-cta {
@@ -699,40 +1328,166 @@
 		line-height: 1.6;
 	}
 
-	.pc .numbers-stack {
+	/* ─────────────────────── Calculator ─────────────────────── */
+	.pc .calculator {
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: 16px;
+		padding: 28px 26px 24px;
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 18px;
 	}
-	.pc .num-card {
-		background: var(--paper);
-		padding: 22px 26px;
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		border: 1px solid var(--line);
-		border-radius: 14px;
-		gap: 16px;
-	}
-	.pc .num-card .lbl {
+	.pc .calc-eyebrow {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 10.5px;
+		font-size: 11px;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		color: var(--ink-3);
+		font-weight: 600;
+	}
+	.pc .calculator h4 {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 22px;
+		color: var(--ink);
+		margin: 0;
+		letter-spacing: -0.01em;
+	}
+	.pc .calc-intro {
+		font-size: 14px;
+		color: var(--ink-2);
+		margin: 0;
+		line-height: 1.5;
+	}
+	.pc .calc-row {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+	.pc .calc-label {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+	}
+	.pc .calc-label span:first-child {
+		font-size: 13px;
+		color: var(--ink-2);
+		font-weight: 500;
+	}
+	.pc .calc-val {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 15px;
+		font-weight: 600;
+		color: var(--ink);
+		letter-spacing: -0.01em;
+	}
+	.pc .calc-scale {
+		display: flex;
+		justify-content: space-between;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		color: var(--ink-3);
+		font-weight: 600;
+		letter-spacing: 0.1em;
+	}
+
+	/* Custom slider styling */
+	.pc input[type='range'] {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 100%;
+		height: 4px;
+		background: var(--cream-deep);
+		border-radius: 2px;
+		outline: none;
+		cursor: pointer;
+		margin: 0;
+	}
+	.pc input[type='range']::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 22px;
+		height: 22px;
+		background: var(--ink);
+		border-radius: 50%;
+		cursor: grab;
+		transition: transform 0.15s, box-shadow 0.15s;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	}
+	.pc input[type='range']::-webkit-slider-thumb:hover {
+		transform: scale(1.12);
+	}
+	.pc input[type='range']::-webkit-slider-thumb:active {
+		cursor: grabbing;
+		background: var(--red);
+	}
+	.pc input[type='range']::-moz-range-thumb {
+		width: 22px;
+		height: 22px;
+		background: var(--ink);
+		border-radius: 50%;
+		border: none;
+		cursor: grab;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	}
+	.pc input[type='range']:focus-visible::-webkit-slider-thumb {
+		outline: 2px solid var(--red);
+		outline-offset: 2px;
+	}
+
+	.pc .calc-result {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		background: var(--line);
+		border-radius: 10px;
+		overflow: hidden;
+		margin-top: 6px;
+	}
+	.pc .calc-result-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		background: var(--paper);
+		padding: 14px 16px;
+	}
+	.pc .calc-result-row .lbl {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--ink-3);
 		font-weight: 600;
-		max-width: 200px;
-		line-height: 1.5;
 	}
-	.pc .num-card .val {
+	.pc .calc-result-row .val {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 32px;
-		color: var(--ink);
+		font-size: 22px;
 		font-weight: 600;
-		letter-spacing: -0.03em;
+		color: var(--ink);
+		letter-spacing: -0.02em;
 	}
-	.pc .num-card .val.accent {
+	.pc .calc-result-row.primary {
+		background: var(--ink);
+	}
+	.pc .calc-result-row.primary .lbl {
+		color: rgba(241, 236, 225, 0.6);
+	}
+	.pc .calc-result-row.primary .val {
+		font-size: 30px;
 		color: var(--red);
+	}
+	.pc .calc-result-row.dim .val {
+		color: var(--ink-2);
+		font-size: 18px;
+	}
+	.pc .calc-note {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		letter-spacing: 0.04em;
+		color: var(--ink-3);
+		line-height: 1.5;
+		margin: 0;
 	}
 
 	/* Pricing */
@@ -779,7 +1534,7 @@
 		margin: 0;
 	}
 
-	/* Final CTA — the only dark moment on the page */
+	/* Final CTA */
 	.pc .final-cta {
 		background: var(--ink);
 		color: var(--cream);

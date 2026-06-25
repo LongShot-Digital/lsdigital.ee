@@ -57,5 +57,7 @@ If this policy changes, the updated version will be posted here with a new "last
 Mark Vainomaa & Jan Joonas Preimann
 
 LongShot Digital OÜ
+Registry code: 17437669
+Tallinn, Estonia
 
-Email: [info+gridlifeapp@lsdigital.ee](mailto:info+gridlifeapp@lsdigital.ee)
+Email: [info@lsdigital.ee](mailto:info@lsdigital.ee)

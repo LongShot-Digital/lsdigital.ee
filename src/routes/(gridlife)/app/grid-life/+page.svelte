@@ -344,11 +344,11 @@
 	<!-- Footer -->
 	<footer>
 		<div class="footer-left">
-			<span>&copy; 2026 LongShot Digital O&Uuml;</span>
+			<span>&copy; 2026 LongShot Digital O&Uuml; &middot; Reg. 17437669</span>
 		</div>
 		<div class="footer-links">
 			<a href="/app/grid-life/legal">Legal</a>
-			<a href="mailto:info+gridlifeapp@lsdigital.ee">Contact</a>
+			<a href="mailto:info@lsdigital.ee">info@lsdigital.ee</a>
 		</div>
 	</footer>
 </div>

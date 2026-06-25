@@ -84,7 +84,7 @@ As a Par Car user in the EU, you have the right to:
 - **Withdraw consent** — for any processing based on consent
 - **Lodge a complaint** with the Estonian Data Protection Inspectorate (Andmekaitse Inspektsioon)
 
-To exercise any of these rights, email [info+parcar@lsdigital.ee](mailto:info+parcar@lsdigital.ee). We respond within 30 days.
+To exercise any of these rights, email [info@lsdigital.ee](mailto:info@lsdigital.ee). We respond within 30 days.
 
 ## Data retention
 
@@ -111,10 +111,10 @@ If this policy materially changes, we will notify active users by email and via 
 ## Data controller
 
 LongShot Digital OÜ
+Registry code: 17437669
 Tallinn, Estonia
-Registry code: [reg. code]
 
-Email: [info+parcar@lsdigital.ee](mailto:info+parcar@lsdigital.ee)
+Email: [info@lsdigital.ee](mailto:info@lsdigital.ee)
 
 ---
 

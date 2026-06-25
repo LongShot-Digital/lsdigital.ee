@@ -52,5 +52,7 @@ These Terms are governed by the laws of the Republic of Estonia, without regard 
 Mark Vainomaa & Jan Joonas Preimann
 
 LongShot Digital OÜ
+Registry code: 17437669
+Tallinn, Estonia
 
-Email: [info+gridlifeapp@lsdigital.ee](mailto:info+gridlifeapp@lsdigital.ee)
+Email: [info@lsdigital.ee](mailto:info@lsdigital.ee)

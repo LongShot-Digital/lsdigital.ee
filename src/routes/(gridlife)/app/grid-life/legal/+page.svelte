@@ -20,7 +20,7 @@
 	</section>
 
 	<section class="legal-cards">
-		<a href="mailto:info+gridlifeapp@lsdigital.ee" class="legal-card">
+		<a href="mailto:info@lsdigital.ee" class="legal-card">
 			<div class="card-icon">
 				<svg
 					viewBox="0 0 24 24"
@@ -36,7 +36,7 @@
 			</div>
 			<h2>Support</h2>
 			<p>For questions, feedback, or support requests, reach out and we'll get back to you.</p>
-			<span class="card-link">info+gridlifeapp@lsdigital.ee</span>
+			<span class="card-link">info@lsdigital.ee</span>
 		</a>
 		<a href="/app/grid-life/privacy" class="legal-card">
 			<div class="card-icon">
@@ -76,8 +76,8 @@
 	</section>
 
 	<footer>
-		<span>&copy; 2026 LongShot Digital O&Uuml;</span>
-		<a href="mailto:info+gridlifeapp@lsdigital.ee">Contact</a>
+		<span>&copy; 2026 LongShot Digital O&Uuml; &middot; Reg. 17437669</span>
+		<a href="mailto:info@lsdigital.ee">info@lsdigital.ee</a>
 	</footer>
 </div>
 

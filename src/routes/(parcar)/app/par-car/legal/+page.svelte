@@ -32,7 +32,7 @@
 	</section>
 
 	<section class="legal-cards">
-		<a href="mailto:info+parcar@lsdigital.ee" class="legal-card">
+		<a href="mailto:info@lsdigital.ee" class="legal-card">
 			<div class="card-icon">
 				<svg
 					viewBox="0 0 24 24"
@@ -50,7 +50,7 @@
 			<p>
 				Questions, feedback, or help with a booking — we get back to you within one business day.
 			</p>
-			<span class="card-link">info+parcar@lsdigital.ee</span>
+			<span class="card-link">info@lsdigital.ee</span>
 		</a>
 
 		<a href="/app/par-car/privacy" class="legal-card">
@@ -101,8 +101,8 @@
 	</section>
 
 	<footer>
-		<span>&copy; 2026 LongShot Digital O&Uuml;</span>
-		<a href="mailto:info+parcar@lsdigital.ee">Contact</a>
+		<span>&copy; 2026 LongShot Digital O&Uuml; &middot; Reg. 17437669</span>
+		<a href="mailto:info@lsdigital.ee">info@lsdigital.ee</a>
 	</footer>
 </div>
 

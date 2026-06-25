@@ -83,7 +83,7 @@ Par Car is an independent service operator. The Club is a venue partner that pro
 
 ## 13. Crew & conduct
 
-Our crew is trained and supervised by Par Car. Any complaint about crew conduct should be sent to [info+parcar@lsdigital.ee](mailto:info+parcar@lsdigital.ee). We may suspend or terminate accounts that abuse crew members.
+Our crew is trained and supervised by Par Car. Any complaint about crew conduct should be sent to [info@lsdigital.ee](mailto:info@lsdigital.ee). We may suspend or terminate accounts that abuse crew members.
 
 ## 14. Intellectual property
 
@@ -120,10 +120,10 @@ If these terms materially change, we will notify active users via the app and em
 ## 22. Contact
 
 LongShot Digital OÜ (operating as Par Car)
+Registry code: 17437669
 Tallinn, Estonia
-Registry code: [reg. code]
 
-Email: [info+parcar@lsdigital.ee](mailto:info+parcar@lsdigital.ee)
+Email: [info@lsdigital.ee](mailto:info@lsdigital.ee)
 
 ---
 
