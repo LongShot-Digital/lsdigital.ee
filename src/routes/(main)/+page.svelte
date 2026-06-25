@@ -78,7 +78,7 @@
 				<img src="/app/par-car/app-icon.png" alt="Par Car" class="apps-item-icon" />
 				<div class="apps-item-text">
 					<span class="apps-item-name">Par Car</span>
-					<span class="apps-item-desc">Premium car care, while you play</span>
+					<span class="apps-item-desc">Car care, while you play</span>
 				</div>
 			</a>
 		</div>

@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	let scrolled = $state(false);
+
 	onMount(() => {
-		// Nav shadow on scroll
-		const navEl = document.querySelector<HTMLElement>('.pc nav');
 		const onScroll = () => {
-			if (navEl) {
-				navEl.style.boxShadow = window.scrollY > 50 ? '0 2px 20px rgba(28, 26, 22, 0.06)' : 'none';
-			}
+			scrolled = window.scrollY > 40;
 		};
+		onScroll();
 		window.addEventListener('scroll', onScroll, { passive: true });
 		return () => window.removeEventListener('scroll', onScroll);
 	});
@@ -30,9 +29,10 @@
 
 <div class="pc">
 	<!-- ──────── Navigation ────────
-	     Outer <nav> is full-width with the background + safe-area padding.
-	     Inner .nav-inner is the constrained 1100px flex row of content. -->
-	<nav>
+	     Outer <nav> is full-bleed sticky bar. Transparent at top of the
+	     page, gains a translucent cream background + subtle shadow only
+	     after the user has scrolled past the hero (40 px). -->
+	<nav class:scrolled>
 		<div class="nav-inner">
 			<a class="logo" href="/app/par-car">
 				<img src="/app/par-car/app-icon.png" alt="Par Car" class="logo-icon" />
@@ -115,9 +115,7 @@
 			<div class="section-head">
 				<div>
 					<div class="section-eyebrow">HOW IT WORKS</div>
-					<h2 class="section-title">
-						One booking, three things happen <em>while you play.</em>
-					</h2>
+					<h2 class="section-title">One booking, three things happen <em>while you play.</em></h2>
 				</div>
 			</div>
 			<div class="steps">
@@ -142,15 +140,15 @@
 					<h3>Walk off 18 to a clean car.</h3>
 					<p>
 						You get a text the moment it's ready. Keys are back at the bag stand. Tip the crew and
-						rate the wash from your phone — that's it.
-					</p>
+						rate the wash from your phone — that's it.</p
+					>
 				</div>
 			</div>
 		</div>
 	</section>
 
 	<!-- ──────── For clubs ──────── -->
-	<section id="clubs" class="clubs">
+	<section id="clubs">
 		<div class="container">
 			<div class="section-head">
 				<div>
@@ -254,18 +252,16 @@
 					<h3>Signature Detail</h3>
 					<div class="meta">~90 MIN · FULL DETAIL</div>
 					<div class="price">€140</div>
-					<p>
-						Everything in Full Valet, plus clay bar, leather conditioning &amp; paint sealant.
-					</p>
+					<p>Everything in Full Valet, plus clay bar, leather conditioning &amp; paint sealant.</p>
 				</div>
 			</div>
 		</div>
 	</section>
 
-	<!-- ──────── Final CTA ──────── -->
+	<!-- ──────── Final CTA (the one dark moment on the page) ──────── -->
 	<section class="final-cta" id="contact">
 		<div class="container">
-			<div class="section-eyebrow">TALK TO US</div>
+			<div class="section-eyebrow gold">TALK TO US</div>
 			<h2>30 minutes. Not a pitch. <em>An exploration.</em></h2>
 			<p>
 				If you run a club and want to see how Par Car would actually work at your lot — let's talk.
@@ -275,8 +271,8 @@
 			<div class="hero-ctas centered">
 				<a
 					class="btn btn-primary"
-					href="mailto:info@lsdigital.ee?subject=Par%20Car%20%C2%B7%20Partnership%20enquiry"
-					>Email info@lsdigital.ee</a
+					href="mailto:info+parcar@lsdigital.ee?subject=Par%20Car%20%C2%B7%20Partnership%20enquiry"
+					>Email info+parcar@lsdigital.ee</a
 				>
 				<a class="btn btn-secondary" href="/">More about LongShot Digital</a>
 			</div>
@@ -289,27 +285,41 @@
 		<div class="footer-links">
 			<a href="/">LSD</a>
 			<a href="/app/grid-life">Grid Life</a>
-			<a href="mailto:info@lsdigital.ee">Contact</a>
+			<a href="/app/par-car/legal">Legal</a>
+			<a href="mailto:info+parcar@lsdigital.ee">Contact</a>
 		</div>
 	</footer>
 </div>
 
 <style>
-	/* ────────── Scoped to .pc so it doesn't fight the LSD homepage ────────── */
+	/* ════════════════════════════════════════════════════════════════
+	   Design discipline (the redesign rules):
+	   · ONE base background everywhere — warm cream. No section-by-section
+	     colour shifts except the single dark final-CTA (the dramatic moment).
+	   · Panels (cards, tiers, KPI numbers) sit on cream as warm-white
+	     surfaces with thin hairline borders. No solid colour blocks behind
+	     entire sections.
+	   · Red used sparingly: brand flag, italic emphasis in headlines (the
+	     "voice" moments), the one accented KPI, the in-phone CTA.
+	     Section eyebrows, list numbers, etc. go to neutral grey.
+	   · Nav is transparent at top of page; only becomes opaque cream +
+	     blur + subtle shadow after the user scrolls past the hero.
+	   ════════════════════════════════════════════════════════════════ */
+
 	.pc {
 		--ink: #1c1a16;
 		--ink-2: #595650;
 		--ink-3: #9a948a;
 		--cream: #f1ece1;
-		--paper: #ffffff;
-		--paper-2: #faf6ee;
-		--line: #e8e1cf;
+		--cream-deep: #ebe5d6; /* hairline rule */
+		--paper: #faf6ee; /* warm white panels */
+		--line: rgba(28, 26, 22, 0.08);
 		--red: #c5392c;
 		--gold: #b89456;
 
 		font-family: 'Inter', system-ui, -apple-system, sans-serif;
 		color: var(--ink);
-		background: var(--paper);
+		background: var(--cream);
 		font-size: 16px;
 		line-height: 1.55;
 		-webkit-font-smoothing: antialiased;
@@ -328,34 +338,35 @@
 		padding: 0 32px;
 	}
 
-	/* ────────── Navigation ────────── */
-	/* Outer <nav>: full-bleed sticky bar with the background + safe-area
-	   padding. Stays at top of viewport while scrolling; the opaque
-	   background fully covers content behind it (including the iPhone
-	   safe area at the top, which previously let content peek through). */
+	/* ─────────────────────── Navigation ─────────────────────── */
 	.pc nav {
 		position: sticky;
 		top: 0;
 		z-index: 50;
 		width: 100%;
-		background: rgba(255, 255, 255, 0.92);
-		backdrop-filter: saturate(180%) blur(14px);
-		-webkit-backdrop-filter: saturate(180%) blur(14px);
-		border-bottom: 1px solid var(--line);
-		transition: box-shadow 0.25s ease;
+		background: transparent;
+		border-bottom: 1px solid transparent;
+		transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 		padding-top: env(safe-area-inset-top, 0);
 	}
+	.pc nav.scrolled {
+		background: rgba(241, 236, 225, 0.82);
+		backdrop-filter: saturate(180%) blur(20px);
+		-webkit-backdrop-filter: saturate(180%) blur(20px);
+		border-bottom-color: var(--line);
+		box-shadow: 0 1px 24px rgba(28, 26, 22, 0.04);
+	}
 
-	/* Inner row: constrained width + the actual flex layout. */
 	.pc .nav-inner {
 		max-width: 1100px;
 		margin: 0 auto;
-		padding: 18px 32px;
+		padding: 16px 32px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 16px;
 	}
+
 	.pc .logo {
 		display: flex;
 		align-items: center;
@@ -370,7 +381,7 @@
 		object-fit: cover;
 	}
 	.pc .logo-text {
-		font-family: 'Spectral', serif;
+		font-family: 'Spectral', Georgia, serif;
 		font-weight: 500;
 		font-size: 15px;
 		letter-spacing: 0.16em;
@@ -408,21 +419,26 @@
 	.pc .nav-links a:hover {
 		color: var(--ink);
 	}
+
+	/* Pill CTA — much less template-y than a sharp rectangle */
 	.pc .nav-cta {
 		background: var(--ink);
-		color: var(--paper-2);
-		padding: 8px 16px;
+		color: var(--cream);
+		padding: 9px 18px;
 		font-size: 13px;
 		font-weight: 600;
-		transition: background 0.15s;
+		border-radius: 999px;
+		transition: background 0.15s, transform 0.15s;
 	}
 	.pc .nav-cta:hover {
 		background: #000;
+		color: var(--cream);
+		transform: translateY(-1px);
 	}
 
-	/* ────────── Hero ────────── */
+	/* ─────────────────────── Hero ─────────────────────── */
 	.pc .hero {
-		padding: 88px 0 56px;
+		padding: 96px 0 80px;
 	}
 	.pc .hero-grid {
 		display: grid;
@@ -440,11 +456,8 @@
 		font-weight: 600;
 		margin-bottom: 24px;
 	}
-	.pc .section-eyebrow {
-		color: var(--red);
-	}
 	.pc h1 {
-		font-family: 'Spectral', serif;
+		font-family: 'Spectral', Georgia, serif;
 		font-weight: 400;
 		font-size: clamp(40px, 6vw, 64px);
 		line-height: 1.05;
@@ -481,14 +494,16 @@
 		font-size: 14px;
 		font-weight: 600;
 		text-decoration: none;
+		border-radius: 999px;
 		transition: all 0.15s;
 	}
 	.pc .btn-primary {
 		background: var(--ink);
-		color: var(--paper-2);
+		color: var(--cream);
 	}
 	.pc .btn-primary:hover {
 		background: #000;
+		transform: translateY(-1px);
 	}
 	.pc .btn-secondary {
 		background: transparent;
@@ -497,23 +512,23 @@
 	}
 	.pc .btn-secondary:hover {
 		background: var(--ink);
-		color: var(--paper-2);
+		color: var(--cream);
 	}
 
-	/* Hero visual */
+	/* Hero phone visual */
 	.pc .hero-visual {
 		display: flex;
 		justify-content: center;
 	}
 	.pc .phone {
 		width: 280px;
-		height: 580px;
+		height: 560px;
 		background: #0e0e10;
 		border-radius: 44px;
 		padding: 10px;
 		box-shadow:
-			0 32px 80px rgba(28, 26, 22, 0.18),
-			0 10px 28px rgba(28, 26, 22, 0.1);
+			0 32px 80px rgba(28, 26, 22, 0.14),
+			0 10px 28px rgba(28, 26, 22, 0.08);
 		position: relative;
 	}
 	.pc .phone::before {
@@ -555,7 +570,7 @@
 		height: 56%;
 	}
 	.pc .phone-line {
-		font-family: 'Spectral', serif;
+		font-family: 'Spectral', Georgia, serif;
 		font-weight: 500;
 		font-size: 18px;
 		letter-spacing: 0.18em;
@@ -582,15 +597,16 @@
 		border-radius: 999px;
 	}
 
-	/* ────────── Sections ────────── */
+	/* ─────────────────────── Sections (all on cream) ─────────────────────── */
 	.pc section {
-		padding: 88px 0;
-		border-top: 1px solid var(--line);
+		padding: 96px 0;
+		border-top: 1px solid var(--cream-deep); /* hairline between sections */
 	}
 	.pc .hero,
 	.pc .final-cta {
 		border-top: none;
 	}
+
 	.pc .section-head {
 		display: flex;
 		align-items: baseline;
@@ -598,7 +614,7 @@
 		margin-bottom: 56px;
 	}
 	.pc .section-title {
-		font-family: 'Spectral', serif;
+		font-family: 'Spectral', Georgia, serif;
 		font-weight: 500;
 		font-size: clamp(28px, 4vw, 40px);
 		line-height: 1.1;
@@ -608,15 +624,15 @@
 		margin: 0;
 	}
 	.pc .section-title em {
-		color: var(--red);
 		font-style: italic;
+		font-weight: 500;
 	}
 
 	/* Steps */
 	.pc .steps {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 32px;
+		gap: 40px;
 	}
 	.pc .step .num {
 		font-family: 'JetBrains Mono', monospace;
@@ -627,13 +643,13 @@
 		margin-bottom: 16px;
 	}
 	.pc .step h3 {
-		font-family: 'Spectral', serif;
+		font-family: 'Spectral', Georgia, serif;
 		font-weight: 500;
-		font-size: 26px;
+		font-size: 24px;
 		color: var(--ink);
 		margin: 0 0 12px;
 		letter-spacing: -0.01em;
-		line-height: 1.15;
+		line-height: 1.2;
 	}
 	.pc .step p {
 		font-size: 15px;
@@ -642,21 +658,17 @@
 		margin: 0;
 	}
 
-	/* Clubs section */
-	.pc .clubs {
-		background: var(--cream);
-		border-top: none;
-	}
+	/* For clubs */
 	.pc .clubs-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 64px;
+		gap: 72px;
 		align-items: start;
 	}
 	.pc .clubs-list {
 		display: flex;
 		flex-direction: column;
-		gap: 28px;
+		gap: 32px;
 	}
 	.pc .clubs-list .item {
 		display: grid;
@@ -666,14 +678,14 @@
 	}
 	.pc .clubs-list .num {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 13px;
-		color: var(--red);
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		padding-top: 4px;
+		font-size: 12px;
+		color: var(--ink-3);
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		padding-top: 5px;
 	}
 	.pc .clubs-list h4 {
-		font-family: 'Spectral', serif;
+		font-family: 'Spectral', Georgia, serif;
 		font-weight: 500;
 		font-size: 20px;
 		color: var(--ink);
@@ -684,19 +696,23 @@
 		font-size: 14.5px;
 		color: var(--ink-2);
 		margin: 0;
+		line-height: 1.6;
 	}
+
 	.pc .numbers-stack {
 		display: flex;
 		flex-direction: column;
-		gap: 16px;
+		gap: 12px;
 	}
 	.pc .num-card {
 		background: var(--paper);
-		padding: 24px 28px;
+		padding: 22px 26px;
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
 		border: 1px solid var(--line);
+		border-radius: 14px;
+		gap: 16px;
 	}
 	.pc .num-card .lbl {
 		font-family: 'JetBrains Mono', monospace;
@@ -710,7 +726,7 @@
 	}
 	.pc .num-card .val {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 36px;
+		font-size: 32px;
 		color: var(--ink);
 		font-weight: 600;
 		letter-spacing: -0.03em;
@@ -728,32 +744,33 @@
 	.pc .tier {
 		background: var(--paper);
 		border: 1px solid var(--line);
-		padding: 28px 28px 32px;
+		padding: 30px 28px 32px;
+		border-radius: 16px;
 	}
 	.pc .tier h3 {
-		font-family: 'Spectral', serif;
+		font-family: 'Spectral', Georgia, serif;
 		font-weight: 500;
-		font-size: 24px;
+		font-size: 22px;
 		color: var(--ink);
 		letter-spacing: -0.01em;
 		margin: 0 0 4px;
 	}
 	.pc .tier .meta {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 10.5px;
-		letter-spacing: 0.16em;
+		font-size: 10px;
+		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--ink-3);
 		font-weight: 600;
-		margin-bottom: 24px;
+		margin-bottom: 22px;
 	}
 	.pc .tier .price {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 36px;
+		font-size: 34px;
 		color: var(--ink);
 		font-weight: 600;
 		letter-spacing: -0.02em;
-		margin-bottom: 16px;
+		margin-bottom: 14px;
 	}
 	.pc .tier p {
 		font-size: 14px;
@@ -762,11 +779,11 @@
 		margin: 0;
 	}
 
-	/* Final CTA */
+	/* Final CTA — the only dark moment on the page */
 	.pc .final-cta {
 		background: var(--ink);
 		color: var(--cream);
-		padding: 88px 0;
+		padding: 96px 0;
 		text-align: center;
 	}
 	.pc .final-cta .container {
@@ -774,17 +791,17 @@
 		flex-direction: column;
 		align-items: center;
 	}
-	.pc .final-cta .section-eyebrow {
+	.pc .section-eyebrow.gold {
 		color: var(--gold);
 	}
 	.pc .final-cta h2 {
-		font-family: 'Spectral', serif;
+		font-family: 'Spectral', Georgia, serif;
 		font-weight: 400;
 		font-size: clamp(28px, 4.5vw, 44px);
 		line-height: 1.15;
 		letter-spacing: -0.01em;
-		color: var(--paper);
-		margin: 16px 0 12px;
+		color: var(--cream);
+		margin: 16px 0 14px;
 		max-width: 720px;
 	}
 	.pc .final-cta h2 em {
@@ -794,9 +811,10 @@
 	}
 	.pc .final-cta p {
 		font-size: 16px;
-		color: #cfc8ba;
-		max-width: 540px;
+		color: rgba(241, 236, 225, 0.7);
+		max-width: 560px;
 		margin: 0 0 36px;
+		line-height: 1.6;
 	}
 	.pc .final-cta .btn-primary {
 		background: var(--cream);
@@ -804,29 +822,28 @@
 	}
 	.pc .final-cta .btn-primary:hover {
 		background: #fff;
+		color: var(--ink);
 	}
 	.pc .final-cta .btn-secondary {
 		color: var(--cream);
-		border-color: var(--gold);
+		border-color: rgba(241, 236, 225, 0.4);
 	}
 	.pc .final-cta .btn-secondary:hover {
-		background: var(--gold);
+		background: var(--cream);
 		color: var(--ink);
-		border-color: var(--gold);
+		border-color: var(--cream);
 	}
 
 	/* Footer */
 	.pc footer {
 		max-width: 1100px;
 		margin: 0 auto;
-		padding: 40px 32px;
+		padding: 36px 32px 56px;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		flex-wrap: wrap;
 		gap: 20px;
-		border-top: 1px solid var(--line);
-		background: var(--paper);
 	}
 	.pc .footer-meta {
 		font-family: 'JetBrains Mono', monospace;
@@ -837,28 +854,39 @@
 	}
 	.pc .footer-links {
 		display: flex;
-		gap: 20px;
+		gap: 22px;
+		flex-wrap: wrap;
 	}
 	.pc .footer-links a {
 		font-size: 12px;
 		color: var(--ink-2);
 		text-decoration: none;
 		font-weight: 500;
+		transition: color 0.15s;
 	}
 	.pc .footer-links a:hover {
 		color: var(--ink);
 	}
 
-	/* ────────── Responsive ────────── */
+	/* Responsive */
 	@media (max-width: 880px) {
 		.pc .hero-grid,
 		.pc .clubs-grid {
 			grid-template-columns: 1fr;
-			gap: 40px;
+			gap: 48px;
+		}
+		.pc section {
+			padding: 72px 0;
+		}
+		.pc .hero {
+			padding: 72px 0 56px;
 		}
 	}
 	@media (max-width: 800px) {
-		.pc .steps,
+		.pc .steps {
+			grid-template-columns: 1fr;
+			gap: 36px;
+		}
 		.pc .tiers {
 			grid-template-columns: 1fr;
 		}
@@ -866,6 +894,12 @@
 	@media (max-width: 640px) {
 		.pc .nav-links a:not(.nav-cta) {
 			display: none;
+		}
+		.pc .nav-inner {
+			padding: 14px 24px;
+		}
+		.pc .container {
+			padding: 0 24px;
 		}
 	}
 </style>
