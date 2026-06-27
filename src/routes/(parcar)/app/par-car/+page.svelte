@@ -233,12 +233,23 @@
 									<div class="vehicle-label">YOUR VEHICLE</div>
 									<div class="vehicle-mini">
 										<div class="vehicle-paint">
-											<div class="paint-brand">RANGE ROVER</div>
-											<div class="paint-sub">'24 VELAR</div>
+											<!-- White-badge wallet-card style logo (matches iOS VehicleArt
+											     when BrandLogoMap returns a known brand — here Mercedes). -->
+											<div class="paint-badge">
+												<svg viewBox="0 0 100 100" aria-hidden="true">
+													<circle cx="50" cy="50" r="46" fill="#FFFFFF" stroke="#1C1A16" stroke-width="3" />
+													<g stroke="#1C1A16" stroke-width="6" stroke-linecap="round" fill="none">
+														<line x1="50" y1="50" x2="50" y2="10" />
+														<line x1="50" y1="50" x2="84.6" y2="70" />
+														<line x1="50" y1="50" x2="15.4" y2="70" />
+													</g>
+												</svg>
+											</div>
+											<div class="paint-sub">'24 S-CLASS</div>
 										</div>
 										<div class="vehicle-info">
-											<div class="vehicle-name">Range Rover</div>
-											<div class="vehicle-meta">OB Black · 123 RDV</div>
+											<div class="vehicle-name">Mercedes-Benz</div>
+											<div class="vehicle-meta">OB Black · 0418 EE</div>
 										</div>
 										<div class="vehicle-spot">E-14</div>
 									</div>
@@ -301,7 +312,7 @@
 									<div class="form-list">
 										<div class="form-row">
 											<span class="fr-lbl">VEHICLE</span>
-											<span class="fr-val">Range Rover · OB Black</span>
+											<span class="fr-val">Mercedes-Benz · OB Black</span>
 										</div>
 										<div class="form-row">
 											<span class="fr-lbl">PARKING SPOT</span>
@@ -379,7 +390,7 @@
 										</div>
 										<div class="bs-row">
 											<span class="fr-lbl">VEHICLE</span>
-											<span class="fr-val">Range Rover</span>
+											<span class="fr-val">Mercedes-Benz</span>
 										</div>
 										<div class="bs-row">
 											<span class="fr-lbl">SPOT</span>
@@ -1129,26 +1140,38 @@
 		height: 38px;
 		border-radius: 7px;
 		background: linear-gradient(135deg, #14141a 0%, #2a2a2e 100%);
-		padding: 5px 7px;
+		padding: 4px;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
+		align-items: center;
+		justify-content: center;
+		gap: 2px;
 		overflow: hidden;
+		position: relative;
 	}
-	.pc .paint-brand {
-		font-family: 'Spectral', serif;
-		font-weight: 500;
-		font-size: 8px;
-		letter-spacing: 0.06em;
-		color: rgba(255, 255, 255, 0.95);
-		line-height: 1;
+	.pc .paint-badge {
+		width: 22px;
+		height: 22px;
+		background: #fff;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+		flex-shrink: 0;
+	}
+	.pc .paint-badge svg {
+		width: 78%;
+		height: 78%;
+		display: block;
 	}
 	.pc .paint-sub {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 6px;
 		letter-spacing: 0.12em;
-		color: rgba(255, 255, 255, 0.55);
+		color: rgba(255, 255, 255, 0.65);
 		font-weight: 600;
+		text-align: center;
 	}
 	.pc .vehicle-info {
 		min-width: 0;
