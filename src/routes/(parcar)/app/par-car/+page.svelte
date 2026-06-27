@@ -28,32 +28,37 @@
 	interface Tier {
 		key: TierKey;
 		name: string;
-		duration: string;
+		duration: number; // minutes — matches iOS WashTier.durationMinutes
+		badge: string;
 		price: number;
 		blurb: string;
 	}
 
+	// Matches WashTier.all in iOS Models.swift / Components+badge field
 	const tiers: Tier[] = [
 		{
 			key: 'express',
 			name: 'Express Exterior',
-			duration: '~30 min',
+			duration: 30,
+			badge: 'EXTERIOR ONLY',
 			price: 45,
-			blurb: 'Hand wash, wheels, tire shine.'
+			blurb: 'Hand wash, wheels & tire shine. Done before the turn.'
 		},
 		{
 			key: 'full',
 			name: 'Full Valet',
-			duration: '~60 min',
+			duration: 60,
+			badge: 'INTERIOR + EXT',
 			price: 85,
-			blurb: 'Interior + exterior detail.'
+			blurb: 'Hand wash, vacuum, dashboard & leather wipe-down.'
 		},
 		{
 			key: 'signature',
 			name: 'Signature Detail',
-			duration: '~90 min',
+			duration: 90,
+			badge: 'FULL DETAIL',
 			price: 140,
-			blurb: 'Full detail + paint sealant.'
+			blurb: 'Everything in Full Valet, plus clay bar & paint sealant.'
 		}
 	];
 
@@ -180,41 +185,71 @@
 
 							{#if phoneScreen === 'home'}
 								<div class="screen" transition:fade={{ duration: 180 }}>
-									<div class="screen-brand">
-										<span>PAR</span>
-										<span class="fl">
-											<svg viewBox="0 0 30 60" aria-hidden="true">
-												<rect x="13" y="6" width="3" height="48" fill="#C5392C" />
-												<path d="M16 8 L28 14 L16 20 Z" fill="#C5392C" />
+									<div class="brand-row">
+										<div class="screen-brand">
+											<span>PAR</span>
+											<span class="fl">
+												<svg viewBox="0 0 30 60" aria-hidden="true">
+													<rect x="13" y="6" width="3" height="48" fill="#C5392C" />
+													<path d="M16 8 L28 14 L16 20 Z" fill="#C5392C" />
+												</svg>
+											</span>
+											<span>CAR</span>
+										</div>
+										<div class="gear-btn" aria-hidden="true">
+											<svg
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="1.6"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+											>
+												<circle cx="12" cy="12" r="2.5" />
+												<path
+													d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09A1.65 1.65 0 0 0 10 4.6V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+												/>
 											</svg>
-										</span>
-										<span>CAR</span>
+										</div>
 									</div>
-									<div class="screen-greet">Welcome back, Jaan</div>
+
+									<div class="greet-block">
+										<div class="greet-line">Good morning,</div>
+										<div class="greet-name">Jaan.</div>
+										<div class="greet-meta">Maardu Golf Club · Today</div>
+									</div>
 
 									<div class="tee-card">
-										<div class="tee-eyebrow">YOUR TEE TIME · TODAY</div>
+										<div class="tee-glow"></div>
+										<div class="tee-eyebrow">YOUR TEE TIME</div>
 										<div class="tee-time">11:36 AM</div>
-										<div class="tee-meta">MAARDU GOLF CLUB · 4 PLAYERS</div>
-										<button class="tee-cta" onclick={goToPick}>Book a wash →</button>
+										<div class="tee-meta">MAARDU · 4 PLAYERS</div>
+										<button class="tee-cta" onclick={goToPick}>
+											<span>Book a wash</span>
+											<span class="arrow">→</span>
+										</button>
 									</div>
 
+									<div class="vehicle-label">YOUR VEHICLE</div>
 									<div class="vehicle-mini">
-										<div class="vehicle-paint"></div>
+										<div class="vehicle-paint">
+											<div class="paint-brand">RANGE ROVER</div>
+											<div class="paint-sub">'24 VELAR</div>
+										</div>
 										<div class="vehicle-info">
 											<div class="vehicle-name">Range Rover</div>
-											<div class="vehicle-meta">Velar · OB Black</div>
+											<div class="vehicle-meta">OB Black · 123 RDV</div>
 										</div>
+										<div class="vehicle-spot">E-14</div>
 									</div>
 								</div>
 							{:else if phoneScreen === 'pick'}
 								<div class="screen" transition:fade={{ duration: 180 }}>
-									<div class="screen-nav">
-										<button class="back" onclick={() => (phoneScreen = 'home')}
-											aria-label="Back">←</button
-										>
-										<span>Pick a wash</span>
-									</div>
+									<button class="back-btn" onclick={() => (phoneScreen = 'home')}>
+										<span class="arr">←</span> Back
+									</button>
+									<div class="screen-h1">Pick a wash</div>
+									<div class="screen-sub">Maardu · Today</div>
 
 									<div class="tier-list">
 										{#each tiers as t}
@@ -224,106 +259,148 @@
 												onclick={() => selectTier(t.key)}
 											>
 												<div class="tier-top">
-													<div>
+													<div class="tier-name-wrap">
+														{#if phoneTier === t.key}
+															<div class="tier-check">
+																<svg viewBox="0 0 12 10" aria-hidden="true">
+																	<polyline
+																		points="1,5 4.5,8.5 11,1.5"
+																		fill="none"
+																		stroke="currentColor"
+																		stroke-width="2"
+																		stroke-linecap="round"
+																		stroke-linejoin="round"
+																	/>
+																</svg>
+															</div>
+														{/if}
 														<div class="tier-name">{t.name}</div>
-														<div class="tier-meta">{t.duration}</div>
 													</div>
 													<div class="tier-price">€{t.price}</div>
 												</div>
+												<div class="tier-meta">~{t.duration} MIN · {t.badge}</div>
 												<div class="tier-blurb">{t.blurb}</div>
-												{#if phoneTier === t.key}
-													<div class="tier-check">
-														<svg viewBox="0 0 12 10" aria-hidden="true">
-															<polyline
-																points="1,5 4.5,8.5 11,1.5"
-																fill="none"
-																stroke="currentColor"
-																stroke-width="2"
-																stroke-linecap="round"
-																stroke-linejoin="round"
-															/>
-														</svg>
-													</div>
-												{/if}
 											</button>
 										{/each}
 									</div>
 
-									<button class="screen-cta" onclick={goToConfirm}>Continue →</button>
+									<button class="screen-cta" onclick={goToConfirm}>
+										Continue with {selectedTier.name}
+									</button>
 								</div>
 							{:else if phoneScreen === 'confirm'}
 								<div class="screen" transition:fade={{ duration: 180 }}>
-									<div class="screen-nav">
-										<button
-											class="back"
-											onclick={() => (phoneScreen = 'pick')}
-											aria-label="Back">←</button
-										>
-										<span>Confirm wash</span>
+									<button class="back-btn" onclick={() => (phoneScreen = 'pick')}>
+										<span class="arr">←</span> Back
+									</button>
+									<div class="screen-h1">Confirm wash</div>
+									<div class="screen-sub">
+										{selectedTier.name} · {selectedTier.duration} min · Today
 									</div>
 
-									<div class="confirm-summary">
-										<div class="cs-eyebrow">YOUR WASH</div>
-										<div class="cs-name">{selectedTier.name}</div>
-										<div class="cs-meta">{selectedTier.duration} · €{selectedTier.price}</div>
-									</div>
-
-									<div class="form-rows">
+									<div class="form-list">
 										<div class="form-row">
-											<span class="fr-lbl">Vehicle</span>
-											<span class="fr-val">Range Rover Velar</span>
+											<span class="fr-lbl">VEHICLE</span>
+											<span class="fr-val">Range Rover · OB Black</span>
 										</div>
 										<div class="form-row">
-											<span class="fr-lbl">Parking spot</span>
-											<span class="fr-val">Row B · #14</span>
+											<span class="fr-lbl">PARKING SPOT</span>
+											<span class="fr-val">E-14 · East lot</span>
 										</div>
 										<div class="form-row">
-											<span class="fr-lbl">Key drop</span>
+											<span class="fr-lbl">KEY DROP</span>
 											<span class="fr-val">Bag staff</span>
 										</div>
 										<div class="form-row">
-											<span class="fr-lbl">Return by</span>
-											<span class="fr-val">3:45 PM</span>
+											<span class="fr-lbl">RETURN WINDOW</span>
+											<span class="fr-val">11:30 – 2:40</span>
+										</div>
+										<div class="form-row">
+											<span class="fr-lbl">PAY WITH</span>
+											<span class="fr-val">Amex ·· 4418</span>
 										</div>
 									</div>
 
-									<button class="screen-cta" onclick={goToBooked}>
-										Confirm & pay €{selectedTier.price}
+									<div class="summary-card">
+										<div class="summary-row">
+											<span class="fr-lbl">SERVICE</span>
+											<span class="fr-val">{selectedTier.name}</span>
+										</div>
+										<div class="summary-row total">
+											<span class="fr-lbl">TOTAL</span>
+											<span class="fr-val">€{selectedTier.price}.00</span>
+										</div>
+									</div>
+
+									<button class="screen-cta confirm-pay" onclick={goToBooked}>
+										<span>Confirm &amp; pay</span>
+										<span>€{selectedTier.price}</span>
 									</button>
 								</div>
 							{:else if phoneScreen === 'booked'}
 								<div class="screen" transition:fade={{ duration: 180 }}>
-									<div class="booked-stage">
+									<div class="brand-row">
+										<div class="screen-brand">
+											<span>PAR</span>
+											<span class="fl">
+												<svg viewBox="0 0 30 60" aria-hidden="true">
+													<rect x="13" y="6" width="3" height="48" fill="#C5392C" />
+													<path d="M16 8 L28 14 L16 20 Z" fill="#C5392C" />
+												</svg>
+											</span>
+											<span>CAR</span>
+										</div>
+									</div>
+
+									<div class="success-card">
+										<div class="success-glow"></div>
 										<div class="check-circle">
 											<svg viewBox="0 0 24 24" aria-hidden="true">
 												<polyline
 													points="5,12 10,17 19,7"
 													fill="none"
 													stroke="currentColor"
-													stroke-width="2.4"
+													stroke-width="2.6"
 													stroke-linecap="round"
 													stroke-linejoin="round"
 												/>
 											</svg>
 										</div>
-										<div class="booked-title">You're all set</div>
-										<div class="booked-sub">
-											We've got your {selectedTier.name.toLowerCase()} booked for today.
+										<div class="success-title">You're all set.</div>
+										<div class="success-sub">
+											We'll text you the moment your car is ready.
 										</div>
-
-										<div class="booked-card">
-											<div class="bc-row">
-												<span class="fr-lbl">Tee time</span>
-												<span class="fr-val">11:36 AM</span>
-											</div>
-											<div class="bc-row">
-												<span class="fr-lbl">Charged</span>
-												<span class="fr-val accent">€{selectedTier.price}</span>
-											</div>
-										</div>
-
-										<button class="restart" onclick={restartPhone}>↻ Run demo again</button>
 									</div>
+
+									<div class="booked-summary">
+										<div class="bs-row">
+											<span class="fr-lbl">SERVICE</span>
+											<span class="fr-val">{selectedTier.name}</span>
+										</div>
+										<div class="bs-row">
+											<span class="fr-lbl">VEHICLE</span>
+											<span class="fr-val">Range Rover</span>
+										</div>
+										<div class="bs-row">
+											<span class="fr-lbl">SPOT</span>
+											<span class="fr-val">E-14</span>
+										</div>
+										<div class="bs-row">
+											<span class="fr-lbl">TEE TIME</span>
+											<span class="fr-val">11:36 AM</span>
+										</div>
+										<div class="bs-row total">
+											<span class="fr-lbl">CHARGED</span>
+											<span class="fr-val accent">€{selectedTier.price}.00</span>
+										</div>
+									</div>
+
+									<div class="bag-note">
+										<div class="bn-title">Leave keys with the bag staff.</div>
+										<div class="bn-sub">Reference #PC-Q72A.</div>
+									</div>
+
+									<button class="restart" onclick={restartPhone}>↻ Run demo again</button>
 								</div>
 							{/if}
 						</div>
@@ -779,7 +856,17 @@
 		color: var(--cream);
 	}
 
-	/* ─────────────────────── Phone (interactive) ─────────────────────── */
+	/* ════════════════════════════════════════════════════════════════
+	   Interactive phone — mirrors the real iOS app's screens.
+	   Reference: ParCar/Screens/HomeScreen.swift, PickWashScreen.swift,
+	   ConfirmWashScreen.swift, BookedScreen.swift.
+	   Visual cues borrowed from the SwiftUI build:
+	   · Dark gradient hero card with red-orange eyebrow + red glow
+	   · Vehicle "wallet card" paint tile (DesignSystem/VehicleArt.swift)
+	   · Inline checkmark on the LEFT of tier name when selected
+	   · Dashed-border bag-staff note on Booked
+	   · Green-glow success card on Booked (matches iOS appGood)
+	   ════════════════════════════════════════════════════════════════ */
 	.pc .hero-visual {
 		display: flex;
 		justify-content: center;
@@ -810,12 +897,13 @@
 	.pc .phone-screen {
 		width: 100%;
 		height: 100%;
-		background: var(--cream);
+		background: #FBF8F1; /* iOS appBgSoft — slightly lighter than cream */
 		border-radius: 36px;
 		overflow: hidden;
 		position: relative;
 	}
 
+	/* Status bar (decorative, fixed at top of phone) */
 	.pc .status-bar {
 		position: absolute;
 		top: 14px;
@@ -843,46 +931,48 @@
 		width: auto;
 	}
 
-	/* Common screen styles */
+	/* Common screen container — each phone screen lives in here */
 	.pc .screen {
 		position: absolute;
 		inset: 0;
-		padding: 56px 18px 18px;
+		padding: 50px 18px 16px;
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
+		gap: 11px;
+		overflow-y: auto;
+		scrollbar-width: none;
+	}
+	.pc .screen::-webkit-scrollbar {
+		display: none;
 	}
 
-	/* Common nav bar inside screens */
-	.pc .screen-nav {
+	/* Brand row (Home + Booked tops) */
+	.pc .brand-row {
 		display: flex;
 		align-items: center;
-		gap: 14px;
-		padding-bottom: 4px;
+		justify-content: space-between;
 	}
-	.pc .screen-nav .back {
-		width: 28px;
-		height: 28px;
-		border: none;
-		background: transparent;
-		font-size: 20px;
-		line-height: 1;
+	.pc .gear-btn {
+		width: 26px;
+		height: 26px;
+		border: 1px solid var(--line);
+		background: var(--paper);
+		border-radius: 8px;
 		color: var(--ink);
-		cursor: pointer;
-		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
-	.pc .screen-nav span {
-		font-family: 'Spectral', serif;
-		font-size: 16px;
-		font-weight: 500;
-		color: var(--ink);
+	.pc .gear-btn svg {
+		width: 13px;
+		height: 13px;
 	}
 
-	/* ─── Home screen ─── */
+	/* Brand mark used inside phone screens */
 	.pc .screen-brand {
 		font-family: 'Spectral', serif;
 		font-weight: 500;
-		font-size: 14px;
+		font-size: 13px;
 		letter-spacing: 0.18em;
 		color: var(--ink);
 		display: inline-flex;
@@ -898,115 +988,257 @@
 		height: 100%;
 		display: block;
 	}
-	.pc .screen-greet {
-		font-family: 'Spectral', serif;
-		font-weight: 500;
-		font-size: 18px;
-		color: var(--ink);
-		letter-spacing: -0.01em;
+
+	/* Home greeting block — matches the iOS "Good morning, Jaan." pattern */
+	.pc .greet-block {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		margin-top: 2px;
 	}
+	.pc .greet-line {
+		font-size: 11px;
+		color: var(--ink-3);
+	}
+	.pc .greet-name {
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: 26px;
+		color: var(--ink);
+		letter-spacing: -0.03em;
+		line-height: 1;
+		margin-top: -1px;
+	}
+	.pc .greet-meta {
+		font-size: 11px;
+		color: var(--ink-2);
+		margin-top: 4px;
+	}
+
+	/* ── Tee card (Home dark hero) ─────────────────────────────────
+	   Matches HomeScreen.bookCard:
+	   · Dark linear gradient bg
+	   · Red-orange (#FF8A7A) eyebrow color (iOS line 148)
+	   · Big bold tee time + small mono meta
+	   · Red "Book a wash" pill with right-aligned arrow + red shadow
+	   · Soft red glow blob in top-right corner
+	   ────────────────────────────────────────────────────────────── */
 	.pc .tee-card {
-		background: var(--ink);
+		position: relative;
+		overflow: hidden;
+		background: linear-gradient(135deg, #1c1a16 0%, #2a2620 100%);
 		color: var(--cream);
-		padding: 18px;
+		padding: 16px 16px 14px;
 		border-radius: 14px;
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		gap: 4px;
+	}
+	.pc .tee-glow {
+		position: absolute;
+		top: -50px;
+		right: -40px;
+		width: 130px;
+		height: 130px;
+		border-radius: 50%;
+		background: rgba(197, 57, 44, 0.5);
+		filter: blur(35px);
+		pointer-events: none;
 	}
 	.pc .tee-eyebrow {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 9px;
-		letter-spacing: 0.2em;
-		color: rgba(241, 236, 225, 0.6);
+		letter-spacing: 0.22em;
+		color: #ff8a7a;
 		font-weight: 600;
+		position: relative;
 	}
 	.pc .tee-time {
-		font-family: 'Spectral', serif;
-		font-weight: 400;
-		font-size: 32px;
-		letter-spacing: -0.02em;
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: 26px;
+		letter-spacing: -0.03em;
 		line-height: 1;
+		color: white;
+		position: relative;
+		margin-top: 2px;
 	}
 	.pc .tee-meta {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 9px;
-		letter-spacing: 0.16em;
-		color: rgba(241, 236, 225, 0.5);
+		letter-spacing: 0.18em;
+		color: rgba(241, 236, 225, 0.55);
 		font-weight: 600;
-		margin-bottom: 8px;
+		margin: 4px 0 10px;
+		position: relative;
 	}
 	.pc .tee-cta {
 		background: var(--red);
 		color: var(--cream);
 		border: none;
 		padding: 10px 14px;
-		border-radius: 999px;
+		border-radius: 10px;
 		font-size: 12px;
 		font-weight: 600;
 		font-family: 'Inter', sans-serif;
 		cursor: pointer;
 		transition: background 0.15s, transform 0.1s;
-		align-self: flex-start;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		position: relative;
+		box-shadow: 0 6px 16px rgba(197, 57, 44, 0.42);
 	}
 	.pc .tee-cta:hover {
 		background: #a32a1e;
 	}
 	.pc .tee-cta:active {
-		transform: scale(0.96);
+		transform: scale(0.98);
+	}
+	.pc .tee-cta .arrow {
+		font-size: 14px;
+		line-height: 1;
+	}
+
+	/* ── Vehicle card (Home) ─────────────────────────────────────
+	   Mirrors VehicleArt + the Home vehicleCard row:
+	   small paint-color "wallet card" tile with brand serif + year mono
+	   on top of the paint color, then display name + meta + RED mono
+	   spot code on the right edge.
+	   ──────────────────────────────────────────────────────────── */
+	.pc .vehicle-label {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.2em;
+		color: var(--ink-3);
+		font-weight: 600;
+		margin-bottom: -4px;
 	}
 	.pc .vehicle-mini {
-		display: flex;
+		display: grid;
+		grid-template-columns: 64px 1fr auto;
 		gap: 10px;
 		align-items: center;
 		background: var(--paper);
 		border: 1px solid var(--line);
-		padding: 12px;
+		padding: 8px;
 		border-radius: 12px;
-		margin-top: auto;
 	}
 	.pc .vehicle-paint {
-		width: 36px;
-		height: 36px;
-		border-radius: 8px;
-		background: linear-gradient(135deg, #1c1a16 0%, #2a2722 100%);
-		flex-shrink: 0;
+		width: 64px;
+		height: 38px;
+		border-radius: 7px;
+		background: linear-gradient(135deg, #14141a 0%, #2a2a2e 100%);
+		padding: 5px 7px;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		overflow: hidden;
+	}
+	.pc .paint-brand {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 8px;
+		letter-spacing: 0.06em;
+		color: rgba(255, 255, 255, 0.95);
+		line-height: 1;
+	}
+	.pc .paint-sub {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 6px;
+		letter-spacing: 0.12em;
+		color: rgba(255, 255, 255, 0.55);
+		font-weight: 600;
+	}
+	.pc .vehicle-info {
+		min-width: 0;
 	}
 	.pc .vehicle-name {
 		font-family: 'Spectral', serif;
 		font-weight: 500;
-		font-size: 13px;
+		font-size: 12px;
 		color: var(--ink);
+		line-height: 1.2;
 	}
 	.pc .vehicle-meta {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 9px;
+		font-size: 8px;
 		letter-spacing: 0.14em;
 		color: var(--ink-3);
 		font-weight: 600;
 		text-transform: uppercase;
+		margin-top: 2px;
+	}
+	.pc .vehicle-spot {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: var(--red);
 	}
 
-	/* ─── Pick screen ─── */
+	/* Back button + screen title (Pick / Confirm) */
+	.pc .back-btn {
+		border: none;
+		background: transparent;
+		font-size: 11px;
+		color: var(--ink-2);
+		font-weight: 500;
+		padding: 0;
+		align-self: flex-start;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+	.pc .back-btn .arr {
+		font-size: 14px;
+		line-height: 1;
+	}
+	.pc .back-btn:hover {
+		color: var(--ink);
+	}
+	.pc .screen-h1 {
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: 22px;
+		color: var(--ink);
+		letter-spacing: -0.025em;
+		line-height: 1.05;
+		margin-top: 2px;
+	}
+	.pc .screen-sub {
+		font-size: 11px;
+		color: var(--ink-2);
+		margin-top: -7px;
+	}
+
+	/* ── Tier list (Pick) ────────────────────────────────────────
+	   Matches PickWashScreen.tierCard:
+	   · Inline red-circle checkmark on the LEFT of the name when
+	     selected — NOT in the corner (per iOS line 60-71)
+	   · Selected card: red 2px border, very light off-white bg
+	     (#FFFBFA), soft red glow shadow
+	   · Meta row: ~30 MIN · EXTERIOR ONLY (tier.badge)
+	   ──────────────────────────────────────────────────────────── */
 	.pc .tier-list {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		margin-top: 4px;
+		gap: 7px;
+		margin-top: 2px;
 	}
 	.pc .tier-card {
-		position: relative;
 		background: var(--paper);
 		border: 1.5px solid var(--line);
 		border-radius: 12px;
-		padding: 12px;
+		padding: 10px 12px;
 		text-align: left;
 		cursor: pointer;
 		font-family: inherit;
-		transition: border-color 0.15s, transform 0.1s;
+		transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 3px;
 	}
 	.pc .tier-card:hover {
 		border-color: rgba(28, 26, 22, 0.2);
@@ -1016,12 +1248,35 @@
 	}
 	.pc .tier-card.selected {
 		border-color: var(--red);
-		background: rgba(197, 57, 44, 0.04);
+		background: #fffbfa;
+		box-shadow: 0 6px 16px rgba(197, 57, 44, 0.15);
 	}
 	.pc .tier-top {
 		display: flex;
 		justify-content: space-between;
-		align-items: baseline;
+		align-items: center;
+		gap: 8px;
+	}
+	.pc .tier-name-wrap {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-width: 0;
+	}
+	.pc .tier-check {
+		width: 14px;
+		height: 14px;
+		background: var(--red);
+		color: var(--cream);
+		border-radius: 50%;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+	.pc .tier-check svg {
+		width: 7px;
+		height: auto;
 	}
 	.pc .tier-name {
 		font-family: 'Spectral', serif;
@@ -1031,8 +1286,8 @@
 	}
 	.pc .tier-meta {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 9px;
-		letter-spacing: 0.14em;
+		font-size: 8px;
+		letter-spacing: 0.16em;
 		color: var(--ink-3);
 		font-weight: 600;
 		text-transform: uppercase;
@@ -1040,37 +1295,21 @@
 	.pc .tier-price {
 		font-family: 'JetBrains Mono', monospace;
 		font-weight: 600;
-		font-size: 16px;
+		font-size: 14px;
 		color: var(--ink);
 		letter-spacing: -0.02em;
 	}
 	.pc .tier-blurb {
 		font-size: 10px;
 		color: var(--ink-2);
-		line-height: 1.4;
-	}
-	.pc .tier-check {
-		position: absolute;
-		top: 10px;
-		right: 10px;
-		width: 16px;
-		height: 16px;
-		background: var(--red);
-		color: var(--cream);
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-	.pc .tier-check svg {
-		width: 9px;
-		height: auto;
+		line-height: 1.45;
+		margin-top: 1px;
 	}
 
-	/* Shared bottom CTA */
+	/* Shared red bottom CTA — matches PrimaryButton style: .red */
 	.pc .screen-cta {
 		margin-top: auto;
-		background: var(--ink);
+		background: var(--red);
 		color: var(--cream);
 		border: none;
 		padding: 12px;
@@ -1080,101 +1319,137 @@
 		font-family: 'Inter', sans-serif;
 		cursor: pointer;
 		transition: background 0.15s, transform 0.1s;
+		box-shadow: 0 6px 18px rgba(197, 57, 44, 0.32);
 	}
 	.pc .screen-cta:hover {
-		background: #000;
+		background: #a32a1e;
 	}
 	.pc .screen-cta:active {
 		transform: scale(0.98);
 	}
+	/* Confirm-pay variant: label on the left, price on the right */
+	.pc .screen-cta.confirm-pay {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 16px;
+	}
 
-	/* ─── Confirm screen ─── */
-	.pc .confirm-summary {
-		background: var(--paper);
-		border: 1px solid var(--line);
-		padding: 12px;
-		border-radius: 12px;
-	}
-	.pc .cs-eyebrow {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 9px;
-		letter-spacing: 0.18em;
-		color: var(--ink-3);
-		font-weight: 600;
-		margin-bottom: 4px;
-	}
-	.pc .cs-name {
-		font-family: 'Spectral', serif;
-		font-weight: 500;
-		font-size: 16px;
-		color: var(--ink);
-	}
-	.pc .cs-meta {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 10px;
-		letter-spacing: 0.14em;
-		color: var(--ink-3);
-		font-weight: 600;
-		margin-top: 2px;
-	}
-	.pc .form-rows {
+	/* ── Confirm form list ────────────────────────────────────────
+	   Mirrors ConfirmWashScreen's FormRow stack: VEHICLE / PARKING
+	   SPOT / KEY DROP / RETURN WINDOW / PAY WITH — labels uppercase
+	   in mono with tracking.
+	   ──────────────────────────────────────────────────────────── */
+	.pc .form-list {
 		display: flex;
 		flex-direction: column;
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		overflow: hidden;
 	}
-	.pc .form-row {
+	.pc .form-list .form-row {
+		padding: 8px 12px;
+		border-bottom: 1px solid var(--line);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 10px 0;
-		border-bottom: 1px solid var(--line);
 	}
-	.pc .form-row:last-child {
+	.pc .form-list .form-row:last-child {
 		border-bottom: none;
 	}
 	.pc .fr-lbl {
-		font-size: 11px;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 8px;
+		letter-spacing: 0.18em;
 		color: var(--ink-3);
-		font-weight: 500;
+		font-weight: 600;
+		text-transform: uppercase;
 	}
 	.pc .fr-val {
-		font-size: 12px;
+		font-size: 11px;
 		color: var(--ink);
 		font-weight: 500;
-	}
-	.pc .fr-val.accent {
-		color: var(--red);
-		font-family: 'JetBrains Mono', monospace;
-		font-weight: 600;
+		text-align: right;
 	}
 
-	/* ─── Booked screen ─── */
-	.pc .booked-stage {
+	/* Summary card at the bottom of Confirm (SERVICE + TOTAL) */
+	.pc .summary-card {
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+	.pc .summary-row {
+		padding: 8px 12px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid var(--line);
+	}
+	.pc .summary-row:last-child {
+		border-bottom: none;
+	}
+	.pc .summary-row.total .fr-val {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+	}
+
+	/* ── Booked success card ──────────────────────────────────────
+	   Mirrors BookedScreen success hero:
+	   · Dark gradient bg
+	   · Green check circle (iOS appGood #9BC28A)
+	   · "You're all set." (white bold)
+	   · "We'll text you when ready" (white-opacity)
+	   · Soft green glow top center
+	   ──────────────────────────────────────────────────────────── */
+	.pc .success-card {
+		position: relative;
+		overflow: hidden;
+		background: linear-gradient(135deg, #1c1a16 0%, #2a2620 100%);
+		border-radius: 14px;
+		padding: 22px 18px 18px;
+		text-align: center;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		text-align: center;
-		gap: 12px;
-		padding-top: 30px;
-		height: 100%;
+		gap: 6px;
+	}
+	.pc .success-glow {
+		position: absolute;
+		top: -110px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 220px;
+		height: 220px;
+		border-radius: 50%;
+		background: rgba(155, 194, 138, 0.42);
+		filter: blur(40px);
+		pointer-events: none;
 	}
 	.pc .check-circle {
-		width: 64px;
-		height: 64px;
-		background: var(--red);
-		color: var(--cream);
+		width: 44px;
+		height: 44px;
+		background: #9bc28a;
+		color: white;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+		animation: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+		box-shadow: 0 10px 26px rgba(155, 194, 138, 0.5);
+		position: relative;
+		z-index: 1;
 	}
 	.pc .check-circle svg {
-		width: 32px;
-		height: 32px;
+		width: 22px;
+		height: 22px;
 	}
 	@keyframes pop {
 		0% {
-			transform: scale(0.6);
+			transform: scale(0.5);
 			opacity: 0;
 		}
 		100% {
@@ -1182,33 +1457,68 @@
 			opacity: 1;
 		}
 	}
-	.pc .booked-title {
-		font-family: 'Spectral', serif;
-		font-weight: 500;
-		font-size: 22px;
-		color: var(--ink);
-		letter-spacing: -0.01em;
+	.pc .success-title {
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: 18px;
+		color: white;
+		letter-spacing: -0.02em;
+		position: relative;
+		z-index: 1;
+		margin-top: 4px;
 	}
-	.pc .booked-sub {
-		font-size: 12px;
-		color: var(--ink-2);
+	.pc .success-sub {
+		font-size: 11px;
+		color: rgba(255, 255, 255, 0.7);
+		line-height: 1.45;
 		max-width: 200px;
-		line-height: 1.4;
+		position: relative;
+		z-index: 1;
 	}
-	.pc .booked-card {
-		width: 100%;
+
+	/* Booked summary (multi-row read-only) */
+	.pc .booked-summary {
 		background: var(--paper);
 		border: 1px solid var(--line);
-		border-radius: 12px;
-		padding: 12px;
-		margin-top: 6px;
+		border-radius: 10px;
+		overflow: hidden;
 	}
-	.pc .bc-row {
+	.pc .bs-row {
+		padding: 6px 12px;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 6px 0;
+		border-bottom: 1px solid var(--line);
 	}
+	.pc .bs-row:last-child {
+		border-bottom: none;
+	}
+	.pc .bs-row.total .fr-val {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		color: var(--red);
+	}
+
+	/* Bag note — dashed border matches iOS BookedScreen bag staff note */
+	.pc .bag-note {
+		background: var(--paper);
+		border: 1px dashed rgba(28, 26, 22, 0.22);
+		border-radius: 10px;
+		padding: 8px 12px;
+	}
+	.pc .bn-title {
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--ink);
+		margin-bottom: 1px;
+	}
+	.pc .bn-sub {
+		font-size: 10px;
+		color: var(--ink-2);
+	}
+
 	.pc .restart {
 		margin-top: auto;
 		background: transparent;
@@ -1219,7 +1529,7 @@
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 		cursor: pointer;
-		padding: 8px;
+		padding: 6px;
 		transition: color 0.15s;
 	}
 	.pc .restart:hover {
