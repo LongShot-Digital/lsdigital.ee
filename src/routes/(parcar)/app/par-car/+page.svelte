@@ -215,15 +215,15 @@
 
 									<div class="greet-block">
 										<div class="greet-line">Good morning,</div>
-										<div class="greet-name">Jaan.</div>
-										<div class="greet-meta">Maardu Golf Club · Today</div>
+										<div class="greet-name">Robert.</div>
+										<div class="greet-meta">Cedar Ridge Country Club · Today</div>
 									</div>
 
 									<div class="tee-card">
 										<div class="tee-glow"></div>
 										<div class="tee-eyebrow">YOUR TEE TIME</div>
 										<div class="tee-time">11:36 AM</div>
-										<div class="tee-meta">MAARDU · 4 PLAYERS</div>
+										<div class="tee-meta">FOURSOME · 18 HOLES</div>
 										<button class="tee-cta" onclick={goToPick}>
 											<span>Book a wash</span>
 											<span class="arrow">→</span>
@@ -232,23 +232,16 @@
 
 									<div class="vehicle-label">YOUR VEHICLE</div>
 									<div class="vehicle-mini">
+										<!-- Wallet-card paint tile: brand serif on the actual paint
+										     colour, year + model in mono below. Matches the iOS
+										     VehicleArt default. User can replace with their own photo
+										     via Edit Vehicle in the real app. -->
 										<div class="vehicle-paint">
-											<!-- White-badge wallet-card style logo (matches iOS VehicleArt
-											     when BrandLogoMap returns a known brand — here Mercedes). -->
-											<div class="paint-badge">
-												<svg viewBox="0 0 100 100" aria-hidden="true">
-													<circle cx="50" cy="50" r="46" fill="#FFFFFF" stroke="#1C1A16" stroke-width="3" />
-													<g stroke="#1C1A16" stroke-width="6" stroke-linecap="round" fill="none">
-														<line x1="50" y1="50" x2="50" y2="10" />
-														<line x1="50" y1="50" x2="84.6" y2="70" />
-														<line x1="50" y1="50" x2="15.4" y2="70" />
-													</g>
-												</svg>
-											</div>
-											<div class="paint-sub">'24 S-CLASS</div>
+											<div class="paint-brand">RANGE ROVER</div>
+											<div class="paint-sub">'24 VELAR</div>
 										</div>
 										<div class="vehicle-info">
-											<div class="vehicle-name">Mercedes-Benz</div>
+											<div class="vehicle-name">Range Rover</div>
 											<div class="vehicle-meta">OB Black · 0418 EE</div>
 										</div>
 										<div class="vehicle-spot">E-14</div>
@@ -260,7 +253,7 @@
 										<span class="arr">←</span> Back
 									</button>
 									<div class="screen-h1">Pick a wash</div>
-									<div class="screen-sub">Maardu · Today</div>
+									<div class="screen-sub">Cedar Ridge · Today</div>
 
 									<div class="tier-list">
 										{#each tiers as t}
@@ -312,7 +305,7 @@
 									<div class="form-list">
 										<div class="form-row">
 											<span class="fr-lbl">VEHICLE</span>
-											<span class="fr-val">Mercedes-Benz · OB Black</span>
+											<span class="fr-val">Range Rover · OB Black</span>
 										</div>
 										<div class="form-row">
 											<span class="fr-lbl">PARKING SPOT</span>
@@ -390,7 +383,7 @@
 										</div>
 										<div class="bs-row">
 											<span class="fr-lbl">VEHICLE</span>
-											<span class="fr-val">Mercedes-Benz</span>
+											<span class="fr-val">Range Rover</span>
 										</div>
 										<div class="bs-row">
 											<span class="fr-lbl">SPOT</span>
@@ -1140,38 +1133,26 @@
 		height: 38px;
 		border-radius: 7px;
 		background: linear-gradient(135deg, #14141a 0%, #2a2a2e 100%);
-		padding: 4px;
+		padding: 5px 7px;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 2px;
+		justify-content: space-between;
 		overflow: hidden;
-		position: relative;
 	}
-	.pc .paint-badge {
-		width: 22px;
-		height: 22px;
-		background: #fff;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-		flex-shrink: 0;
-	}
-	.pc .paint-badge svg {
-		width: 78%;
-		height: 78%;
-		display: block;
+	.pc .paint-brand {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 8px;
+		letter-spacing: 0.06em;
+		color: rgba(255, 255, 255, 0.95);
+		line-height: 1;
 	}
 	.pc .paint-sub {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 6px;
 		letter-spacing: 0.12em;
-		color: rgba(255, 255, 255, 0.65);
+		color: rgba(255, 255, 255, 0.55);
 		font-weight: 600;
-		text-align: center;
 	}
 	.pc .vehicle-info {
 		min-width: 0;
