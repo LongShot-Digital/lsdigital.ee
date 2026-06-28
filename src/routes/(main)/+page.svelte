@@ -81,6 +81,13 @@
 					<span class="apps-item-desc">Car care, while you play</span>
 				</div>
 			</a>
+			<a href="/app/marco" class="apps-item">
+				<img src="/app/marco/app-icon.svg" alt="Marco" class="apps-item-icon" />
+				<div class="apps-item-text">
+					<span class="apps-item-name">Marco</span>
+					<span class="apps-item-desc">Your weekend plans, on a map</span>
+				</div>
+			</a>
 		</div>
 	{/if}
 </div>
