@@ -1,36 +1,28 @@
 <script lang="ts">
-	// ── Waitlist form ───────────────────────────────────────────────
-	// 1. Sign up at tally.so (free)
-	// 2. Create a form with a single Email field, set to public
-	// 3. Publish, copy the form ID from the URL (e.g. tally.so/r/mZjkOA → 'mZjkOA')
-	// 4. Paste it below; that's it.
+	// Tally captures emails via its own popup modal (loaded from tally.so/widgets/embed.js).
+	// Form ID is the 6-char string at the end of tally.so/r/<id>.
 	const TALLY_FORM_ID = 'Y5gJgB';
 
-	let email = $state('');
-	let status: 'idle' | 'sending' | 'done' | 'error' = $state('idle');
+	let submitted = $state(false);
 
-	async function submit(e: Event) {
-		e.preventDefault();
-		const trimmed = email.trim();
-		if (!trimmed || !trimmed.includes('@')) {
-			status = 'error';
-			return;
-		}
-		status = 'sending';
-		try {
-			const body = new URLSearchParams();
-			body.set('email', trimmed);
-			// no-cors lets the POST fire across origins without us needing to read the response.
-			await fetch(`https://tally.so/r/${TALLY_FORM_ID}`, {
-				method: 'POST',
-				mode: 'no-cors',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body
+	function openWaitlist() {
+		// Tally's embed.js attaches itself to window.Tally once loaded.
+		// Falls back to a direct link if for any reason the script didn't load.
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const Tally = (typeof window !== 'undefined' ? (window as any).Tally : undefined);
+		if (Tally?.openPopup) {
+			Tally.openPopup(TALLY_FORM_ID, {
+				layout: 'modal',
+				width: 460,
+				hideTitle: true,
+				autoClose: 1500,
+				emoji: { text: '👋', animation: 'wave' },
+				onSubmit: () => {
+					submitted = true;
+				}
 			});
-			status = 'done';
-			email = '';
-		} catch {
-			status = 'error';
+		} else {
+			window.open(`https://tally.so/r/${TALLY_FORM_ID}`, '_blank');
 		}
 	}
 </script>
@@ -41,6 +33,7 @@
 		name="description"
 		content="Marco — your weekend plans you've been waiting for. A social map of what your people are up to. Coming soon."
 	/>
+	<script src="https://tally.so/widgets/embed.js"></script>
 </svelte:head>
 
 <main class="marco">
@@ -71,29 +64,16 @@
 			Quietly cooking. Built for iPhone.
 		</p>
 
-		{#if status === 'done'}
+		{#if submitted}
 			<div class="success">
 				<span class="check">✓</span>
 				You're on the list. We'll let you know when Marco opens.
 			</div>
 		{:else}
-			<form class="waitlist" onsubmit={submit}>
-				<input
-					type="email"
-					inputmode="email"
-					autocomplete="email"
-					placeholder="you@somewhere.com"
-					bind:value={email}
-					disabled={status === 'sending'}
-					aria-label="Email address"
-				/>
-				<button type="submit" disabled={status === 'sending'}>
-					{status === 'sending' ? 'Sending…' : 'Get early access'}
-				</button>
-			</form>
-			{#if status === 'error'}
-				<p class="form-error">That email doesn't look right — give it another go.</p>
-			{/if}
+			<button class="cta" onclick={openWaitlist}>
+				Get early access
+			</button>
+			<p class="cta-sub">Drop your email — we'll only use it for the launch.</p>
 		{/if}
 
 		<a href="/" class="back">← from LongShot Digital</a>
@@ -240,70 +220,37 @@
 		margin: 0;
 	}
 
-	/* ── Waitlist form ─────────────────────────────────────── */
-	.waitlist {
+	/* ── Waitlist CTA ─────────────────────────────────────── */
+	.cta {
 		margin-top: 14px;
-		display: flex;
-		gap: 8px;
-		width: 100%;
-		max-width: 420px;
-		padding: 6px;
-		background: #ffffff;
-		border-radius: 16px;
-		border: 1px solid rgba(28, 29, 31, 0.08);
-		box-shadow:
-			0 8px 28px rgba(45, 99, 245, 0.07),
-			0 1px 2px rgba(28, 29, 31, 0.04);
-		transition: box-shadow 0.2s ease, border-color 0.2s ease;
-	}
-	.waitlist:focus-within {
-		border-color: rgba(45, 99, 245, 0.45);
-		box-shadow:
-			0 8px 28px rgba(45, 99, 245, 0.12),
-			0 0 0 3px rgba(45, 99, 245, 0.10);
-	}
-	.waitlist input {
-		flex: 1;
-		min-width: 0;
-		border: 0;
-		background: transparent;
-		padding: 10px 12px;
-		font-size: 0.98rem;
-		color: #1c1d1f;
-		font-family: inherit;
-		outline: none;
-	}
-	.waitlist input::placeholder {
-		color: #a5a39c;
-	}
-	.waitlist button {
-		flex: 0 0 auto;
 		border: 0;
 		background: #2d63f5;
 		color: #ffffff;
 		font-family: inherit;
-		font-size: 0.92rem;
+		font-size: 1.02rem;
 		font-weight: 600;
-		padding: 10px 16px;
-		border-radius: 11px;
+		padding: 14px 28px;
+		border-radius: 14px;
 		cursor: pointer;
-		transition: background 0.15s ease, transform 0.08s ease;
+		box-shadow:
+			0 10px 28px rgba(45, 99, 245, 0.22),
+			0 2px 4px rgba(45, 99, 245, 0.08);
+		transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.2s ease;
 	}
-	.waitlist button:hover:not(:disabled) {
+	.cta:hover {
 		background: #1f51d6;
+		transform: translateY(-1px);
+		box-shadow:
+			0 14px 32px rgba(45, 99, 245, 0.28),
+			0 2px 4px rgba(45, 99, 245, 0.10);
 	}
-	.waitlist button:active:not(:disabled) {
-		transform: scale(0.98);
+	.cta:active {
+		transform: scale(0.98) translateY(0);
 	}
-	.waitlist button:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	.form-error {
+	.cta-sub {
 		margin: 8px 0 0;
-		font-size: 0.82rem;
-		color: #c54a2a;
+		font-size: 0.78rem;
+		color: #8593ac;
 	}
 
 	.success {
@@ -347,13 +294,7 @@
 	@media (max-width: 480px) {
 		.logo-wrap { width: 112px; height: 112px; border-radius: 26px; }
 		.stage { gap: 14px; }
-		.waitlist {
-			flex-direction: column;
-			padding: 8px;
-		}
-		.waitlist button {
-			width: 100%;
-		}
+		.cta { width: 100%; }
 	}
 
 	@media (prefers-reduced-motion: reduce) {
