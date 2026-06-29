@@ -1,14 +1,67 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	// Web3Forms access key — get one at https://web3forms.com (free, 1 min, no account
+	// verification needed). Paste below; until you do, the form falls back to opening
+	// the visitor's mail client with the message pre-filled.
+	const WEB3FORMS_KEY = 'YOUR_WEB3FORMS_KEY';
+	const CONTACT_EMAIL = 'info@lsdigital.ee';
+
 	let formVisible = $state(true);
 	let formSuccess = $state(false);
+	let formError = $state<string | null>(null);
+	let submitting = $state(false);
 	let appsOpen = $state(false);
 
-	function handleSubmit(e: Event) {
+	async function handleSubmit(e: Event) {
 		e.preventDefault();
-		formVisible = false;
-		formSuccess = true;
+		formError = null;
+		const form = e.target as HTMLFormElement;
+		const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+
+		// Honeypot — silently ignore obvious bot submissions
+		if (data.website && data.website.length > 0) return;
+
+		// If the access key hasn't been pasted in yet, fall back to mailto so visitors
+		// still have a way to get through. (Easy to verify the form is wired up too.)
+		if (WEB3FORMS_KEY === 'YOUR_WEB3FORMS_KEY') {
+			const subject = encodeURIComponent(`New enquiry from ${data.name}`);
+			const body = encodeURIComponent(
+				`From: ${data.name} <${data.email}>\n\n${data.message}\n\n— Sent from lsdigital.ee`
+			);
+			window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+			formVisible = false;
+			formSuccess = true;
+			return;
+		}
+
+		submitting = true;
+		try {
+			const res = await fetch('https://api.web3forms.com/submit', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+				body: JSON.stringify({
+					access_key: WEB3FORMS_KEY,
+					name: data.name,
+					email: data.email,
+					message: data.message,
+					from_name: 'LSDigital contact form',
+					subject: `New enquiry from ${data.name}`,
+					replyto: data.email
+				})
+			});
+			const json = await res.json();
+			if (json.success) {
+				formVisible = false;
+				formSuccess = true;
+			} else {
+				formError = json.message ?? 'Something went wrong. Email us directly.';
+			}
+		} catch {
+			formError = 'Network glitch. Try again — or email us at ' + CONTACT_EMAIL + '.';
+		} finally {
+			submitting = false;
+		}
 	}
 
 	function toggleApps() {
@@ -160,11 +213,30 @@
 	{#if formVisible}
 		<form class="contact-form anim-up d1" onsubmit={handleSubmit}>
 			<div class="form-row">
-				<input type="text" name="name" placeholder="Name" required />
-				<input type="email" name="email" placeholder="Email" required />
+				<input type="text" name="name" placeholder="Name" required disabled={submitting} />
+				<input type="email" name="email" placeholder="Email" required disabled={submitting} />
 			</div>
-			<textarea name="message" placeholder="Tell us about your project..." required></textarea>
-			<button type="submit" class="submit-btn">Send Message</button>
+			<textarea
+				name="message"
+				placeholder="Tell us about your project..."
+				required
+				disabled={submitting}
+			></textarea>
+			<!-- Honeypot — hidden from humans, often filled by bots -->
+			<input
+				type="text"
+				name="website"
+				tabindex="-1"
+				autocomplete="off"
+				aria-hidden="true"
+				class="honeypot"
+			/>
+			<button type="submit" class="submit-btn" disabled={submitting}>
+				{submitting ? 'Sending…' : 'Send Message'}
+			</button>
+			{#if formError}
+				<p class="form-error">{formError}</p>
+			{/if}
 		</form>
 	{/if}
 	{#if formSuccess}
