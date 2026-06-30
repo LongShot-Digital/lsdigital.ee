@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	// Web3Forms access key — get one at https://web3forms.com (free, 1 min, no account
-	// verification needed). Paste below; until you do, the form falls back to opening
-	// the visitor's mail client with the message pre-filled.
-	const WEB3FORMS_KEY = 'YOUR_WEB3FORMS_KEY';
+	// Web3Forms access key tied to info@lsdigital.ee. Get a new one from https://web3forms.com
+	// if this ever needs rotating.
+	const WEB3FORMS_KEY = '74131967-39f2-4010-b10e-4769f4aa0303';
 	const CONTACT_EMAIL = 'info@lsdigital.ee';
 
 	let formVisible = $state(true);
@@ -21,19 +20,6 @@
 
 		// Honeypot — silently ignore obvious bot submissions
 		if (data.website && data.website.length > 0) return;
-
-		// If the access key hasn't been pasted in yet, fall back to mailto so visitors
-		// still have a way to get through. (Easy to verify the form is wired up too.)
-		if (WEB3FORMS_KEY === 'YOUR_WEB3FORMS_KEY') {
-			const subject = encodeURIComponent(`New enquiry from ${data.name}`);
-			const body = encodeURIComponent(
-				`From: ${data.name} <${data.email}>\n\n${data.message}\n\n— Sent from lsdigital.ee`
-			);
-			window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-			formVisible = false;
-			formSuccess = true;
-			return;
-		}
 
 		submitting = true;
 		try {
