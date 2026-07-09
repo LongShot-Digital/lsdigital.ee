@@ -7,6 +7,21 @@
 	type Tier = 'express' | 'full' | 'signature';
 	type FilterKey = 'all' | 'action' | 'active' | 'scheduled' | 'completed';
 	type ToastKind = 'info' | 'success' | 'warning' | 'error';
+	type ActivityKind =
+		| 'status_advance'
+		| 'status_revert'
+		| 'crew_reassigned'
+		| 'message_sent'
+		| 'note_added'
+		| 'cancelled'
+		| 'settings_updated'
+		| 'system';
+	type SettingKey =
+		| 'payoutAccount'
+		| 'reservedParking'
+		| 'operatingHours'
+		| 'caddiemasterContact'
+		| 'notifications';
 
 	interface Booking {
 		id: string;
@@ -33,12 +48,27 @@
 		pickedUpAt?: string;
 		rating?: number;
 		tipEur?: number;
+		note?: string;
 	}
 
 	interface Toast {
 		id: number;
 		msg: string;
 		kind: ToastKind;
+	}
+
+	interface Activity {
+		id: number;
+		at: Date;
+		kind: ActivityKind;
+		memberName?: string;
+		bookingId?: string;
+		details: string;
+	}
+
+	interface MessageTemplate {
+		title: string;
+		body: string;
 	}
 
 	// ═══════════ Constants ═══════════
@@ -71,6 +101,44 @@
 	};
 	const crewChoices = ['Marcus & Dani', 'Priit & Anna', 'Kalev & Elias'];
 
+	const activityKindLabel: Record<ActivityKind, string> = {
+		status_advance: 'STATUS',
+		status_revert: 'REVERT',
+		crew_reassigned: 'CREW',
+		message_sent: 'SMS',
+		note_added: 'NOTE',
+		cancelled: 'CANCEL',
+		settings_updated: 'SETTINGS',
+		system: 'SYSTEM'
+	};
+
+	const settingLabel: Record<SettingKey, string> = {
+		payoutAccount: 'Payout account',
+		reservedParking: 'Reserved parking',
+		operatingHours: 'Operating hours',
+		caddiemasterContact: 'Caddiemaster contact',
+		notifications: 'Notifications'
+	};
+
+	const messageTemplates: MessageTemplate[] = [
+		{
+			title: 'Your car is ready',
+			body: 'Hi %name%, your %vehicle% is washed and back at spot %spot%. Keys are at the bag stand. See you next round.'
+		},
+		{
+			title: 'Just started washing',
+			body: 'Hi %name%, we just started on your %vehicle%. Expect it ready in ~%dur% min.'
+		},
+		{
+			title: 'Running 10–15 min late',
+			body: 'Hi %name%, your wash will be ~15 min later than expected — sorry for the wait. We\'ll ping you the moment it\'s ready.'
+		},
+		{
+			title: 'Payment issue',
+			body: 'Hi %name%, we had trouble with your card on file. Could you check your Par Car app when you have a moment? We\'ll hold the car ready until then.'
+		}
+	];
+
 	// ═══════════ Clock ═══════════
 	let now = $state(new Date());
 	onMount(() => {
@@ -102,7 +170,7 @@
 	}
 
 	// ═══════════ UI state ═══════════
-	let currentNav = $state<'live' | 'earnings' | 'settings'>('live');
+	let currentNav = $state<'live' | 'activity' | 'earnings' | 'settings'>('live');
 	let searchQuery = $state('');
 	let activeFilter = $state<FilterKey>('all');
 	let selectedBookingId = $state<string | null>(null);
@@ -114,6 +182,41 @@
 	let confirmingRevert = $state<{ id: string; toStatus: Status } | null>(null);
 	let confirmingCancel = $state<string | null>(null);
 	let showingCrewMenu = $state(false);
+	let showingContactMenu = $state(false);
+
+	// Notes editor state
+	let editingNoteFor = $state<string | null>(null);
+	let noteDraft = $state('');
+
+	// Settings state (editable)
+	let settings = $state<Record<SettingKey, string>>({
+		payoutAccount: 'EE38 2200 2210 2014 5685 · Nordea Bank',
+		reservedParking: '6 spots · East and West lots (rows E, W)',
+		operatingHours: 'Mon–Sun · 7:00 AM – 6:00 PM',
+		caddiemasterContact: 'Andres Kask · andres@cedarridge.example',
+		notifications: 'SMS on ready + daily summary at 6 PM'
+	});
+	let editingSettingKey = $state<SettingKey | null>(null);
+	let settingDraft = $state('');
+
+	// Activity log (audit trail)
+	let activityCounter = 100;
+	let activityLog = $state<Activity[]>([
+		{ id: 5, at: new Date(Date.now() - 4 * 60_000), kind: 'status_advance',
+			memberName: 'Katherine Ellsworth', bookingId: 'PC-B72C',
+			details: 'Advanced to READY' },
+		{ id: 4, at: new Date(Date.now() - 12 * 60_000), kind: 'message_sent',
+			memberName: 'Robert Whitcomb', bookingId: 'PC-A31F',
+			details: 'SMS · "Your car is ready"' },
+		{ id: 3, at: new Date(Date.now() - 25 * 60_000), kind: 'crew_reassigned',
+			memberName: 'Henry Winston', bookingId: 'PC-E55N',
+			details: 'Crew reassigned to Marcus & Dani' },
+		{ id: 2, at: new Date(Date.now() - 45 * 60_000), kind: 'status_advance',
+			memberName: 'Thomas Ashworth', bookingId: 'PC-C41K',
+			details: 'Advanced to DRYING' },
+		{ id: 1, at: new Date(Date.now() - 3 * 60 * 60_000), kind: 'system',
+			details: 'Auto-summary sent: 3 washes completed, €395 gross' }
+	]);
 
 	// ═══════════ Booking data (mutable state) ═══════════
 	let bookings = $state<Booking[]>([
@@ -312,6 +415,25 @@
 		}, 3200);
 	}
 
+	function logActivity(
+		kind: ActivityKind,
+		details: string,
+		booking?: Booking
+	) {
+		const id = ++activityCounter;
+		activityLog = [
+			{
+				id,
+				at: new Date(now),
+				kind,
+				memberName: booking?.memberName,
+				bookingId: booking?.id,
+				details
+			},
+			...activityLog
+		].slice(0, 100);
+	}
+
 	function nextStatus(s: Status): Status | null {
 		const i = statusOrder.indexOf(s);
 		return i < 0 || i >= statusOrder.length - 1 ? null : statusOrder[i + 1];
@@ -339,6 +461,7 @@
 		if (!b.crew && (next === 'received' || next === 'washing')) {
 			b.crew = crewChoices[0];
 		}
+		logActivity('status_advance', `Advanced to ${statusLabel[next]}`, b);
 		toast(`${b.memberName} · ${statusLabel[next]}`, 'success');
 	}
 
@@ -354,6 +477,11 @@
 		const b = bookings.find((x) => x.id === confirmingRevert!.id);
 		if (b) {
 			b.status = confirmingRevert.toStatus;
+			logActivity(
+				'status_revert',
+				`Reverted to ${statusLabel[confirmingRevert.toStatus]}`,
+				b
+			);
 			toast(`${b.memberName} → ${statusLabel[confirmingRevert.toStatus]}`, 'warning');
 		}
 		confirmingRevert = null;
@@ -364,13 +492,66 @@
 		if (!b) return;
 		b.crew = crew;
 		showingCrewMenu = false;
+		logActivity('crew_reassigned', `Crew set to ${crew}`, b);
 		toast(`Crew set to ${crew}`, 'info');
 	}
 
-	function contactMember(id: string) {
+	function sendMessageTemplate(id: string, template: MessageTemplate) {
 		const b = bookings.find((x) => x.id === id);
 		if (!b) return;
-		toast(`SMS sent to ${b.memberName} · ${b.memberPhone}`, 'success');
+		showingContactMenu = false;
+		logActivity('message_sent', `SMS · "${template.title}"`, b);
+		toast(`SMS sent to ${b.memberName} · "${template.title}"`, 'success');
+	}
+
+	function renderTemplate(template: MessageTemplate, b: Booking): string {
+		const first = b.memberName.split(' ')[0];
+		const vehicle = `${b.vehicleMake} ${b.vehicleModel}`;
+		const dur = tierBadge[b.tier];
+		return template.body
+			.replace(/%name%/g, first)
+			.replace(/%vehicle%/g, vehicle)
+			.replace(/%spot%/g, b.spot)
+			.replace(/%dur%/g, dur);
+	}
+
+	function startEditNote(bookingId: string) {
+		const b = bookings.find((x) => x.id === bookingId);
+		if (!b) return;
+		editingNoteFor = bookingId;
+		noteDraft = b.note ?? '';
+	}
+	function saveNote() {
+		if (!editingNoteFor) return;
+		const b = bookings.find((x) => x.id === editingNoteFor);
+		if (b) {
+			b.note = noteDraft.trim() || undefined;
+			logActivity('note_added', b.note ? 'Note updated' : 'Note cleared', b);
+			toast(`Note ${b.note ? 'saved' : 'cleared'} for ${b.memberName}`, 'success');
+		}
+		editingNoteFor = null;
+	}
+	function cancelEditNote() {
+		editingNoteFor = null;
+	}
+
+	function startEditSetting(key: SettingKey) {
+		editingSettingKey = key;
+		settingDraft = settings[key];
+	}
+	function saveSetting() {
+		if (!editingSettingKey) return;
+		const key = editingSettingKey;
+		const oldVal = settings[key];
+		if (settingDraft.trim() && settingDraft !== oldVal) {
+			settings[key] = settingDraft.trim();
+			logActivity('settings_updated', `${settingLabel[key]} updated`);
+			toast(`${settingLabel[key]} saved`, 'success');
+		}
+		editingSettingKey = null;
+	}
+	function cancelEditSetting() {
+		editingSettingKey = null;
 	}
 
 	function requestCancel(id: string) {
@@ -380,6 +561,7 @@
 		if (!confirmingCancel) return;
 		const b = bookings.find((x) => x.id === confirmingCancel);
 		if (b) {
+			logActivity('cancelled', `Booking cancelled`, b);
 			bookings = bookings.filter((x) => x.id !== confirmingCancel);
 			toast(`Cancelled: ${b.memberName}`, 'warning');
 		}
@@ -390,10 +572,35 @@
 	function selectBooking(id: string) {
 		selectedBookingId = id;
 		showingCrewMenu = false;
+		showingContactMenu = false;
+		editingNoteFor = null;
 	}
 	function closeModal() {
 		selectedBookingId = null;
 		showingCrewMenu = false;
+		showingContactMenu = false;
+		editingNoteFor = null;
+	}
+
+	function formatActivityTime(d: Date): string {
+		const diffMs = now.getTime() - d.getTime();
+		const mins = Math.floor(diffMs / 60000);
+		if (mins < 1) return 'just now';
+		if (mins < 60) return `${mins} min ago`;
+		const hrs = Math.floor(mins / 60);
+		if (hrs < 24) {
+			const rem = mins % 60;
+			return rem === 0 ? `${hrs}h ago` : `${hrs}h ${rem}m ago`;
+		}
+		const days = Math.floor(hrs / 24);
+		return `${days}d ago`;
+	}
+	function formatActivityAbs(d: Date): string {
+		let h = d.getHours();
+		const m = d.getMinutes();
+		const ampm = h >= 12 ? 'PM' : 'AM';
+		h = h % 12 || 12;
+		return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
 	}
 
 	function toggleAutoSim() {
@@ -563,6 +770,14 @@
 				<span class="dot"></span>
 				<span>Live board</span>
 				<span class="badge">{carsOnProperty}</span>
+			</button>
+			<button
+				class:active={currentNav === 'activity'}
+				onclick={() => (currentNav = 'activity')}
+			>
+				<span class="icon">◈</span>
+				<span>Activity log</span>
+				<span class="badge subtle">{activityLog.length}</span>
 			</button>
 			<button
 				class:active={currentNav === 'earnings'}
@@ -1021,50 +1236,106 @@
 					</div>
 				</div>
 			</div>
+		{:else if currentNav === 'activity'}
+			<div class="content">
+				<div class="page-head">
+					<div>
+						<div class="head-eyebrow">AUDIT TRAIL · LAST 100 EVENTS</div>
+						<h1>Activity log</h1>
+					</div>
+					<div class="head-right">
+						<div class="clock">{formatClock(now)}</div>
+						<div class="last-updated">
+							<span class="live-dot"></span> {activityLog.length} events
+						</div>
+					</div>
+				</div>
+
+				<div class="activity-list">
+					{#each activityLog as a (a.id)}
+						<div class="activity-row">
+							<div class="a-time">
+								<div class="a-abs">{formatActivityAbs(a.at)}</div>
+								<div class="a-rel">{formatActivityTime(a.at)}</div>
+							</div>
+							<div class="a-badge {a.kind}">{activityKindLabel[a.kind]}</div>
+							<div class="a-body">
+								<div class="a-details">{a.details}</div>
+								{#if a.memberName}
+									<div class="a-sub">
+										<button
+											class="a-link"
+											onclick={() => {
+												if (a.bookingId) {
+													const found = bookings.find((b) => b.id === a.bookingId);
+													if (found) {
+														currentNav = 'live';
+														selectBooking(a.bookingId);
+													} else {
+														toast('This booking has been cancelled', 'info');
+													}
+												}
+											}}
+										>{a.memberName} · {a.bookingId}</button>
+									</div>
+								{/if}
+							</div>
+						</div>
+					{/each}
+				</div>
+
+				<div class="a-note">
+					Every operator action is logged locally. In production this stream feeds
+					the audit trail available to LSD support + the club owner.
+				</div>
+			</div>
 		{:else if currentNav === 'settings'}
 			<div class="content">
 				<div class="page-head">
 					<div>
-						<div class="head-eyebrow">SETTINGS</div>
+						<div class="head-eyebrow">SETTINGS · EDIT INLINE</div>
 						<h1>Club configuration</h1>
 					</div>
 				</div>
 				<div class="settings-list">
-					<div class="setting-row">
-						<div>
-							<div class="setting-name">Payout account</div>
-							<div class="setting-sub">SEPA · EE38 2200 2210 2014 5685 · Nordea Bank</div>
+					{#each Object.entries(settings) as [key, value] (key)}
+						{@const skey = key as SettingKey}
+						<div class="setting-row" class:editing={editingSettingKey === skey}>
+							<div class="setting-info">
+								<div class="setting-name">{settingLabel[skey]}</div>
+								{#if editingSettingKey === skey}
+									<input
+										class="setting-input"
+										bind:value={settingDraft}
+										onkeydown={(e) => {
+											if (e.key === 'Enter') saveSetting();
+											if (e.key === 'Escape') cancelEditSetting();
+										}}
+									/>
+								{:else}
+									<div class="setting-sub">{value}</div>
+								{/if}
+							</div>
+							{#if editingSettingKey === skey}
+								<div class="setting-actions">
+									<button class="edit-btn" onclick={cancelEditSetting}>Cancel</button>
+									<button class="edit-btn primary" onclick={saveSetting}>Save</button>
+								</div>
+							{:else}
+								<div class="setting-actions">
+									{#if skey === 'payoutAccount'}
+										<span class="verified">VERIFIED</span>
+									{/if}
+									<button class="edit-btn" onclick={() => startEditSetting(skey)}>Edit</button>
+								</div>
+							{/if}
 						</div>
-						<span class="verified">VERIFIED</span>
-					</div>
-					<div class="setting-row">
-						<div>
-							<div class="setting-name">Reserved parking</div>
-							<div class="setting-sub">6 spots · East and West lots (rows E, W)</div>
-						</div>
-						<button class="edit-btn">Edit</button>
-					</div>
-					<div class="setting-row">
-						<div>
-							<div class="setting-name">Operating hours</div>
-							<div class="setting-sub">Mon–Sun · 7:00 AM – 6:00 PM</div>
-						</div>
-						<button class="edit-btn">Edit</button>
-					</div>
-					<div class="setting-row">
-						<div>
-							<div class="setting-name">Caddiemaster contact</div>
-							<div class="setting-sub">Andres Kask · andres@cedarridge.example</div>
-						</div>
-						<button class="edit-btn">Edit</button>
-					</div>
-					<div class="setting-row">
-						<div>
-							<div class="setting-name">Notifications</div>
-							<div class="setting-sub">SMS on ready + daily summary at 6 PM</div>
-						</div>
-						<button class="edit-btn">Edit</button>
-					</div>
+					{/each}
+				</div>
+
+				<div class="settings-note">
+					Changes are stored locally for the demo. In production they sync to the
+					club's account at LongShot Digital OÜ.
 				</div>
 			</div>
 		{/if}
@@ -1135,9 +1406,28 @@
 						<span class="ds-v">{selectedBooking.memberSince}</span>
 					</div>
 				</div>
-				<button class="drawer-action" onclick={() => contactMember(selectedBooking!.id)}>
-					✉ Text member — "your car is ready"
-				</button>
+				<div class="contact-wrap">
+					<button
+						class="drawer-action"
+						onclick={() => (showingContactMenu = !showingContactMenu)}
+					>
+						✉ Send message to member
+					</button>
+					{#if showingContactMenu}
+						<div class="contact-menu" transition:fade={{ duration: 120 }}>
+							<div class="cm-head">TEMPLATES · TAP TO SEND</div>
+							{#each messageTemplates as t}
+								<button
+									class="cm-row"
+									onclick={() => sendMessageTemplate(selectedBooking!.id, t)}
+								>
+									<div class="cm-title">{t.title}</div>
+									<div class="cm-body">{renderTemplate(t, selectedBooking!)}</div>
+								</button>
+							{/each}
+						</div>
+					{/if}
+				</div>
 			</section>
 
 			<!-- Vehicle -->
@@ -1217,6 +1507,34 @@
 							</button>
 						{/each}
 					</div>
+				{/if}
+			</section>
+
+			<!-- Notes -->
+			<section class="drawer-section">
+				<div class="ds-h-row">
+					<div class="ds-h">NOTES</div>
+					{#if editingNoteFor !== selectedBooking.id}
+						<button class="link-btn" onclick={() => startEditNote(selectedBooking!.id)}>
+							{selectedBooking.note ? 'Edit' : 'Add note'}
+						</button>
+					{/if}
+				</div>
+				{#if editingNoteFor === selectedBooking.id}
+					<textarea
+						class="note-editor"
+						bind:value={noteDraft}
+						placeholder="e.g. Member requested extra tire dressing. Prefers pro shop key drop."
+						rows="3"
+					></textarea>
+					<div class="note-actions">
+						<button class="dialog-btn" onclick={cancelEditNote}>Cancel</button>
+						<button class="dialog-btn warn" onclick={saveNote}>Save note</button>
+					</div>
+				{:else if selectedBooking.note}
+					<div class="note-view">{selectedBooking.note}</div>
+				{:else}
+					<div class="note-empty">No notes yet · Anything the crew should know about this member?</div>
 				{/if}
 			</section>
 
@@ -1518,6 +1836,11 @@
 		text-align: center;
 	}
 	.sidebar nav button.active .badge { background: var(--cream); color: var(--ink); }
+	.sidebar nav button .badge.subtle {
+		background: rgba(28, 26, 22, 0.1);
+		color: var(--ink-2);
+	}
+	.sidebar nav button.active .badge.subtle { background: rgba(241, 236, 225, 0.2); color: var(--cream); }
 	.sidebar nav button .soon {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 8px;
@@ -2196,6 +2519,96 @@
 	.dv-meta { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
 	.mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.03em; }
 
+	.ds-h-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 12px;
+	}
+	.ds-h-row .ds-h { margin-bottom: 0; }
+
+	/* Contact template menu */
+	.contact-wrap { position: relative; }
+	.contact-menu {
+		margin-top: 10px;
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+	.cm-head {
+		padding: 10px 14px;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.22em;
+		color: var(--ink-3);
+		font-weight: 600;
+		background: rgba(28, 26, 22, 0.03);
+		border-bottom: 1px solid var(--line);
+	}
+	.cm-row {
+		display: block;
+		width: 100%;
+		background: transparent;
+		border: none;
+		border-bottom: 1px solid var(--line);
+		text-align: left;
+		padding: 12px 14px;
+		cursor: pointer;
+		font-family: inherit;
+		transition: background 0.12s;
+	}
+	.cm-row:last-child { border-bottom: none; }
+	.cm-row:hover { background: rgba(28, 26, 22, 0.04); }
+	.cm-title {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 13px;
+		color: var(--ink);
+		margin-bottom: 3px;
+	}
+	.cm-body {
+		font-size: 11px;
+		color: var(--ink-2);
+		line-height: 1.5;
+	}
+
+	/* Notes */
+	.note-editor {
+		width: 100%;
+		background: var(--paper);
+		border: 1px solid var(--line-2);
+		border-radius: 8px;
+		padding: 10px 12px;
+		font-family: inherit;
+		font-size: 13px;
+		color: var(--ink);
+		resize: vertical;
+		min-height: 70px;
+		transition: border-color 0.15s;
+	}
+	.note-editor:focus { outline: none; border-color: var(--ink); }
+	.note-actions {
+		display: flex;
+		gap: 6px;
+		justify-content: flex-end;
+		margin-top: 8px;
+	}
+	.note-view {
+		background: var(--paper);
+		border-left: 3px solid var(--amber);
+		padding: 10px 14px;
+		font-size: 13px;
+		color: var(--ink);
+		line-height: 1.5;
+		border-radius: 0 8px 8px 0;
+	}
+	.note-empty {
+		font-size: 12px;
+		color: var(--ink-3);
+		font-style: italic;
+	}
+
 	.crew-line {
 		display: flex;
 		justify-content: space-between;
@@ -2516,6 +2929,117 @@
 		cursor: pointer;
 	}
 	.edit-btn:hover { background: rgba(28, 26, 22, 0.06); }
+	.edit-btn.primary {
+		background: var(--red);
+		color: var(--cream);
+		border-color: var(--red);
+	}
+	.edit-btn.primary:hover { background: #a32a1e; }
+	.setting-row.editing { background: rgba(197, 57, 44, 0.03); }
+	.setting-info { flex: 1; }
+	.setting-actions { display: flex; gap: 6px; align-items: center; }
+	.setting-input {
+		width: 100%;
+		background: white;
+		border: 1px solid var(--red);
+		border-radius: 8px;
+		padding: 8px 12px;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 12px;
+		color: var(--ink);
+		margin-top: 4px;
+	}
+	.setting-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(197, 57, 44, 0.15); }
+	.settings-note {
+		margin-top: 16px;
+		font-size: 12px;
+		color: var(--ink-3);
+		text-align: center;
+	}
+
+	/* ═══════════════ ACTIVITY LOG ═══════════════ */
+	.activity-list {
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: 12px;
+		overflow: hidden;
+	}
+	.activity-row {
+		display: grid;
+		grid-template-columns: 100px 90px 1fr;
+		gap: 16px;
+		padding: 12px 20px;
+		border-bottom: 1px solid var(--line);
+		align-items: center;
+	}
+	.activity-row:last-child { border-bottom: none; }
+	.a-time { display: flex; flex-direction: column; }
+	.a-abs {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--ink);
+		letter-spacing: -0.02em;
+	}
+	.a-rel {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		letter-spacing: 0.06em;
+		color: var(--ink-3);
+		margin-top: 2px;
+	}
+	.a-badge {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		padding: 4px 8px;
+		border-radius: 999px;
+		text-align: center;
+		background: var(--ink-4);
+		color: white;
+	}
+	.a-badge.status_advance { background: var(--blue); }
+	.a-badge.status_revert { background: var(--amber); }
+	.a-badge.crew_reassigned { background: var(--ink-3); color: white; }
+	.a-badge.message_sent { background: #4a7c40; }
+	.a-badge.note_added { background: var(--gold); color: var(--ink); }
+	.a-badge.cancelled { background: var(--red); }
+	.a-badge.settings_updated { background: var(--ink); color: var(--cream); }
+	.a-badge.system { background: rgba(28, 26, 22, 0.4); color: var(--cream); }
+	.a-details {
+		font-size: 14px;
+		color: var(--ink);
+		font-weight: 500;
+	}
+	.a-sub {
+		font-size: 11px;
+		color: var(--ink-3);
+		margin-top: 3px;
+	}
+	.a-link {
+		background: transparent;
+		border: none;
+		color: var(--ink-2);
+		font-family: inherit;
+		font-size: 11px;
+		padding: 0;
+		cursor: pointer;
+		text-decoration: underline;
+		text-decoration-color: rgba(28, 26, 22, 0.15);
+		text-underline-offset: 3px;
+	}
+	.a-link:hover { color: var(--red); text-decoration-color: var(--red); }
+	.a-note {
+		margin-top: 16px;
+		padding: 14px 20px;
+		background: var(--paper);
+		border: 1px dashed var(--line-2);
+		border-radius: 10px;
+		font-size: 12px;
+		color: var(--ink-3);
+		line-height: 1.55;
+	}
 
 	/* ═══════════════ Responsive ═══════════════ */
 	@media (max-width: 1080px) {
