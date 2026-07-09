@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { tweened } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 
 	// ═══════════ Types ═══════════
 	type Status = 'booked' | 'received' | 'washing' | 'drying' | 'ready' | 'pickedUp';
@@ -69,6 +71,16 @@
 	interface MessageTemplate {
 		title: string;
 		body: string;
+	}
+
+	interface InboxItem {
+		id: number;
+		at: Date;
+		kind: 'booking' | 'rating' | 'payment' | 'system';
+		title: string;
+		body: string;
+		bookingId?: string;
+		read: boolean;
 	}
 
 	// ═══════════ Constants ═══════════
@@ -217,6 +229,79 @@
 		{ id: 1, at: new Date(Date.now() - 3 * 60 * 60_000), kind: 'system',
 			details: 'Auto-summary sent: 3 washes completed, €395 gross' }
 	]);
+
+	// Notifications inbox (the operator's attention queue — different from
+	// the audit trail: this is "what needs me", the log is "what happened")
+	let showInbox = $state(false);
+	let inboxCounter = 10;
+	let inbox = $state<InboxItem[]>([
+		{ id: 3, at: new Date(Date.now() - 9 * 60_000), kind: 'booking',
+			title: 'New booking', body: 'David Brookline · Full Valet · tee 11:36 AM',
+			bookingId: 'PC-L13U', read: false },
+		{ id: 2, at: new Date(Date.now() - 31 * 60_000), kind: 'rating',
+			title: 'New 5★ rating', body: 'Frederick Lassiter · Signature Detail · tipped €20',
+			bookingId: 'PC-Q88Y', read: false },
+		{ id: 1, at: new Date(Date.now() - 2 * 60 * 60_000), kind: 'system',
+			title: 'Morning summary', body: '3 washes completed before 11 AM · €395 gross',
+			read: true }
+	]);
+	let unreadCount = $derived(inbox.filter((i) => !i.read).length);
+
+	function addInbox(
+		kind: InboxItem['kind'],
+		title: string,
+		body: string,
+		bookingId?: string
+	) {
+		inbox = [
+			{ id: ++inboxCounter, at: new Date(now), kind, title, body, bookingId, read: false },
+			...inbox
+		].slice(0, 30);
+	}
+	function openInboxItem(item: InboxItem) {
+		item.read = true;
+		if (item.bookingId) {
+			const found = bookings.find((b) => b.id === item.bookingId);
+			if (found) {
+				showInbox = false;
+				currentNav = 'live';
+				selectBooking(item.bookingId);
+			}
+		}
+	}
+	function markAllRead() {
+		for (const i of inbox) i.read = true;
+	}
+
+	// ─── Exports ──────────────────────────────────────────────────
+	function exportCSV() {
+		const header = ['Booking ID', 'Member', 'Vehicle', 'Plate', 'Spot', 'Service',
+			'Price EUR', 'Tee time', 'Status', 'Booked', 'Received', 'Wash started',
+			'Ready', 'Picked up', 'Rating', 'Tip EUR', 'Crew'];
+		const rows = bookings.map((b) => [
+			b.id, b.memberName,
+			`${b.vehicleYear} ${b.vehicleMake} ${b.vehicleModel}`,
+			b.plate, b.spot, tierLabel[b.tier], b.price, b.teeTime,
+			statusLabel[b.status], b.bookedAt, b.receivedAt ?? '', b.startedAt ?? '',
+			b.readyAt ?? '', b.pickedUpAt ?? '', b.rating ?? '', b.tipEur ?? '', b.crew ?? ''
+		]);
+		const csv = [header, ...rows]
+			.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
+			.join('\n');
+		const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `parcar-daily-${now.toISOString().slice(0, 10)}.csv`;
+		a.click();
+		URL.revokeObjectURL(url);
+		logActivity('system', 'Day exported to CSV');
+		toast('CSV downloaded', 'success');
+	}
+	function printDaily() {
+		logActivity('system', 'Daily report printed');
+		window.print();
+	}
 
 	// ═══════════ Booking data (mutable state) ═══════════
 	let bookings = $state<Booking[]>([
@@ -463,6 +548,14 @@
 		}
 		logActivity('status_advance', `Advanced to ${statusLabel[next]}`, b);
 		toast(`${b.memberName} · ${statusLabel[next]}`, 'success');
+		if (next === 'ready') {
+			addInbox('booking', 'Ready for pickup',
+				`${b.memberName} · ${b.vehicleMake} ${b.vehicleModel} at ${b.spot}`, b.id);
+		}
+		if (next === 'pickedUp') {
+			addInbox('rating', `New ${b.rating}★ rating`,
+				`${b.memberName} · ${tierLabel[b.tier]}${b.tipEur ? ` · tipped €${b.tipEur}` : ''}`, b.id);
+		}
 	}
 
 	function requestRevert(id: string) {
@@ -671,6 +764,17 @@
 	);
 	let clubShare = $derived(Math.round(revenueToday * 0.2));
 
+	// Animated KPI numbers — count toward the new value instead of snapping.
+	// Restrained: 450–550ms ease-out, no bounce.
+	const kpiCars = tweened(0, { duration: 450, easing: cubicOut });
+	const kpiReady = tweened(0, { duration: 450, easing: cubicOut });
+	const kpiRevenue = tweened(0, { duration: 550, easing: cubicOut });
+	const kpiShare = tweened(0, { duration: 550, easing: cubicOut });
+	$effect(() => { kpiCars.set(carsOnProperty); });
+	$effect(() => { kpiReady.set(readyCount); });
+	$effect(() => { kpiRevenue.set(revenueToday); });
+	$effect(() => { kpiShare.set(clubShare); });
+
 	// ═══════════ Helpers ═══════════
 	function paintColor(name: string): string {
 		const n = name.toLowerCase();
@@ -838,6 +942,56 @@
 						<h1>Live board</h1>
 					</div>
 					<div class="head-right">
+						<button class="tool-btn" onclick={exportCSV}>Export CSV</button>
+						<button class="tool-btn" onclick={printDaily}>Print report</button>
+						<div class="bell-wrap">
+							<button
+								class="bell"
+								class:has-unread={unreadCount > 0}
+								onclick={() => (showInbox = !showInbox)}
+								aria-label="Notifications"
+							>
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+									stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+									<path d="M13.7 21a2 2 0 0 1-3.4 0" />
+								</svg>
+								{#if unreadCount > 0}
+									<span class="bell-badge">{unreadCount}</span>
+								{/if}
+							</button>
+							{#if showInbox}
+								<div
+									class="inbox-backdrop"
+									onclick={() => (showInbox = false)}
+									role="button"
+									tabindex="-1"
+								></div>
+								<div class="inbox" transition:fly={{ y: -6, duration: 160 }}>
+									<div class="inbox-head">
+										<span>Notifications</span>
+										<button class="link-btn" onclick={markAllRead}>Mark all read</button>
+									</div>
+									{#each inbox as item (item.id)}
+										<button
+											class="inbox-row"
+											class:unread={!item.read}
+											onclick={() => openInboxItem(item)}
+										>
+											<span class="ib-dot {item.kind}"></span>
+											<span class="ib-body">
+												<span class="ib-title">{item.title}</span>
+												<span class="ib-text">{item.body}</span>
+											</span>
+											<span class="ib-time">{formatActivityTime(item.at)}</span>
+										</button>
+									{/each}
+									{#if inbox.length === 0}
+										<div class="inbox-empty">All caught up.</div>
+									{/if}
+								</div>
+							{/if}
+						</div>
 						<div class="clock">{formatClock(now)}</div>
 						<div class="last-updated">
 							<span class="live-dot"></span>
@@ -894,26 +1048,26 @@
 				<div class="kpi-grid">
 					<div class="kpi">
 						<div class="kpi-lbl">CARS ON PROPERTY</div>
-						<div class="kpi-val">{carsOnProperty}</div>
+						<div class="kpi-val">{Math.round($kpiCars)}</div>
 						<div class="kpi-sub">
 							{progressList.length} washing · {readyCount} ready
 						</div>
 					</div>
 					<div class="kpi accent">
 						<div class="kpi-lbl">READY FOR PICKUP</div>
-						<div class="kpi-val">{readyCount}</div>
+						<div class="kpi-val">{Math.round($kpiReady)}</div>
 						<div class="kpi-sub">action needed</div>
 					</div>
 					<div class="kpi">
 						<div class="kpi-lbl">REVENUE TODAY</div>
-						<div class="kpi-val">€{revenueToday.toLocaleString('en-US')}</div>
+						<div class="kpi-val">€{Math.round($kpiRevenue).toLocaleString('en-US')}</div>
 						<div class="kpi-sub">
 							{bookings.filter((b) => b.status !== 'booked').length} washes billed
 						</div>
 					</div>
 					<div class="kpi highlight">
 						<div class="kpi-lbl">YOUR SHARE · 20%</div>
-						<div class="kpi-val">€{clubShare.toLocaleString('en-US')}</div>
+						<div class="kpi-val">€{Math.round($kpiShare).toLocaleString('en-US')}</div>
 						<div class="kpi-sub">settles on the 5th</div>
 					</div>
 				</div>
@@ -930,7 +1084,12 @@
 						</div>
 						<div class="rows">
 							{#each readyList as b (b.id)}
-								<button class="row row-ready" onclick={() => selectBooking(b.id)}>
+								<button
+									class="row row-ready"
+									in:fly={{ y: 6, duration: 200 }}
+									out:fade={{ duration: 140 }}
+									onclick={() => selectBooking(b.id)}
+								>
 									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
 										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
 											{b.vehicleMake.toUpperCase()}
@@ -976,7 +1135,12 @@
 						</div>
 						<div class="rows">
 							{#each progressList as b (b.id)}
-								<button class="row" onclick={() => selectBooking(b.id)}>
+								<button
+									class="row"
+									in:fly={{ y: 6, duration: 200 }}
+									out:fade={{ duration: 140 }}
+									onclick={() => selectBooking(b.id)}
+								>
 									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
 										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
 											{b.vehicleMake.toUpperCase()}
@@ -1022,7 +1186,12 @@
 						</div>
 						<div class="rows">
 							{#each receivedList as b (b.id)}
-								<button class="row" onclick={() => selectBooking(b.id)}>
+								<button
+									class="row"
+									in:fly={{ y: 6, duration: 200 }}
+									out:fade={{ duration: 140 }}
+									onclick={() => selectBooking(b.id)}
+								>
 									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
 										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
 											{b.vehicleMake.toUpperCase()}
@@ -1068,7 +1237,12 @@
 						</div>
 						<div class="rows">
 							{#each scheduledList as b (b.id)}
-								<button class="row row-scheduled" onclick={() => selectBooking(b.id)}>
+								<button
+									class="row row-scheduled"
+									in:fly={{ y: 6, duration: 200 }}
+									out:fade={{ duration: 140 }}
+									onclick={() => selectBooking(b.id)}
+								>
 									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
 										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
 											{b.vehicleMake.toUpperCase()}
@@ -1114,7 +1288,12 @@
 						</div>
 						<div class="rows">
 							{#each completedList as b (b.id)}
-								<button class="row row-completed" onclick={() => selectBooking(b.id)}>
+								<button
+									class="row row-completed"
+									in:fly={{ y: 6, duration: 200 }}
+									out:fade={{ duration: 140 }}
+									onclick={() => selectBooking(b.id)}
+								>
 									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
 										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
 											{b.vehicleMake.toUpperCase()}
@@ -1340,6 +1519,53 @@
 			</div>
 		{/if}
 	</main>
+
+	<!-- ═════════════ PRINT-ONLY DAILY REPORT ═════════════
+	     Hidden on screen; @media print hides the console chrome and
+	     shows only this clean A4-friendly summary. -->
+	<div class="print-report" aria-hidden="true">
+		<div class="pr-head">
+			<div class="pr-brand">PAR CAR · DAILY REPORT</div>
+			<div class="pr-meta">
+				Cedar Ridge Country Club — {formatDate(now)}, printed {formatClock(now)}
+			</div>
+		</div>
+		<div class="pr-kpis">
+			<div><b>{bookings.filter((b) => b.status !== 'booked').length}</b> washes billed</div>
+			<div><b>€{revenueToday.toLocaleString('en-US')}</b> gross revenue</div>
+			<div><b>€{clubShare.toLocaleString('en-US')}</b> club share (20%)</div>
+			<div><b>{carsOnProperty}</b> cars on property at print time</div>
+		</div>
+		<table class="pr-table">
+			<thead>
+				<tr>
+					<th>ID</th><th>Member</th><th>Vehicle</th><th>Spot</th><th>Service</th>
+					<th>Status</th><th>Ready</th><th>Picked up</th><th>Rating</th>
+					<th class="pr-right">Price</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each bookings as b (b.id)}
+					<tr>
+						<td>{b.id}</td>
+						<td>{b.memberName}</td>
+						<td>{b.vehicleYear} {b.vehicleMake} {b.vehicleModel}</td>
+						<td>{b.spot}</td>
+						<td>{tierLabel[b.tier]}</td>
+						<td>{statusLabel[b.status]}</td>
+						<td>{b.readyAt ?? '—'}</td>
+						<td>{b.pickedUpAt ?? '—'}</td>
+						<td>{b.rating ? '★'.repeat(b.rating) : '—'}</td>
+						<td class="pr-right">€{b.price}</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+		<div class="pr-foot">
+			LongShot Digital OÜ · Reg. 17437669 · info@lsdigital.ee ·
+			Settlement: 20% of gross via SEPA on the 5th business day of the following month.
+		</div>
+	</div>
 
 	<!-- ═════════════ BOOKING DETAIL DRAWER ═════════════ -->
 	{#if selectedBooking}
@@ -3039,6 +3265,269 @@
 		font-size: 12px;
 		color: var(--ink-3);
 		line-height: 1.55;
+	}
+
+	/* ═══════════════ MICRO-INTERACTIONS ═══════════════
+	   Restrained by design: short durations, small distances, no bounce.
+	   This is a professional console, not a consumer toy. */
+	.console button:not(:disabled):active {
+		transform: scale(0.985);
+	}
+	.live-dot {
+		position: relative;
+	}
+	.live-dot::after {
+		content: '';
+		position: absolute;
+		inset: -4px;
+		border-radius: 50%;
+		border: 1px solid var(--red);
+		opacity: 0;
+		animation: ripple 3s ease-out infinite;
+	}
+	@keyframes ripple {
+		0% { transform: scale(0.6); opacity: 0.5; }
+		55% { transform: scale(1.6); opacity: 0; }
+		100% { opacity: 0; }
+	}
+
+	/* ═══════════════ HEADER TOOLS · EXPORT + BELL ═══════════════ */
+	.tool-btn {
+		border: 1px solid var(--line-2);
+		background: var(--paper);
+		color: var(--ink-2);
+		font-family: inherit;
+		font-size: 12px;
+		font-weight: 500;
+		padding: 8px 14px;
+		border-radius: 999px;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+		white-space: nowrap;
+	}
+	.tool-btn:hover {
+		background: rgba(28, 26, 22, 0.05);
+		color: var(--ink);
+	}
+	.bell-wrap {
+		position: relative;
+	}
+	.bell {
+		width: 36px;
+		height: 36px;
+		border-radius: 10px;
+		border: 1px solid var(--line-2);
+		background: var(--paper);
+		color: var(--ink-3);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		position: relative;
+		transition: color 0.15s, background 0.15s;
+		padding: 0;
+	}
+	.bell:hover {
+		background: rgba(28, 26, 22, 0.05);
+		color: var(--ink);
+	}
+	.bell.has-unread {
+		color: var(--ink);
+	}
+	.bell svg {
+		width: 17px;
+		height: 17px;
+	}
+	.bell-badge {
+		position: absolute;
+		top: -5px;
+		right: -5px;
+		background: var(--red);
+		color: var(--cream);
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		font-weight: 700;
+		padding: 1px 5px;
+		border-radius: 999px;
+		min-width: 16px;
+		text-align: center;
+	}
+	.inbox-backdrop {
+		position: fixed;
+		inset: 0;
+		background: transparent;
+		z-index: 65;
+	}
+	.inbox {
+		position: absolute;
+		top: 44px;
+		right: 0;
+		width: 340px;
+		background: var(--paper);
+		border: 1px solid var(--line-2);
+		border-radius: 12px;
+		box-shadow: 0 16px 40px rgba(28, 26, 22, 0.16);
+		z-index: 66;
+		overflow: hidden;
+		text-align: left;
+	}
+	.inbox-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 12px 14px;
+		border-bottom: 1px solid var(--line);
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 14px;
+		color: var(--ink);
+	}
+	.inbox-row {
+		display: grid;
+		grid-template-columns: 10px 1fr auto;
+		gap: 10px;
+		width: 100%;
+		padding: 11px 14px;
+		background: transparent;
+		border: none;
+		border-bottom: 1px solid var(--line);
+		text-align: left;
+		cursor: pointer;
+		font-family: inherit;
+		align-items: start;
+		transition: background 0.12s;
+	}
+	.inbox-row:last-child {
+		border-bottom: none;
+	}
+	.inbox-row:hover {
+		background: rgba(28, 26, 22, 0.03);
+	}
+	.inbox-row.unread {
+		background: rgba(197, 57, 44, 0.04);
+	}
+	.ib-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		margin-top: 5px;
+		background: var(--ink-4);
+	}
+	.ib-dot.booking { background: var(--blue); }
+	.ib-dot.rating { background: var(--gold); }
+	.ib-dot.payment { background: var(--red); }
+	.ib-body {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+	.ib-title {
+		font-size: 12.5px;
+		font-weight: 600;
+		color: var(--ink);
+	}
+	.ib-text {
+		font-size: 11.5px;
+		color: var(--ink-2);
+		line-height: 1.45;
+	}
+	.ib-time {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		color: var(--ink-3);
+		font-weight: 600;
+		margin-top: 4px;
+		white-space: nowrap;
+	}
+	.inbox-empty {
+		padding: 22px;
+		text-align: center;
+		font-size: 12px;
+		color: var(--ink-3);
+	}
+
+	/* ═══════════════ PRINT · DAILY REPORT ═══════════════ */
+	.print-report {
+		display: none;
+	}
+	.pr-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		border-bottom: 2px solid #1c1a16;
+		padding-bottom: 10px;
+		margin-bottom: 14px;
+	}
+	.pr-brand {
+		font-family: 'JetBrains Mono', monospace;
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		font-size: 13px;
+		color: #1c1a16;
+	}
+	.pr-meta {
+		font-size: 11px;
+		color: #595650;
+	}
+	.pr-kpis {
+		display: flex;
+		gap: 26px;
+		font-size: 12px;
+		margin-bottom: 16px;
+		color: #1c1a16;
+	}
+	.pr-kpis b {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 14px;
+	}
+	.pr-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 10.5px;
+		color: #1c1a16;
+	}
+	.pr-table th {
+		text-align: left;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 8.5px;
+		letter-spacing: 0.12em;
+		color: #595650;
+		border-bottom: 1px solid #1c1a16;
+		padding: 4px 6px;
+	}
+	.pr-table td {
+		padding: 5px 6px;
+		border-bottom: 1px solid rgba(28, 26, 22, 0.15);
+	}
+	.pr-right {
+		text-align: right;
+	}
+	.pr-foot {
+		margin-top: 16px;
+		font-size: 9px;
+		color: #595650;
+	}
+	@media print {
+		.console {
+			display: block;
+			background: white;
+		}
+		.sidebar,
+		.console main,
+		.drawer,
+		.drawer-backdrop,
+		.dialog,
+		.dialog-backdrop,
+		.toasts,
+		.inbox,
+		.inbox-backdrop {
+			display: none !important;
+		}
+		.print-report {
+			display: block;
+			padding: 24px 8px;
+			font-family: 'Inter', sans-serif;
+		}
 	}
 
 	/* ═══════════════ Responsive ═══════════════ */
