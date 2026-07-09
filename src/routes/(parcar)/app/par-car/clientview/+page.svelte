@@ -437,50 +437,58 @@
 								</div>
 							</div>
 
-							<div class="ready-hero">
-								<div class="ready-glow"></div>
-								<div class="ready-emoji">✨</div>
-								<div class="ready-title">Your car is ready.</div>
-								<div class="ready-sub">Keys are back at the bag stand · Spot E-14</div>
+							<!-- Wash-complete card · mirrors iOS HomeScreen.completeCard:
+							     dark linear-gradient bg, green (#9BC28A) eyebrow +
+							     inline READY pill, big white vehicle-short-name title,
+							     white-opacity sub, soft green glow blob top-right. -->
+							<div class="complete-card">
+								<div class="complete-glow"></div>
+								<div class="complete-head">
+									<div class="complete-eyebrow">WASH COMPLETE</div>
+									<div class="status-pill-inline">READY</div>
+								</div>
+								<div class="complete-vehicle">'24 Velar, ready.</div>
+								<div class="complete-sub">
+									Keys at the bag stand · Spot E-14 · How was it?
+								</div>
 							</div>
 
 							<!-- Rating -->
 							<div class="rating-card">
-								<div class="rating-title">How was it?</div>
+								<div class="rating-title">Rate the crew</div>
 								<div class="stars">
 									{#each Array(5) as _, i}
-										<button class="star-btn"
+										<button
+											class="star-btn"
 											class:filled={i < rating}
-											onclick={() => setRating(i + 1)}>
-											★
-										</button>
+											onclick={() => setRating(i + 1)}
+										>★</button>
 									{/each}
 								</div>
 							</div>
 
 							<!-- Tip -->
 							<div class="tip-card">
-								<div class="tip-title">Tip the crew</div>
+								<div class="tip-title">Tip Marcus &amp; Dani</div>
 								<div class="tip-options">
 									{#each [0, 5, 10, 20] as amount}
-										<button class="tip-btn"
+										<button
+											class="tip-btn"
 											class:selected={tipEur === amount}
-											onclick={() => (tipEur = amount)}>
-											€{amount}
-										</button>
+											onclick={() => (tipEur = amount)}
+										>€{amount}</button>
 									{/each}
 								</div>
-								<div class="tip-hint">100% passed to Marcus &amp; Dani.</div>
+								<div class="tip-hint">100% passed to the crew.</div>
 							</div>
 
-							<button class="screen-cta"
+							<button
+								class="screen-cta gold"
 								onclick={submitRating}
-								disabled={rating === 0}>
-								{#if rating === 0}
-									Rate to close →
-								{:else}
-									Close &amp; drive home →
-								{/if}
+								disabled={rating === 0}
+							>
+								<span>{rating === 0 ? 'Rate to close' : 'Rate & close'}</span>
+								<span class="cta-star">★</span>
 							</button>
 						</div>
 					{/if}
@@ -1374,52 +1382,95 @@
 		margin-top: 2px;
 	}
 
-	/* Ready screen */
-	.ready-hero {
+	/* Ready · wash-complete card (mirrors iOS HomeScreen.completeCard) */
+	.complete-card {
 		position: relative;
 		overflow: hidden;
 		background: linear-gradient(135deg, #1c1a16 0%, #2a2620 100%);
 		color: var(--cream);
+		padding: 20px 22px 22px;
 		border-radius: 16px;
-		padding: 24px 20px;
-		text-align: center;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 6px;
+		gap: 4px;
 	}
-	.ready-glow {
+	.complete-glow {
 		position: absolute;
-		top: -110px;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 240px;
-		height: 240px;
+		top: -70px;
+		right: -50px;
+		width: 200px;
+		height: 200px;
 		border-radius: 50%;
-		background: rgba(184, 148, 86, 0.55);
+		background: rgba(155, 194, 138, 0.5);
 		filter: blur(45px);
 		pointer-events: none;
 	}
-	.ready-emoji {
-		font-size: 32px;
+	.complete-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 		position: relative;
 		z-index: 1;
 	}
-	.ready-title {
+	.complete-eyebrow {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		letter-spacing: 0.22em;
+		color: #9bc28a;
+		font-weight: 600;
+	}
+	.status-pill-inline {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.16em;
+		font-weight: 700;
+		background: rgba(155, 194, 138, 0.22);
+		color: #9bc28a;
+		padding: 3px 9px;
+		border-radius: 999px;
+	}
+	.complete-vehicle {
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: 22px;
-		letter-spacing: -0.02em;
+		font-size: 26px;
+		letter-spacing: -0.03em;
+		line-height: 1;
 		color: white;
 		position: relative;
 		z-index: 1;
-		margin-top: 4px;
+		margin-top: 8px;
 	}
-	.ready-sub {
+	.complete-sub {
 		font-size: 12px;
-		color: rgba(255, 255, 255, 0.72);
+		color: rgba(255, 255, 255, 0.65);
 		position: relative;
 		z-index: 1;
+		line-height: 1.5;
+		margin-top: 4px;
+	}
+
+	/* Gold CTA variant (matches iOS "Rate & close" button — appGold bg,
+	   ink foreground, gold shadow) */
+	.screen-cta.gold {
+		background: #b89456;
+		color: var(--ink);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 14px 18px;
+		box-shadow: 0 8px 20px rgba(184, 148, 86, 0.42);
+	}
+	.screen-cta.gold:hover {
+		background: #a48242;
+	}
+	.screen-cta.gold:disabled {
+		background: rgba(184, 148, 86, 0.4);
+		color: rgba(28, 26, 22, 0.5);
+		box-shadow: none;
+	}
+	.screen-cta .cta-star {
+		font-size: 14px;
+		line-height: 1;
 	}
 	.rating-card {
 		background: var(--paper);

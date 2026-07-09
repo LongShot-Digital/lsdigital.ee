@@ -1,39 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
 
-	// ─── Live clock ───────────────────────────────────────────────
-	let now = $state(new Date());
-	onMount(() => {
-		const t = setInterval(() => (now = new Date()), 1000);
-		return () => clearInterval(t);
-	});
-
-	const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-	const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-		'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-	function formatTime(d: Date) {
-		let h = d.getHours();
-		const m = d.getMinutes();
-		const s = d.getSeconds();
-		const ampm = h >= 12 ? 'PM' : 'AM';
-		h = h % 12 || 12;
-		return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} ${ampm}`;
-	}
-	function formatDate(d: Date) {
-		return `${weekdays[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
-	}
-
-	// ─── Nav state ────────────────────────────────────────────────
-	let currentNav = $state<'live' | 'earnings' | 'settings'>('live');
-
-	// ─── Data model ───────────────────────────────────────────────
+	// ═══════════ Types ═══════════
 	type Status = 'booked' | 'received' | 'washing' | 'drying' | 'ready' | 'pickedUp';
 	type Tier = 'express' | 'full' | 'signature';
+	type FilterKey = 'all' | 'action' | 'active' | 'scheduled' | 'completed';
+	type ToastKind = 'info' | 'success' | 'warning' | 'error';
 
 	interface Booking {
 		id: string;
 		memberName: string;
+		memberPhone: string;
+		memberSince: string;
+		memberID: string;
 		vehicleYear: number;
 		vehicleMake: string;
 		vehicleModel: string;
@@ -46,197 +26,39 @@
 		returnWindow: string;
 		status: Status;
 		crew?: string;
+		bookedAt: string;
+		receivedAt?: string;
 		startedAt?: string;
 		readyAt?: string;
 		pickedUpAt?: string;
 		rating?: number;
+		tipEur?: number;
 	}
 
-	// Fictional but tasteful — matches the Robert-Whitcomb-of-Cedar-Ridge
-	// naming convention used elsewhere.
-	const bookings: Booking[] = [
-		// ─── READY FOR PICKUP (2) ───
-		{
-			id: 'PC-A31F', memberName: 'Robert Whitcomb',
-			vehicleYear: 2024, vehicleMake: 'Range Rover', vehicleModel: 'Velar',
-			vehicleColor: 'Obsidian Black', plate: '0418 EE',
-			spot: 'E-14', tier: 'full', price: 85,
-			teeTime: '8:12 AM', returnWindow: '11:20 – 2:15',
-			status: 'ready', crew: 'Marcus & Dani',
-			startedAt: '9:04 AM', readyAt: '10:03 AM'
-		},
-		{
-			id: 'PC-B72C', memberName: 'Katherine Ellsworth',
-			vehicleYear: 2023, vehicleMake: 'Audi', vehicleModel: 'RS6 Avant',
-			vehicleColor: 'Nardo Grey', plate: '271 CGR',
-			spot: 'W-08', tier: 'signature', price: 140,
-			teeTime: '8:24 AM', returnWindow: '11:30 – 2:30',
-			status: 'ready', crew: 'Priit & Anna',
-			startedAt: '9:16 AM', readyAt: '10:41 AM'
-		},
+	interface Toast {
+		id: number;
+		msg: string;
+		kind: ToastKind;
+	}
 
-		// ─── IN PROGRESS · WASHING/DRYING (5) ───
-		{
-			id: 'PC-C41K', memberName: 'Thomas Ashworth',
-			vehicleYear: 2024, vehicleMake: 'BMW', vehicleModel: 'X5 M60i',
-			vehicleColor: 'Alpine White', plate: '992 TMB',
-			spot: 'E-08', tier: 'full', price: 85,
-			teeTime: '9:00 AM', returnWindow: '12:10 – 3:00',
-			status: 'drying', crew: 'Marcus & Dani',
-			startedAt: '10:12 AM'
-		},
-		{
-			id: 'PC-D18M', memberName: 'Elizabeth Marchand',
-			vehicleYear: 2023, vehicleMake: 'Volvo', vehicleModel: 'XC90 Recharge',
-			vehicleColor: 'Crystal White Pearl', plate: '146 EMR',
-			spot: 'N-22', tier: 'express', price: 45,
-			teeTime: '9:12 AM', returnWindow: '12:20 – 2:40',
-			status: 'washing', crew: 'Priit & Anna',
-			startedAt: '10:31 AM'
-		},
-		{
-			id: 'PC-E55N', memberName: 'Henry Winston',
-			vehicleYear: 2024, vehicleMake: 'Audi', vehicleModel: 'Q7 55 TFSI',
-			vehicleColor: 'Mythos Black', plate: '830 HWN',
-			spot: 'S-05', tier: 'signature', price: 140,
-			teeTime: '9:24 AM', returnWindow: '12:30 – 3:20',
-			status: 'washing', crew: 'Marcus & Dani',
-			startedAt: '10:44 AM'
-		},
-		{
-			id: 'PC-F09P', memberName: 'James Kellner',
-			vehicleYear: 2024, vehicleMake: 'Porsche', vehicleModel: 'Cayenne S',
-			vehicleColor: 'Jet Black Metallic', plate: '408 JMK',
-			spot: 'E-19', tier: 'full', price: 85,
-			teeTime: '9:36 AM', returnWindow: '12:40 – 3:20',
-			status: 'washing', crew: 'Priit & Anna',
-			startedAt: '10:52 AM'
-		},
-		{
-			id: 'PC-G26Q', memberName: 'Margaret Coleridge',
-			vehicleYear: 2022, vehicleMake: 'Mercedes-Benz', vehicleModel: 'S 500',
-			vehicleColor: 'Selenite Grey', plate: '513 MCL',
-			spot: 'W-14', tier: 'signature', price: 140,
-			teeTime: '9:48 AM', returnWindow: '12:50 – 3:40',
-			status: 'drying', crew: 'Marcus & Dani',
-			startedAt: '10:38 AM'
-		},
-
-		// ─── RECEIVED · car at lot, not yet started (3) ───
-		{
-			id: 'PC-H82R', memberName: 'William Pemberton',
-			vehicleYear: 2024, vehicleMake: 'Lexus', vehicleModel: 'LX 600',
-			vehicleColor: 'Eminent White Pearl', plate: '107 WPB',
-			spot: 'N-08', tier: 'full', price: 85,
-			teeTime: '10:00 AM', returnWindow: '1:00 – 3:45',
-			status: 'received'
-		},
-		{
-			id: 'PC-J47S', memberName: 'Charles Ashton',
-			vehicleYear: 2023, vehicleMake: 'Range Rover', vehicleModel: 'Sport SVR',
-			vehicleColor: 'Carpathian Grey', plate: '625 CHA',
-			spot: 'E-04', tier: 'express', price: 45,
-			teeTime: '10:12 AM', returnWindow: '1:10 – 3:20',
-			status: 'received'
-		},
-		{
-			id: 'PC-K90T', memberName: 'Andrew Sinclair',
-			vehicleYear: 2023, vehicleMake: 'Mercedes-AMG', vehicleModel: 'GT 63',
-			vehicleColor: 'Obsidian Black', plate: '774 ASR',
-			spot: 'W-02', tier: 'signature', price: 140,
-			teeTime: '10:24 AM', returnWindow: '1:20 – 4:00',
-			status: 'received'
-		},
-
-		// ─── BOOKED · not yet at lot (3) ───
-		{
-			id: 'PC-L13U', memberName: 'David Brookline',
-			vehicleYear: 2024, vehicleMake: 'BMW', vehicleModel: '7 Series 750e',
-			vehicleColor: 'Carbon Black Metallic', plate: '319 DBK',
-			spot: '—', tier: 'full', price: 85,
-			teeTime: '11:36 AM', returnWindow: '2:40 – 5:20',
-			status: 'booked'
-		},
-		{
-			id: 'PC-M64V', memberName: 'Michael Farley',
-			vehicleYear: 2024, vehicleMake: 'Porsche', vehicleModel: 'Panamera GTS',
-			vehicleColor: 'Chalk', plate: '882 MFY',
-			spot: '—', tier: 'signature', price: 140,
-			teeTime: '11:48 AM', returnWindow: '2:50 – 5:40',
-			status: 'booked'
-		},
-		{
-			id: 'PC-N75W', memberName: 'Alexander Vardanyan',
-			vehicleYear: 2023, vehicleMake: 'Audi', vehicleModel: 'e-tron GT',
-			vehicleColor: 'Mythos Black', plate: '204 AVD',
-			spot: '—', tier: 'express', price: 45,
-			teeTime: '12:00 PM', returnWindow: '3:00 – 5:15',
-			status: 'booked'
-		},
-
-		// ─── COMPLETED TODAY (4) ───
-		{
-			id: 'PC-P29X', memberName: 'Peter Halloway',
-			vehicleYear: 2023, vehicleMake: 'BMW', vehicleModel: 'X7 M60i',
-			vehicleColor: 'Alpine White', plate: '640 PHW',
-			spot: 'E-11', tier: 'full', price: 85,
-			teeTime: '7:00 AM', returnWindow: '10:00 – 1:00',
-			status: 'pickedUp',
-			startedAt: '8:04 AM', readyAt: '9:01 AM', pickedUpAt: '11:03 AM',
-			rating: 5
-		},
-		{
-			id: 'PC-Q88Y', memberName: 'Frederick Lassiter',
-			vehicleYear: 2024, vehicleMake: 'Range Rover', vehicleModel: 'Autobiography',
-			vehicleColor: 'Santorini Black', plate: '395 FLS',
-			spot: 'W-01', tier: 'signature', price: 140,
-			teeTime: '7:12 AM', returnWindow: '10:20 – 1:40',
-			status: 'pickedUp',
-			startedAt: '8:16 AM', readyAt: '9:44 AM', pickedUpAt: '11:12 AM',
-			rating: 5
-		},
-		{
-			id: 'PC-R33Z', memberName: 'Nathaniel Rowe',
-			vehicleYear: 2022, vehicleMake: 'Porsche', vehicleModel: 'Taycan Turbo',
-			vehicleColor: 'Volcano Grey', plate: '158 NRW',
-			spot: 'E-15', tier: 'express', price: 45,
-			teeTime: '7:24 AM', returnWindow: '10:30 – 1:15',
-			status: 'pickedUp',
-			startedAt: '8:22 AM', readyAt: '8:56 AM', pickedUpAt: '10:47 AM',
-			rating: 4
-		},
-		{
-			id: 'PC-S45A', memberName: 'Julian Bartholomew',
-			vehicleYear: 2024, vehicleMake: 'Mercedes-Benz', vehicleModel: 'GLE 580',
-			vehicleColor: 'Selenite Grey', plate: '271 JBW',
-			spot: 'N-10', tier: 'full', price: 85,
-			teeTime: '7:48 AM', returnWindow: '11:00 – 1:45',
-			status: 'pickedUp',
-			startedAt: '8:41 AM', readyAt: '9:42 AM', pickedUpAt: '11:38 AM',
-			rating: 5
-		}
-	];
-
-	// ─── Derived: sections + KPIs ─────────────────────────────────
-	const readyBookings = $derived(bookings.filter((b) => b.status === 'ready'));
-	const inProgressBookings = $derived(
-		bookings.filter((b) => b.status === 'washing' || b.status === 'drying')
-	);
-	const receivedBookings = $derived(bookings.filter((b) => b.status === 'received'));
-	const scheduledBookings = $derived(bookings.filter((b) => b.status === 'booked'));
-	const completedToday = $derived(bookings.filter((b) => b.status === 'pickedUp'));
-
-	const carsOnProperty = $derived(
-		bookings.filter((b) =>
-			['received', 'washing', 'drying', 'ready'].includes(b.status)
-		).length
-	);
-	const revenueToday = $derived(
-		bookings.filter((b) => b.status !== 'booked').reduce((sum, b) => sum + b.price, 0)
-	);
-	const clubShare = $derived(Math.round(revenueToday * 0.2));
-
-	// ─── Tier + status helpers ────────────────────────────────────
+	// ═══════════ Constants ═══════════
+	const statusOrder: Status[] = ['booked', 'received', 'washing', 'drying', 'ready', 'pickedUp'];
+	const statusLabel: Record<Status, string> = {
+		booked: 'BOOKED',
+		received: 'AT LOT',
+		washing: 'WASHING',
+		drying: 'DRYING',
+		ready: 'READY',
+		pickedUp: 'PICKED UP'
+	};
+	const advanceLabel: Record<Status, string> = {
+		booked: 'Mark as received',
+		received: 'Start washing',
+		washing: 'Move to drying',
+		drying: 'Mark ready for pickup',
+		ready: 'Mark picked up',
+		pickedUp: '—'
+	};
 	const tierLabel: Record<Tier, string> = {
 		express: 'Express Exterior',
 		full: 'Full Valet',
@@ -247,16 +69,402 @@
 		full: '60 MIN',
 		signature: '90 MIN'
 	};
-	const statusLabel: Record<Status, string> = {
-		booked: 'BOOKED',
-		received: 'AT LOT',
-		washing: 'WASHING',
-		drying: 'DRYING',
-		ready: 'READY',
-		pickedUp: 'PICKED UP'
-	};
+	const crewChoices = ['Marcus & Dani', 'Priit & Anna', 'Kalev & Elias'];
 
-	// ─── Paint-color map (mirrors iOS VehiclePaintMap) ──────────
+	// ═══════════ Clock ═══════════
+	let now = $state(new Date());
+	onMount(() => {
+		const t = setInterval(() => (now = new Date()), 1000);
+		return () => clearInterval(t);
+	});
+
+	const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+	const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+		'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+	function formatClock(d: Date) {
+		let h = d.getHours();
+		const m = d.getMinutes();
+		const s = d.getSeconds();
+		const ampm = h >= 12 ? 'PM' : 'AM';
+		h = h % 12 || 12;
+		return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} ${ampm}`;
+	}
+	function formatDate(d: Date) {
+		return `${weekdays[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+	}
+	function currentHHMM(): string {
+		let h = now.getHours();
+		const m = now.getMinutes();
+		const ampm = h >= 12 ? 'PM' : 'AM';
+		h = h % 12 || 12;
+		return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+	}
+
+	// ═══════════ UI state ═══════════
+	let currentNav = $state<'live' | 'earnings' | 'settings'>('live');
+	let searchQuery = $state('');
+	let activeFilter = $state<FilterKey>('all');
+	let selectedBookingId = $state<string | null>(null);
+	let autoSim = $state(false);
+	let toasts = $state<Toast[]>([]);
+	let toastCounter = 0;
+
+	// Confirmation dialogs
+	let confirmingRevert = $state<{ id: string; toStatus: Status } | null>(null);
+	let confirmingCancel = $state<string | null>(null);
+	let showingCrewMenu = $state(false);
+
+	// ═══════════ Booking data (mutable state) ═══════════
+	let bookings = $state<Booking[]>([
+		// ─── READY FOR PICKUP (2) ───
+		{
+			id: 'PC-A31F', memberName: 'Robert Whitcomb',
+			memberPhone: '+372 5620 8845', memberSince: 'Jan 2024', memberID: '0418',
+			vehicleYear: 2024, vehicleMake: 'Range Rover', vehicleModel: 'Velar',
+			vehicleColor: 'Obsidian Black', plate: '0418 EE',
+			spot: 'E-14', tier: 'full', price: 85,
+			teeTime: '8:12 AM', returnWindow: '11:20 – 2:15',
+			status: 'ready', crew: 'Marcus & Dani',
+			bookedAt: '7:41 AM',
+			receivedAt: '8:36 AM', startedAt: '9:04 AM', readyAt: '10:03 AM'
+		},
+		{
+			id: 'PC-B72C', memberName: 'Katherine Ellsworth',
+			memberPhone: '+372 5514 3092', memberSince: 'May 2023', memberID: '0271',
+			vehicleYear: 2023, vehicleMake: 'Audi', vehicleModel: 'RS6 Avant',
+			vehicleColor: 'Nardo Grey', plate: '271 CGR',
+			spot: 'W-08', tier: 'signature', price: 140,
+			teeTime: '8:24 AM', returnWindow: '11:30 – 2:30',
+			status: 'ready', crew: 'Priit & Anna',
+			bookedAt: '7:52 AM',
+			receivedAt: '8:48 AM', startedAt: '9:16 AM', readyAt: '10:41 AM'
+		},
+
+		// ─── IN PROGRESS · WASHING/DRYING (4) ───
+		{
+			id: 'PC-C41K', memberName: 'Thomas Ashworth',
+			memberPhone: '+372 5011 8452', memberSince: 'Oct 2024', memberID: '0992',
+			vehicleYear: 2024, vehicleMake: 'BMW', vehicleModel: 'X5 M60i',
+			vehicleColor: 'Alpine White', plate: '992 TMB',
+			spot: 'E-08', tier: 'full', price: 85,
+			teeTime: '9:00 AM', returnWindow: '12:10 – 3:00',
+			status: 'drying', crew: 'Marcus & Dani',
+			bookedAt: '8:31 AM',
+			receivedAt: '9:24 AM', startedAt: '10:12 AM'
+		},
+		{
+			id: 'PC-D18M', memberName: 'Elizabeth Marchand',
+			memberPhone: '+372 5820 3140', memberSince: 'Mar 2022', memberID: '0146',
+			vehicleYear: 2023, vehicleMake: 'Volvo', vehicleModel: 'XC90 Recharge',
+			vehicleColor: 'Crystal White Pearl', plate: '146 EMR',
+			spot: 'N-22', tier: 'express', price: 45,
+			teeTime: '9:12 AM', returnWindow: '12:20 – 2:40',
+			status: 'washing', crew: 'Priit & Anna',
+			bookedAt: '8:42 AM',
+			receivedAt: '9:36 AM', startedAt: '10:31 AM'
+		},
+		{
+			id: 'PC-E55N', memberName: 'Henry Winston',
+			memberPhone: '+372 5348 6221', memberSince: 'Nov 2023', memberID: '0830',
+			vehicleYear: 2024, vehicleMake: 'Audi', vehicleModel: 'Q7 55 TFSI',
+			vehicleColor: 'Mythos Black', plate: '830 HWN',
+			spot: 'S-05', tier: 'signature', price: 140,
+			teeTime: '9:24 AM', returnWindow: '12:30 – 3:20',
+			status: 'washing', crew: 'Marcus & Dani',
+			bookedAt: '8:55 AM',
+			receivedAt: '9:48 AM', startedAt: '10:44 AM'
+		},
+		{
+			id: 'PC-F09P', memberName: 'James Kellner',
+			memberPhone: '+372 5145 8080', memberSince: 'Feb 2024', memberID: '0408',
+			vehicleYear: 2024, vehicleMake: 'Porsche', vehicleModel: 'Cayenne S',
+			vehicleColor: 'Jet Black Metallic', plate: '408 JMK',
+			spot: 'E-19', tier: 'full', price: 85,
+			teeTime: '9:36 AM', returnWindow: '12:40 – 3:20',
+			status: 'washing', crew: 'Priit & Anna',
+			bookedAt: '9:04 AM',
+			receivedAt: '10:00 AM', startedAt: '10:52 AM'
+		},
+
+		// ─── RECEIVED · car at lot, awaiting crew (3) ───
+		{
+			id: 'PC-H82R', memberName: 'William Pemberton',
+			memberPhone: '+372 5090 4110', memberSince: 'Aug 2024', memberID: '0107',
+			vehicleYear: 2024, vehicleMake: 'Lexus', vehicleModel: 'LX 600',
+			vehicleColor: 'Eminent White Pearl', plate: '107 WPB',
+			spot: 'N-08', tier: 'full', price: 85,
+			teeTime: '10:00 AM', returnWindow: '1:00 – 3:45',
+			status: 'received',
+			bookedAt: '9:23 AM', receivedAt: '10:15 AM'
+		},
+		{
+			id: 'PC-J47S', memberName: 'Charles Ashton',
+			memberPhone: '+372 5687 2211', memberSince: 'Apr 2025', memberID: '0625',
+			vehicleYear: 2023, vehicleMake: 'Range Rover', vehicleModel: 'Sport SVR',
+			vehicleColor: 'Carpathian Grey', plate: '625 CHA',
+			spot: 'E-04', tier: 'express', price: 45,
+			teeTime: '10:12 AM', returnWindow: '1:10 – 3:20',
+			status: 'received',
+			bookedAt: '9:38 AM', receivedAt: '10:28 AM'
+		},
+		{
+			id: 'PC-K90T', memberName: 'Andrew Sinclair',
+			memberPhone: '+372 5442 9074', memberSince: 'Jul 2023', memberID: '0774',
+			vehicleYear: 2023, vehicleMake: 'Mercedes-AMG', vehicleModel: 'GT 63',
+			vehicleColor: 'Obsidian Black', plate: '774 ASR',
+			spot: 'W-02', tier: 'signature', price: 140,
+			teeTime: '10:24 AM', returnWindow: '1:20 – 4:00',
+			status: 'received',
+			bookedAt: '9:50 AM', receivedAt: '10:42 AM'
+		},
+
+		// ─── BOOKED · not yet at lot (3) ───
+		{
+			id: 'PC-L13U', memberName: 'David Brookline',
+			memberPhone: '+372 5231 6633', memberSince: 'Dec 2024', memberID: '0319',
+			vehicleYear: 2024, vehicleMake: 'BMW', vehicleModel: '7 Series 750e',
+			vehicleColor: 'Carbon Black Metallic', plate: '319 DBK',
+			spot: '—', tier: 'full', price: 85,
+			teeTime: '11:36 AM', returnWindow: '2:40 – 5:20',
+			status: 'booked', bookedAt: '9:15 AM'
+		},
+		{
+			id: 'PC-M64V', memberName: 'Michael Farley',
+			memberPhone: '+372 5807 5581', memberSince: 'Sep 2024', memberID: '0882',
+			vehicleYear: 2024, vehicleMake: 'Porsche', vehicleModel: 'Panamera GTS',
+			vehicleColor: 'Chalk', plate: '882 MFY',
+			spot: '—', tier: 'signature', price: 140,
+			teeTime: '11:48 AM', returnWindow: '2:50 – 5:40',
+			status: 'booked', bookedAt: '9:32 AM'
+		},
+		{
+			id: 'PC-N75W', memberName: 'Alexander Vardanyan',
+			memberPhone: '+372 5116 9024', memberSince: 'Mar 2024', memberID: '0204',
+			vehicleYear: 2023, vehicleMake: 'Audi', vehicleModel: 'e-tron GT',
+			vehicleColor: 'Mythos Black', plate: '204 AVD',
+			spot: '—', tier: 'express', price: 45,
+			teeTime: '12:00 PM', returnWindow: '3:00 – 5:15',
+			status: 'booked', bookedAt: '9:58 AM'
+		},
+
+		// ─── COMPLETED TODAY (4) ───
+		{
+			id: 'PC-P29X', memberName: 'Peter Halloway',
+			memberPhone: '+372 5400 1120', memberSince: 'Jun 2022', memberID: '0640',
+			vehicleYear: 2023, vehicleMake: 'BMW', vehicleModel: 'X7 M60i',
+			vehicleColor: 'Alpine White', plate: '640 PHW',
+			spot: 'E-11', tier: 'full', price: 85,
+			teeTime: '7:00 AM', returnWindow: '10:00 – 1:00',
+			status: 'pickedUp', crew: 'Marcus & Dani',
+			bookedAt: '6:14 AM',
+			receivedAt: '7:22 AM', startedAt: '8:04 AM',
+			readyAt: '9:01 AM', pickedUpAt: '11:03 AM',
+			rating: 5, tipEur: 10
+		},
+		{
+			id: 'PC-Q88Y', memberName: 'Frederick Lassiter',
+			memberPhone: '+372 5772 4485', memberSince: 'Feb 2023', memberID: '0395',
+			vehicleYear: 2024, vehicleMake: 'Range Rover', vehicleModel: 'Autobiography',
+			vehicleColor: 'Santorini Black', plate: '395 FLS',
+			spot: 'W-01', tier: 'signature', price: 140,
+			teeTime: '7:12 AM', returnWindow: '10:20 – 1:40',
+			status: 'pickedUp', crew: 'Priit & Anna',
+			bookedAt: '6:22 AM',
+			receivedAt: '7:34 AM', startedAt: '8:16 AM',
+			readyAt: '9:44 AM', pickedUpAt: '11:12 AM',
+			rating: 5, tipEur: 20
+		},
+		{
+			id: 'PC-R33Z', memberName: 'Nathaniel Rowe',
+			memberPhone: '+372 5001 4478', memberSince: 'Nov 2024', memberID: '0158',
+			vehicleYear: 2022, vehicleMake: 'Porsche', vehicleModel: 'Taycan Turbo',
+			vehicleColor: 'Volcano Grey', plate: '158 NRW',
+			spot: 'E-15', tier: 'express', price: 45,
+			teeTime: '7:24 AM', returnWindow: '10:30 – 1:15',
+			status: 'pickedUp', crew: 'Kalev & Elias',
+			bookedAt: '6:40 AM',
+			receivedAt: '7:44 AM', startedAt: '8:22 AM',
+			readyAt: '8:56 AM', pickedUpAt: '10:47 AM',
+			rating: 4, tipEur: 5
+		},
+		{
+			id: 'PC-S45A', memberName: 'Julian Bartholomew',
+			memberPhone: '+372 5390 6614', memberSince: 'Aug 2022', memberID: '0271',
+			vehicleYear: 2024, vehicleMake: 'Mercedes-Benz', vehicleModel: 'GLE 580',
+			vehicleColor: 'Selenite Grey', plate: '271 JBW',
+			spot: 'N-10', tier: 'full', price: 85,
+			teeTime: '7:48 AM', returnWindow: '11:00 – 1:45',
+			status: 'pickedUp', crew: 'Marcus & Dani',
+			bookedAt: '7:03 AM',
+			receivedAt: '8:12 AM', startedAt: '8:41 AM',
+			readyAt: '9:42 AM', pickedUpAt: '11:38 AM',
+			rating: 5, tipEur: 15
+		}
+	]);
+
+	// ═══════════ Actions ═══════════
+	function toast(msg: string, kind: ToastKind = 'info') {
+		const id = ++toastCounter;
+		toasts = [...toasts, { id, msg, kind }];
+		setTimeout(() => {
+			toasts = toasts.filter((t) => t.id !== id);
+		}, 3200);
+	}
+
+	function nextStatus(s: Status): Status | null {
+		const i = statusOrder.indexOf(s);
+		return i < 0 || i >= statusOrder.length - 1 ? null : statusOrder[i + 1];
+	}
+	function prevStatus(s: Status): Status | null {
+		const i = statusOrder.indexOf(s);
+		return i <= 0 ? null : statusOrder[i - 1];
+	}
+
+	function advanceStatus(id: string) {
+		const b = bookings.find((x) => x.id === id);
+		if (!b) return;
+		const next = nextStatus(b.status);
+		if (!next) return;
+		b.status = next;
+		const t = currentHHMM();
+		if (next === 'received') b.receivedAt = t;
+		if (next === 'washing') b.startedAt = t;
+		if (next === 'ready') b.readyAt = t;
+		if (next === 'pickedUp') {
+			b.pickedUpAt = t;
+			if (!b.rating) b.rating = 5;
+			if (b.tipEur === undefined) b.tipEur = 10;
+		}
+		if (!b.crew && (next === 'received' || next === 'washing')) {
+			b.crew = crewChoices[0];
+		}
+		toast(`${b.memberName} · ${statusLabel[next]}`, 'success');
+	}
+
+	function requestRevert(id: string) {
+		const b = bookings.find((x) => x.id === id);
+		if (!b) return;
+		const prev = prevStatus(b.status);
+		if (!prev) return;
+		confirmingRevert = { id, toStatus: prev };
+	}
+	function performRevert() {
+		if (!confirmingRevert) return;
+		const b = bookings.find((x) => x.id === confirmingRevert!.id);
+		if (b) {
+			b.status = confirmingRevert.toStatus;
+			toast(`${b.memberName} → ${statusLabel[confirmingRevert.toStatus]}`, 'warning');
+		}
+		confirmingRevert = null;
+	}
+
+	function reassignCrew(id: string, crew: string) {
+		const b = bookings.find((x) => x.id === id);
+		if (!b) return;
+		b.crew = crew;
+		showingCrewMenu = false;
+		toast(`Crew set to ${crew}`, 'info');
+	}
+
+	function contactMember(id: string) {
+		const b = bookings.find((x) => x.id === id);
+		if (!b) return;
+		toast(`SMS sent to ${b.memberName} · ${b.memberPhone}`, 'success');
+	}
+
+	function requestCancel(id: string) {
+		confirmingCancel = id;
+	}
+	function performCancel() {
+		if (!confirmingCancel) return;
+		const b = bookings.find((x) => x.id === confirmingCancel);
+		if (b) {
+			bookings = bookings.filter((x) => x.id !== confirmingCancel);
+			toast(`Cancelled: ${b.memberName}`, 'warning');
+		}
+		if (selectedBookingId === confirmingCancel) selectedBookingId = null;
+		confirmingCancel = null;
+	}
+
+	function selectBooking(id: string) {
+		selectedBookingId = id;
+		showingCrewMenu = false;
+	}
+	function closeModal() {
+		selectedBookingId = null;
+		showingCrewMenu = false;
+	}
+
+	function toggleAutoSim() {
+		autoSim = !autoSim;
+		toast(autoSim ? 'Auto-advance ON · every 15 seconds' : 'Auto-advance OFF', 'info');
+	}
+
+	// Auto-sim effect
+	$effect(() => {
+		if (!autoSim) return;
+		const timer = setInterval(() => {
+			const candidates = bookings.filter(
+				(b) => b.status !== 'pickedUp' && nextStatus(b.status) !== null
+			);
+			if (candidates.length === 0) return;
+			const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+			advanceStatus(chosen.id);
+		}, 15000);
+		return () => clearInterval(timer);
+	});
+
+	// ═══════════ Derived ═══════════
+	let selectedBooking = $derived(bookings.find((b) => b.id === selectedBookingId));
+
+	let filteredBookings = $derived.by(() => {
+		let list = bookings;
+		const q = searchQuery.trim().toLowerCase();
+		if (q) {
+			list = list.filter(
+				(b) =>
+					b.memberName.toLowerCase().includes(q) ||
+					b.plate.toLowerCase().includes(q) ||
+					b.spot.toLowerCase().includes(q) ||
+					b.id.toLowerCase().includes(q) ||
+					b.vehicleModel.toLowerCase().includes(q) ||
+					b.vehicleMake.toLowerCase().includes(q)
+			);
+		}
+		if (activeFilter === 'action') {
+			list = list.filter((b) => b.status === 'ready' || b.status === 'received');
+		} else if (activeFilter === 'active') {
+			list = list.filter((b) => b.status === 'washing' || b.status === 'drying');
+		} else if (activeFilter === 'scheduled') {
+			list = list.filter((b) => b.status === 'booked');
+		} else if (activeFilter === 'completed') {
+			list = list.filter((b) => b.status === 'pickedUp');
+		}
+		return list;
+	});
+
+	let readyList = $derived(filteredBookings.filter((b) => b.status === 'ready'));
+	let progressList = $derived(
+		filteredBookings.filter((b) => b.status === 'washing' || b.status === 'drying')
+	);
+	let receivedList = $derived(filteredBookings.filter((b) => b.status === 'received'));
+	let scheduledList = $derived(filteredBookings.filter((b) => b.status === 'booked'));
+	let completedList = $derived(filteredBookings.filter((b) => b.status === 'pickedUp'));
+
+	let carsOnProperty = $derived(
+		bookings.filter((b) =>
+			['received', 'washing', 'drying', 'ready'].includes(b.status)
+		).length
+	);
+	let readyCount = $derived(bookings.filter((b) => b.status === 'ready').length);
+	let actionCount = $derived(readyCount + bookings.filter((b) => b.status === 'received').length);
+	let revenueToday = $derived(
+		bookings.filter((b) => b.status !== 'booked').reduce((s, b) => s + b.price, 0)
+	);
+	let clubShare = $derived(Math.round(revenueToday * 0.2));
+
+	// ═══════════ Helpers ═══════════
 	function paintColor(name: string): string {
 		const n = name.toLowerCase();
 		if (n.includes('jet') && n.includes('black')) return '#0E0E10';
@@ -290,6 +498,33 @@
 			n.includes('chalk')
 		);
 	}
+
+	function parseHHMM(s: string): Date | null {
+		if (!s) return null;
+		const m = s.match(/(\d+):(\d+)\s*(AM|PM)/i);
+		if (!m) return null;
+		let h = parseInt(m[1]);
+		const min = parseInt(m[2]);
+		const isPM = m[3].toUpperCase() === 'PM';
+		if (isPM && h < 12) h += 12;
+		if (!isPM && h === 12) h = 0;
+		const d = new Date(now);
+		d.setHours(h, min, 0, 0);
+		return d;
+	}
+
+	function timeSince(hhmm?: string): string {
+		if (!hhmm) return '—';
+		const then = parseHHMM(hhmm);
+		if (!then) return '—';
+		const diffMs = now.getTime() - then.getTime();
+		const mins = Math.max(0, Math.floor(diffMs / 60000));
+		if (mins < 1) return 'just now';
+		if (mins < 60) return `${mins} min ago`;
+		const hrs = Math.floor(mins / 60);
+		const rem = mins % 60;
+		return rem === 0 ? `${hrs}h ago` : `${hrs}h ${rem}m ago`;
+	}
 </script>
 
 <svelte:head>
@@ -317,7 +552,7 @@
 		<div class="club-card">
 			<div class="club-label">SIGNED IN</div>
 			<div class="club-name">Cedar Ridge Country Club</div>
-			<div class="club-meta">Member since Feb 2026</div>
+			<div class="club-meta">Andres Kask · Caddiemaster</div>
 		</div>
 
 		<nav>
@@ -355,6 +590,19 @@
 			</button>
 		</nav>
 
+		<!-- Auto-sim toggle -->
+		<div class="autosim">
+			<div class="autosim-head">
+				<div class="autosim-label">
+					<div class="autosim-name">AUTO-ADVANCE</div>
+					<div class="autosim-sub">Simulate live traffic</div>
+				</div>
+				<button class="toggle" class:on={autoSim} onclick={toggleAutoSim}>
+					<div class="toggle-knob"></div>
+				</button>
+			</div>
+		</div>
+
 		<div class="side-foot">
 			<div class="side-support">
 				<div class="ss-label">SUPPORT</div>
@@ -375,10 +623,55 @@
 						<h1>Live board</h1>
 					</div>
 					<div class="head-right">
-						<div class="clock">{formatTime(now)}</div>
+						<div class="clock">{formatClock(now)}</div>
 						<div class="last-updated">
-							<span class="live-dot"></span> Live
+							<span class="live-dot"></span>
+							{autoSim ? 'Auto · live' : 'Live'}
 						</div>
+					</div>
+				</div>
+
+				<!-- ─── Search + filters ─── -->
+				<div class="tools">
+					<div class="search-wrap">
+						<span class="search-icon">⌕</span>
+						<input
+							type="text"
+							class="search"
+							placeholder="Search name, plate, spot, or booking ID…"
+							bind:value={searchQuery}
+						/>
+						{#if searchQuery}
+							<button class="clear-btn" onclick={() => (searchQuery = '')}>✕</button>
+						{/if}
+					</div>
+					<div class="filter-chips">
+						<button
+							class="chip"
+							class:on={activeFilter === 'all'}
+							onclick={() => (activeFilter = 'all')}
+						>All <span class="chip-c">{bookings.length}</span></button>
+						<button
+							class="chip"
+							class:on={activeFilter === 'action'}
+							class:accent={actionCount > 0 && activeFilter !== 'action'}
+							onclick={() => (activeFilter = 'action')}
+						>Action <span class="chip-c">{actionCount}</span></button>
+						<button
+							class="chip"
+							class:on={activeFilter === 'active'}
+							onclick={() => (activeFilter = 'active')}
+						>Washing <span class="chip-c">{progressList.length}</span></button>
+						<button
+							class="chip"
+							class:on={activeFilter === 'scheduled'}
+							onclick={() => (activeFilter = 'scheduled')}
+						>Scheduled <span class="chip-c">{scheduledList.length}</span></button>
+						<button
+							class="chip"
+							class:on={activeFilter === 'completed'}
+							onclick={() => (activeFilter = 'completed')}
+						>Completed <span class="chip-c">{completedList.length}</span></button>
 					</div>
 				</div>
 
@@ -388,12 +681,12 @@
 						<div class="kpi-lbl">CARS ON PROPERTY</div>
 						<div class="kpi-val">{carsOnProperty}</div>
 						<div class="kpi-sub">
-							{inProgressBookings.length} washing · {readyBookings.length} ready
+							{progressList.length} washing · {readyCount} ready
 						</div>
 					</div>
 					<div class="kpi accent">
 						<div class="kpi-lbl">READY FOR PICKUP</div>
-						<div class="kpi-val">{readyBookings.length}</div>
+						<div class="kpi-val">{readyCount}</div>
 						<div class="kpi-sub">action needed</div>
 					</div>
 					<div class="kpi">
@@ -410,19 +703,19 @@
 					</div>
 				</div>
 
-				<!-- ─── Ready for pickup (urgent) ─── -->
-				{#if readyBookings.length > 0}
+				<!-- ─── Sections ─── -->
+				{#if readyList.length > 0}
 					<section class="section ready-section">
 						<div class="section-head">
 							<h2>
 								<span class="status-pill ready">READY</span>
 								Ready for pickup
 							</h2>
-							<span class="count">{readyBookings.length}</span>
+							<span class="count">{readyList.length}</span>
 						</div>
 						<div class="rows">
-							{#each readyBookings as b (b.id)}
-								<div class="row row-ready">
+							{#each readyList as b (b.id)}
+								<button class="row row-ready" onclick={() => selectBooking(b.id)}>
 									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
 										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
 											{b.vehicleMake.toUpperCase()}
@@ -443,76 +736,78 @@
 									</div>
 									<div class="col-status">
 										<div class="status-pill ready">{statusLabel[b.status]}</div>
-										<div class="col-sub">since {b.readyAt}</div>
+										<div class="col-sub">since {b.readyAt} · {timeSince(b.readyAt)}</div>
 									</div>
 									<div class="col-tier">
 										<div class="tier-name">{tierLabel[b.tier]}</div>
 										<div class="tier-meta">{tierBadge[b.tier]}</div>
 									</div>
 									<div class="col-price">€{b.price}</div>
-								</div>
+									<div class="col-chev">›</div>
+								</button>
 							{/each}
 						</div>
 					</section>
 				{/if}
 
-				<!-- ─── In progress ─── -->
-				<section class="section">
-					<div class="section-head">
-						<h2>
-							<span class="status-pill washing">IN PROGRESS</span>
-							Washing &amp; drying
-						</h2>
-						<span class="count">{inProgressBookings.length}</span>
-					</div>
-					<div class="rows">
-						{#each inProgressBookings as b (b.id)}
-							<div class="row">
-								<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
-									<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
-										{b.vehicleMake.toUpperCase()}
+				{#if progressList.length > 0}
+					<section class="section">
+						<div class="section-head">
+							<h2>
+								<span class="status-pill washing">IN PROGRESS</span>
+								Washing &amp; drying
+							</h2>
+							<span class="count">{progressList.length}</span>
+						</div>
+						<div class="rows">
+							{#each progressList as b (b.id)}
+								<button class="row" onclick={() => selectBooking(b.id)}>
+									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
+										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
+											{b.vehicleMake.toUpperCase()}
+										</div>
+										<div class="paint-sub" style:color={isPaintLight(b.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
+											'{String(b.vehicleYear).slice(-2)} {b.vehicleModel.toUpperCase()}
+										</div>
 									</div>
-									<div class="paint-sub" style:color={isPaintLight(b.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
-										'{String(b.vehicleYear).slice(-2)} {b.vehicleModel.toUpperCase()}
+									<div class="col-member">
+										<div class="member-name">{b.memberName}</div>
+										<div class="member-meta">
+											{b.vehicleYear} {b.vehicleMake} {b.vehicleModel} · {b.plate}
+										</div>
 									</div>
-								</div>
-								<div class="col-member">
-									<div class="member-name">{b.memberName}</div>
-									<div class="member-meta">
-										{b.vehicleYear} {b.vehicleMake} {b.vehicleModel} · {b.plate}
+									<div class="col-spot">
+										<div class="col-lbl">SPOT</div>
+										<div class="spot-val">{b.spot}</div>
 									</div>
-								</div>
-								<div class="col-spot">
-									<div class="col-lbl">SPOT</div>
-									<div class="spot-val">{b.spot}</div>
-								</div>
-								<div class="col-status">
-									<div class="status-pill {b.status}">{statusLabel[b.status]}</div>
-									<div class="col-sub">started {b.startedAt}</div>
-								</div>
-								<div class="col-tier">
-									<div class="tier-name">{tierLabel[b.tier]}</div>
-									<div class="tier-meta">{tierBadge[b.tier]} · {b.crew}</div>
-								</div>
-								<div class="col-price">€{b.price}</div>
-							</div>
-						{/each}
-					</div>
-				</section>
+									<div class="col-status">
+										<div class="status-pill {b.status}">{statusLabel[b.status]}</div>
+										<div class="col-sub">{timeSince(b.startedAt)} · {b.crew ?? '—'}</div>
+									</div>
+									<div class="col-tier">
+										<div class="tier-name">{tierLabel[b.tier]}</div>
+										<div class="tier-meta">{tierBadge[b.tier]}</div>
+									</div>
+									<div class="col-price">€{b.price}</div>
+									<div class="col-chev">›</div>
+								</button>
+							{/each}
+						</div>
+					</section>
+				{/if}
 
-				<!-- ─── At the lot, waiting for crew ─── -->
-				{#if receivedBookings.length > 0}
+				{#if receivedList.length > 0}
 					<section class="section">
 						<div class="section-head">
 							<h2>
 								<span class="status-pill received">AT LOT</span>
 								Awaiting crew
 							</h2>
-							<span class="count">{receivedBookings.length}</span>
+							<span class="count">{receivedList.length}</span>
 						</div>
 						<div class="rows">
-							{#each receivedBookings as b (b.id)}
-								<div class="row">
+							{#each receivedList as b (b.id)}
+								<button class="row" onclick={() => selectBooking(b.id)}>
 									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
 										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
 											{b.vehicleMake.toUpperCase()}
@@ -533,32 +828,32 @@
 									</div>
 									<div class="col-status">
 										<div class="status-pill received">{statusLabel[b.status]}</div>
-										<div class="col-sub">tee {b.teeTime}</div>
+										<div class="col-sub">arrived {timeSince(b.receivedAt)}</div>
 									</div>
 									<div class="col-tier">
 										<div class="tier-name">{tierLabel[b.tier]}</div>
 										<div class="tier-meta">{tierBadge[b.tier]}</div>
 									</div>
 									<div class="col-price">€{b.price}</div>
-								</div>
+									<div class="col-chev">›</div>
+								</button>
 							{/each}
 						</div>
 					</section>
 				{/if}
 
-				<!-- ─── Scheduled (later today) ─── -->
-				{#if scheduledBookings.length > 0}
+				{#if scheduledList.length > 0}
 					<section class="section">
 						<div class="section-head">
 							<h2>
 								<span class="status-pill booked">SCHEDULED</span>
 								Booked, not yet on property
 							</h2>
-							<span class="count">{scheduledBookings.length}</span>
+							<span class="count">{scheduledList.length}</span>
 						</div>
 						<div class="rows">
-							{#each scheduledBookings as b (b.id)}
-								<div class="row row-scheduled">
+							{#each scheduledList as b (b.id)}
+								<button class="row row-scheduled" onclick={() => selectBooking(b.id)}>
 									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
 										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
 											{b.vehicleMake.toUpperCase()}
@@ -586,62 +881,71 @@
 										<div class="tier-meta">{tierBadge[b.tier]}</div>
 									</div>
 									<div class="col-price">€{b.price}</div>
-								</div>
+									<div class="col-chev">›</div>
+								</button>
 							{/each}
 						</div>
 					</section>
 				{/if}
 
-				<!-- ─── Completed today ─── -->
-				<section class="section muted">
-					<div class="section-head">
-						<h2>
-							<span class="status-pill picked">DONE</span>
-							Completed today
-						</h2>
-						<span class="count">{completedToday.length}</span>
+				{#if completedList.length > 0}
+					<section class="section muted">
+						<div class="section-head">
+							<h2>
+								<span class="status-pill picked">DONE</span>
+								Completed today
+							</h2>
+							<span class="count">{completedList.length}</span>
+						</div>
+						<div class="rows">
+							{#each completedList as b (b.id)}
+								<button class="row row-completed" onclick={() => selectBooking(b.id)}>
+									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
+										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
+											{b.vehicleMake.toUpperCase()}
+										</div>
+										<div class="paint-sub" style:color={isPaintLight(b.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
+											'{String(b.vehicleYear).slice(-2)} {b.vehicleModel.toUpperCase()}
+										</div>
+									</div>
+									<div class="col-member">
+										<div class="member-name">{b.memberName}</div>
+										<div class="member-meta">
+											{b.vehicleYear} {b.vehicleMake} {b.vehicleModel} · {b.plate}
+										</div>
+									</div>
+									<div class="col-spot">
+										<div class="col-lbl">PICKED UP</div>
+										<div class="spot-val">{b.pickedUpAt}</div>
+									</div>
+									<div class="col-status">
+										<div class="stars">
+											{#each Array(5) as _, i}
+												<span class="star" class:filled={i < (b.rating ?? 0)}>★</span>
+											{/each}
+										</div>
+										<div class="col-sub">tip €{b.tipEur ?? 0} · {b.crew ?? '—'}</div>
+									</div>
+									<div class="col-tier">
+										<div class="tier-name">{tierLabel[b.tier]}</div>
+										<div class="tier-meta">{tierBadge[b.tier]}</div>
+									</div>
+									<div class="col-price">€{b.price}</div>
+									<div class="col-chev">›</div>
+								</button>
+							{/each}
+						</div>
+					</section>
+				{/if}
+
+				{#if filteredBookings.length === 0}
+					<div class="empty">
+						<div class="empty-h">Nothing matches.</div>
+						<div class="empty-sub">Try clearing the search or the filter.</div>
 					</div>
-					<div class="rows">
-						{#each completedToday as b (b.id)}
-							<div class="row row-completed">
-								<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
-									<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
-										{b.vehicleMake.toUpperCase()}
-									</div>
-									<div class="paint-sub" style:color={isPaintLight(b.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
-										'{String(b.vehicleYear).slice(-2)} {b.vehicleModel.toUpperCase()}
-									</div>
-								</div>
-								<div class="col-member">
-									<div class="member-name">{b.memberName}</div>
-									<div class="member-meta">
-										{b.vehicleYear} {b.vehicleMake} {b.vehicleModel} · {b.plate}
-									</div>
-								</div>
-								<div class="col-spot">
-									<div class="col-lbl">PICKED UP</div>
-									<div class="spot-val">{b.pickedUpAt}</div>
-								</div>
-								<div class="col-status">
-									<div class="stars">
-										{#each Array(5) as _, i}
-											<span class="star" class:filled={i < (b.rating ?? 0)}>★</span>
-										{/each}
-									</div>
-									<div class="col-sub">wash: {b.startedAt} → {b.readyAt}</div>
-								</div>
-								<div class="col-tier">
-									<div class="tier-name">{tierLabel[b.tier]}</div>
-									<div class="tier-meta">{tierBadge[b.tier]}</div>
-								</div>
-								<div class="col-price">€{b.price}</div>
-							</div>
-						{/each}
-					</div>
-				</section>
+				{/if}
 			</div>
 		{:else if currentNav === 'earnings'}
-			<!-- ═════════════ EARNINGS ═════════════ -->
 			<div class="content">
 				<div class="page-head">
 					<div>
@@ -649,7 +953,7 @@
 						<h1>Earnings</h1>
 					</div>
 					<div class="head-right">
-						<div class="clock">{formatTime(now)}</div>
+						<div class="clock">{formatClock(now)}</div>
 					</div>
 				</div>
 
@@ -657,13 +961,10 @@
 					<div class="eh-left">
 						<div class="eh-eyebrow">JUNE PAYOUT · SETTLES JULY 5</div>
 						<div class="eh-val">€6,942</div>
-						<div class="eh-sub">
-							20% of €34,710 gross across 412 washes this month
-						</div>
+						<div class="eh-sub">20% of €34,710 gross across 412 washes this month</div>
 					</div>
 					<div class="eh-right">
 						<div class="eh-chart">
-							<!-- Simple sparkline-style bars for last 6 months -->
 							{#each [4200, 5100, 5800, 6100, 6480, 6942] as v, i}
 								<div class="bar" style="height: {(v / 7000) * 100}%">
 									<div class="bar-val">€{(v / 1000).toFixed(1)}k</div>
@@ -768,16 +1069,300 @@
 			</div>
 		{/if}
 	</main>
+
+	<!-- ═════════════ BOOKING DETAIL DRAWER ═════════════ -->
+	{#if selectedBooking}
+		<div
+			class="drawer-backdrop"
+			onclick={closeModal}
+			role="button"
+			tabindex="-1"
+			transition:fade={{ duration: 150 }}
+		></div>
+		<aside
+			class="drawer"
+			transition:fly={{ x: 480, duration: 240 }}
+		>
+			<!-- Head -->
+			<div class="drawer-head">
+				<div>
+					<div class="drawer-eyebrow">BOOKING · {selectedBooking.id}</div>
+					<div class="drawer-title">{selectedBooking.memberName}</div>
+				</div>
+				<button class="drawer-close" onclick={closeModal} aria-label="Close">×</button>
+			</div>
+
+			<!-- Status action bar -->
+			<div class="drawer-status">
+				<div class="ds-left">
+					<div class="ds-lbl">CURRENT STATUS</div>
+					<div class="status-pill {selectedBooking.status}">{statusLabel[selectedBooking.status]}</div>
+				</div>
+				<div class="ds-actions">
+					{#if nextStatus(selectedBooking.status)}
+						<button class="btn-advance" onclick={() => advanceStatus(selectedBooking!.id)}>
+							{advanceLabel[selectedBooking.status]} →
+						</button>
+					{:else}
+						<div class="ds-done">Complete · picked up at {selectedBooking.pickedUpAt}</div>
+					{/if}
+					{#if prevStatus(selectedBooking.status)}
+						<button class="btn-revert" onclick={() => requestRevert(selectedBooking!.id)}>
+							↺ Revert to {statusLabel[prevStatus(selectedBooking.status)!]}
+						</button>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Member -->
+			<section class="drawer-section">
+				<div class="ds-h">MEMBER</div>
+				<div class="ds-rows">
+					<div class="ds-row">
+						<span class="ds-k">Name</span>
+						<span class="ds-v">{selectedBooking.memberName}</span>
+					</div>
+					<div class="ds-row">
+						<span class="ds-k">Member ID</span>
+						<span class="ds-v mono">#{selectedBooking.memberID}</span>
+					</div>
+					<div class="ds-row">
+						<span class="ds-k">Phone</span>
+						<span class="ds-v mono">{selectedBooking.memberPhone}</span>
+					</div>
+					<div class="ds-row">
+						<span class="ds-k">Member since</span>
+						<span class="ds-v">{selectedBooking.memberSince}</span>
+					</div>
+				</div>
+				<button class="drawer-action" onclick={() => contactMember(selectedBooking!.id)}>
+					✉ Text member — "your car is ready"
+				</button>
+			</section>
+
+			<!-- Vehicle -->
+			<section class="drawer-section">
+				<div class="ds-h">VEHICLE</div>
+				<div class="drawer-vehicle">
+					<div class="dv-paint" style="background: {paintColor(selectedBooking.vehicleColor)}">
+						<div class="dv-brand" style:color={isPaintLight(selectedBooking.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
+							{selectedBooking.vehicleMake.toUpperCase()}
+						</div>
+						<div class="dv-sub" style:color={isPaintLight(selectedBooking.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
+							'{String(selectedBooking.vehicleYear).slice(-2)} {selectedBooking.vehicleModel.toUpperCase()}
+						</div>
+					</div>
+					<div class="dv-info">
+						<div class="dv-name">
+							{selectedBooking.vehicleYear} {selectedBooking.vehicleMake} {selectedBooking.vehicleModel}
+						</div>
+						<div class="dv-meta">
+							{selectedBooking.vehicleColor} · <span class="mono">{selectedBooking.plate}</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Booking details -->
+			<section class="drawer-section">
+				<div class="ds-h">BOOKING</div>
+				<div class="ds-rows">
+					<div class="ds-row">
+						<span class="ds-k">Service</span>
+						<span class="ds-v">{tierLabel[selectedBooking.tier]}</span>
+					</div>
+					<div class="ds-row">
+						<span class="ds-k">Charge</span>
+						<span class="ds-v mono price-accent">€{selectedBooking.price}.00</span>
+					</div>
+					<div class="ds-row">
+						<span class="ds-k">Tee time</span>
+						<span class="ds-v">{selectedBooking.teeTime}</span>
+					</div>
+					<div class="ds-row">
+						<span class="ds-k">Return window</span>
+						<span class="ds-v">{selectedBooking.returnWindow}</span>
+					</div>
+					<div class="ds-row">
+						<span class="ds-k">Parking spot</span>
+						<span class="ds-v mono spot-accent">{selectedBooking.spot}</span>
+					</div>
+					<div class="ds-row">
+						<span class="ds-k">Key drop</span>
+						<span class="ds-v">Bag staff</span>
+					</div>
+				</div>
+			</section>
+
+			<!-- Crew -->
+			<section class="drawer-section">
+				<div class="ds-h">CREW</div>
+				<div class="crew-line">
+					<div class="ds-v">{selectedBooking.crew ?? 'Not assigned yet'}</div>
+					<button class="link-btn" onclick={() => (showingCrewMenu = !showingCrewMenu)}>
+						{selectedBooking.crew ? 'Reassign' : 'Assign'}
+					</button>
+				</div>
+				{#if showingCrewMenu}
+					<div class="crew-menu" transition:fade={{ duration: 120 }}>
+						{#each crewChoices as crew}
+							<button
+								class:current={selectedBooking.crew === crew}
+								onclick={() => reassignCrew(selectedBooking!.id, crew)}
+							>
+								{crew}
+								{#if selectedBooking.crew === crew}
+									<span class="check-inline">✓</span>
+								{/if}
+							</button>
+						{/each}
+					</div>
+				{/if}
+			</section>
+
+			<!-- Timeline -->
+			<section class="drawer-section">
+				<div class="ds-h">TIMELINE</div>
+				<div class="timeline">
+					<div class="tl-row done">
+						<div class="tl-dot"></div>
+						<div class="tl-body">
+							<div class="tl-lbl">BOOKED</div>
+							<div class="tl-time">at {selectedBooking.bookedAt} · via Par Car app</div>
+						</div>
+					</div>
+					<div class="tl-row" class:done={statusOrder.indexOf(selectedBooking.status) >= 1}>
+						<div class="tl-dot"></div>
+						<div class="tl-body">
+							<div class="tl-lbl">AT LOT</div>
+							<div class="tl-time">
+								{selectedBooking.receivedAt ? `at ${selectedBooking.receivedAt}` : 'waiting'}
+							</div>
+						</div>
+					</div>
+					<div class="tl-row" class:done={statusOrder.indexOf(selectedBooking.status) >= 2}>
+						<div class="tl-dot"></div>
+						<div class="tl-body">
+							<div class="tl-lbl">WASHING</div>
+							<div class="tl-time">
+								{selectedBooking.startedAt ? `started ${selectedBooking.startedAt}` : 'waiting'}
+							</div>
+						</div>
+					</div>
+					<div class="tl-row" class:done={statusOrder.indexOf(selectedBooking.status) >= 3}>
+						<div class="tl-dot"></div>
+						<div class="tl-body">
+							<div class="tl-lbl">DRYING</div>
+							<div class="tl-time">
+								{statusOrder.indexOf(selectedBooking.status) >= 3 ? 'in progress' : 'waiting'}
+							</div>
+						</div>
+					</div>
+					<div class="tl-row" class:done={statusOrder.indexOf(selectedBooking.status) >= 4}>
+						<div class="tl-dot"></div>
+						<div class="tl-body">
+							<div class="tl-lbl">READY</div>
+							<div class="tl-time">
+								{selectedBooking.readyAt ? `since ${selectedBooking.readyAt}` : 'waiting'}
+							</div>
+						</div>
+					</div>
+					<div class="tl-row" class:done={selectedBooking.status === 'pickedUp'}>
+						<div class="tl-dot"></div>
+						<div class="tl-body">
+							<div class="tl-lbl">PICKED UP</div>
+							<div class="tl-time">
+								{selectedBooking.pickedUpAt ? `at ${selectedBooking.pickedUpAt}` : 'waiting'}
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Rating & tip (if completed) -->
+			{#if selectedBooking.status === 'pickedUp' && selectedBooking.rating}
+				<section class="drawer-section">
+					<div class="ds-h">MEMBER FEEDBACK</div>
+					<div class="ds-rows">
+						<div class="ds-row">
+							<span class="ds-k">Rating</span>
+							<span class="ds-v">
+								<span class="stars-lg">
+									{#each Array(5) as _, i}
+										<span class="star" class:filled={i < (selectedBooking.rating ?? 0)}>★</span>
+									{/each}
+								</span>
+							</span>
+						</div>
+						<div class="ds-row">
+							<span class="ds-k">Tip</span>
+							<span class="ds-v mono">€{selectedBooking.tipEur ?? 0}</span>
+						</div>
+					</div>
+				</section>
+			{/if}
+
+			<!-- Danger -->
+			<section class="drawer-section danger">
+				<div class="ds-h danger">DANGER ZONE</div>
+				<button class="drawer-action danger-action" onclick={() => requestCancel(selectedBooking!.id)}>
+					Cancel booking
+				</button>
+				<div class="ds-note">
+					Cancels the booking and refunds via Stripe. The member will be notified.
+				</div>
+			</section>
+		</aside>
+	{/if}
+
+	<!-- ═════════════ CONFIRM · REVERT ═════════════ -->
+	{#if confirmingRevert}
+		<div class="dialog-backdrop" onclick={() => (confirmingRevert = null)} role="button" tabindex="-1" transition:fade={{ duration: 120 }}></div>
+		<div class="dialog" transition:fade={{ duration: 120 }}>
+			<div class="dialog-h">Revert status?</div>
+			<div class="dialog-body">
+				This moves the booking back to <b>{statusLabel[confirmingRevert.toStatus]}</b>. Use this only
+				if you advanced a status by mistake.
+			</div>
+			<div class="dialog-actions">
+				<button class="dialog-btn" onclick={() => (confirmingRevert = null)}>Cancel</button>
+				<button class="dialog-btn warn" onclick={performRevert}>Yes, revert</button>
+			</div>
+		</div>
+	{/if}
+
+	<!-- ═════════════ CONFIRM · CANCEL BOOKING ═════════════ -->
+	{#if confirmingCancel}
+		<div class="dialog-backdrop" onclick={() => (confirmingCancel = null)} role="button" tabindex="-1" transition:fade={{ duration: 120 }}></div>
+		<div class="dialog" transition:fade={{ duration: 120 }}>
+			<div class="dialog-h">Cancel this booking?</div>
+			<div class="dialog-body">
+				The booking will be removed and the member notified. Their payment is refunded via Stripe
+				within 5–10 business days.
+			</div>
+			<div class="dialog-actions">
+				<button class="dialog-btn" onclick={() => (confirmingCancel = null)}>Keep booking</button>
+				<button class="dialog-btn danger" onclick={performCancel}>Cancel booking</button>
+			</div>
+		</div>
+	{/if}
+
+	<!-- ═════════════ TOASTS ═════════════ -->
+	<div class="toasts">
+		{#each toasts as t (t.id)}
+			<div class="toast {t.kind}" transition:fly={{ y: 40, duration: 220 }}>
+				<span class="toast-dot"></span>
+				{t.msg}
+			</div>
+		{/each}
+	</div>
 </div>
 
 <style>
 	/* ════════════════════════════════════════════════════════════════
-	   Par Car Console — desktop dashboard for the caddiemaster / club.
-	   Design register: warm-cream base (matches marketing site), thin
-	   hairlines instead of hard borders, Spectral for the branding
-	   moments + Inter for UI + JetBrains Mono for numbers/ids/time.
-	   Status colours: red for READY (urgent action), amber for at-lot,
-	   blue for washing/drying, muted for booked/picked-up.
+	   Par Car Console — desktop dashboard, real-operator powers.
+	   Warm-cream base, dashboard-grade density. Drawer-based detail
+	   view; toasts bottom-right; confirm dialogs centered.
 	   ════════════════════════════════════════════════════════════════ */
 
 	.console {
@@ -794,9 +1379,7 @@
 		--red: #c5392c;
 		--red-soft: rgba(197, 57, 44, 0.08);
 		--amber: #b57420;
-		--amber-soft: rgba(181, 116, 32, 0.1);
 		--blue: #2c6f9e;
-		--blue-soft: rgba(44, 111, 158, 0.08);
 		--green: #4a7c40;
 		--green-soft: rgba(74, 124, 64, 0.12);
 		--gold: #b89456;
@@ -813,14 +1396,10 @@
 		position: relative;
 		z-index: 1;
 	}
-
-	.console * {
-		box-sizing: border-box;
-	}
+	.console * { box-sizing: border-box; }
 
 	/* ═══════════════ SIDEBAR ═══════════════ */
 	.sidebar {
-		background: #ecdaba00;
 		background: linear-gradient(180deg, #ebe5d6 0%, #e5dcc7 100%);
 		border-right: 1px solid var(--line-2);
 		padding: 24px 18px;
@@ -831,10 +1410,7 @@
 		top: 0;
 		height: 100vh;
 	}
-
-	.brand {
-		padding: 6px 6px 12px;
-	}
+	.brand { padding: 6px 6px 12px; }
 	.brand-mark {
 		font-family: 'Spectral', Georgia, serif;
 		font-weight: 500;
@@ -850,11 +1426,7 @@
 		height: 1em;
 		display: inline-block;
 	}
-	.brand-mark .flag svg {
-		width: 100%;
-		height: 100%;
-		display: block;
-	}
+	.brand-mark .flag svg { width: 100%; height: 100%; display: block; }
 	.brand-sub {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 9px;
@@ -863,7 +1435,6 @@
 		font-weight: 600;
 		margin-top: 6px;
 	}
-
 	.club-card {
 		background: var(--paper);
 		border: 1px solid var(--line-2);
@@ -886,11 +1457,7 @@
 		letter-spacing: -0.01em;
 		line-height: 1.2;
 	}
-	.club-meta {
-		font-size: 10px;
-		color: var(--ink-3);
-		margin-top: 4px;
-	}
+	.club-meta { font-size: 10px; color: var(--ink-3); margin-top: 4px; }
 
 	.sidebar nav {
 		display: flex;
@@ -922,10 +1489,7 @@
 		background: var(--ink);
 		color: var(--cream);
 	}
-	.sidebar nav button:disabled {
-		color: var(--ink-4);
-		cursor: not-allowed;
-	}
+	.sidebar nav button:disabled { color: var(--ink-4); cursor: not-allowed; }
 	.sidebar nav button .dot {
 		width: 6px;
 		height: 6px;
@@ -933,21 +1497,15 @@
 		background: var(--red);
 		flex-shrink: 0;
 	}
-	.sidebar nav button.active .dot {
-		background: var(--cream);
-	}
+	.sidebar nav button.active .dot { background: var(--cream); }
 	.sidebar nav button .icon {
 		width: 14px;
 		text-align: center;
 		font-size: 12px;
 		color: var(--ink-3);
 	}
-	.sidebar nav button.active .icon {
-		color: var(--cream);
-	}
-	.sidebar nav button span:nth-child(2) {
-		flex: 1;
-	}
+	.sidebar nav button.active .icon { color: var(--cream); }
+	.sidebar nav button span:nth-child(2) { flex: 1; }
 	.sidebar nav button .badge {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 10px;
@@ -959,10 +1517,7 @@
 		min-width: 20px;
 		text-align: center;
 	}
-	.sidebar nav button.active .badge {
-		background: var(--cream);
-		color: var(--ink);
-	}
+	.sidebar nav button.active .badge { background: var(--cream); color: var(--ink); }
 	.sidebar nav button .soon {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 8px;
@@ -970,6 +1525,57 @@
 		color: var(--ink-4);
 		font-weight: 600;
 	}
+
+	/* Auto-sim toggle */
+	.autosim {
+		background: rgba(28, 26, 22, 0.04);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		padding: 10px 12px;
+	}
+	.autosim-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+	.autosim-name {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.22em;
+		color: var(--ink);
+		font-weight: 700;
+	}
+	.autosim-sub {
+		font-size: 10px;
+		color: var(--ink-3);
+		margin-top: 2px;
+	}
+	.toggle {
+		width: 36px;
+		height: 20px;
+		border-radius: 999px;
+		background: var(--ink-4);
+		border: none;
+		cursor: pointer;
+		position: relative;
+		transition: background 0.2s;
+		padding: 0;
+		flex-shrink: 0;
+	}
+	.toggle.on { background: var(--red); }
+	.toggle-knob {
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		background: white;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+		transition: left 0.2s;
+	}
+	.toggle.on .toggle-knob { left: 18px; }
 
 	.side-foot {
 		margin-top: auto;
@@ -990,15 +1596,8 @@
 		font-weight: 600;
 		margin-bottom: 3px;
 	}
-	.side-support a {
-		font-size: 11px;
-		color: var(--ink);
-		text-decoration: none;
-		font-weight: 500;
-	}
-	.side-support a:hover {
-		text-decoration: underline;
-	}
+	.side-support a { font-size: 11px; color: var(--ink); text-decoration: none; font-weight: 500; }
+	.side-support a:hover { text-decoration: underline; }
 	.side-ver {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 9px;
@@ -1010,20 +1609,14 @@
 	}
 
 	/* ═══════════════ MAIN ═══════════════ */
-	main {
-		overflow-x: auto;
-	}
-	.content {
-		max-width: 1400px;
-		margin: 0 auto;
-		padding: 28px 32px 60px;
-	}
+	main { overflow-x: auto; }
+	.content { max-width: 1400px; margin: 0 auto; padding: 28px 32px 60px; }
 
 	.page-head {
 		display: flex;
 		align-items: flex-end;
 		justify-content: space-between;
-		margin-bottom: 24px;
+		margin-bottom: 20px;
 		gap: 20px;
 	}
 	.head-eyebrow {
@@ -1078,6 +1671,89 @@
 		50% { opacity: 0.35; }
 	}
 
+	/* ─── Tools (search + filters) ─── */
+	.tools {
+		display: flex;
+		gap: 14px;
+		align-items: center;
+		margin-bottom: 22px;
+		flex-wrap: wrap;
+	}
+	.search-wrap {
+		position: relative;
+		flex: 1;
+		min-width: 260px;
+		max-width: 460px;
+	}
+	.search-icon {
+		position: absolute;
+		left: 14px;
+		top: 50%;
+		transform: translateY(-50%);
+		color: var(--ink-3);
+		font-size: 14px;
+	}
+	.search {
+		width: 100%;
+		padding: 10px 34px 10px 34px;
+		border: 1px solid var(--line-2);
+		background: var(--paper-2);
+		border-radius: 999px;
+		font-family: inherit;
+		font-size: 13px;
+		color: var(--ink);
+		transition: border-color 0.15s;
+	}
+	.search:focus { outline: none; border-color: var(--ink); }
+	.clear-btn {
+		position: absolute;
+		right: 10px;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 20px;
+		height: 20px;
+		border: none;
+		background: rgba(28, 26, 22, 0.1);
+		color: var(--ink-2);
+		border-radius: 50%;
+		cursor: pointer;
+		font-size: 11px;
+		padding: 0;
+	}
+	.clear-btn:hover { background: rgba(28, 26, 22, 0.18); }
+
+	.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+	.chip {
+		border: 1px solid var(--line-2);
+		background: var(--paper);
+		color: var(--ink-2);
+		font-family: inherit;
+		font-size: 12px;
+		font-weight: 500;
+		padding: 7px 14px;
+		border-radius: 999px;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s, border-color 0.15s;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.chip:hover { background: rgba(28, 26, 22, 0.04); color: var(--ink); }
+	.chip.on { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+	.chip.accent { border-color: var(--red); color: var(--red); }
+	.chip.accent:hover { background: var(--red-soft); }
+	.chip-c {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		font-weight: 700;
+		background: rgba(28, 26, 22, 0.08);
+		padding: 1px 6px;
+		border-radius: 999px;
+		min-width: 20px;
+		text-align: center;
+	}
+	.chip.on .chip-c { background: rgba(241, 236, 225, 0.2); color: var(--cream); }
+
 	/* ─── KPI grid ─── */
 	.kpi-grid {
 		display: grid;
@@ -1093,19 +1769,9 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-		position: relative;
-		overflow: hidden;
 	}
-	.kpi.accent {
-		background: var(--red);
-		color: var(--cream);
-		border-color: var(--red);
-	}
-	.kpi.highlight {
-		background: var(--ink);
-		color: var(--cream);
-		border-color: var(--ink);
-	}
+	.kpi.accent { background: var(--red); color: var(--cream); border-color: var(--red); }
+	.kpi.highlight { background: var(--ink); color: var(--cream); border-color: var(--ink); }
 	.kpi-lbl {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 9px;
@@ -1113,12 +1779,8 @@
 		font-weight: 600;
 		color: var(--ink-3);
 	}
-	.kpi.accent .kpi-lbl {
-		color: rgba(241, 236, 225, 0.7);
-	}
-	.kpi.highlight .kpi-lbl {
-		color: var(--gold);
-	}
+	.kpi.accent .kpi-lbl { color: rgba(241, 236, 225, 0.7); }
+	.kpi.highlight .kpi-lbl { color: var(--gold); }
 	.kpi-val {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 34px;
@@ -1127,28 +1789,14 @@
 		letter-spacing: -0.03em;
 		line-height: 1;
 	}
-	.kpi.accent .kpi-val,
-	.kpi.highlight .kpi-val {
-		color: var(--cream);
-	}
-	.kpi-sub {
-		font-size: 11px;
-		color: var(--ink-3);
-	}
-	.kpi.accent .kpi-sub {
-		color: rgba(241, 236, 225, 0.75);
-	}
-	.kpi.highlight .kpi-sub {
-		color: rgba(241, 236, 225, 0.65);
-	}
+	.kpi.accent .kpi-val, .kpi.highlight .kpi-val { color: var(--cream); }
+	.kpi-sub { font-size: 11px; color: var(--ink-3); }
+	.kpi.accent .kpi-sub { color: rgba(241, 236, 225, 0.75); }
+	.kpi.highlight .kpi-sub { color: rgba(241, 236, 225, 0.65); }
 
-	/* ─── Section ─── */
-	.section {
-		margin-bottom: 28px;
-	}
-	.section.muted {
-		opacity: 0.72;
-	}
+	/* ─── Sections ─── */
+	.section { margin-bottom: 28px; }
+	.section.muted { opacity: 0.72; }
 	.section-head {
 		display: flex;
 		align-items: center;
@@ -1174,7 +1822,7 @@
 		font-weight: 600;
 	}
 
-	/* ─── Status pills ─── */
+	/* Status pills */
 	.status-pill {
 		display: inline-flex;
 		align-items: center;
@@ -1187,29 +1835,13 @@
 		background: var(--ink-4);
 		color: white;
 	}
-	.status-pill.ready {
-		background: var(--red);
-		color: var(--cream);
-	}
-	.status-pill.washing,
-	.status-pill.drying {
-		background: var(--blue);
-		color: white;
-	}
-	.status-pill.received {
-		background: var(--amber);
-		color: white;
-	}
-	.status-pill.booked {
-		background: rgba(28, 26, 22, 0.55);
-		color: var(--cream);
-	}
-	.status-pill.picked {
-		background: rgba(28, 26, 22, 0.35);
-		color: var(--cream);
-	}
+	.status-pill.ready { background: var(--red); color: var(--cream); }
+	.status-pill.washing, .status-pill.drying { background: var(--blue); color: white; }
+	.status-pill.received { background: var(--amber); color: white; }
+	.status-pill.booked { background: rgba(28, 26, 22, 0.55); color: var(--cream); }
+	.status-pill.picked, .status-pill.pickedUp { background: rgba(28, 26, 22, 0.35); color: var(--cream); }
 
-	/* ─── Booking rows ─── */
+	/* Rows */
 	.rows {
 		background: var(--paper);
 		border: 1px solid var(--line);
@@ -1218,24 +1850,28 @@
 	}
 	.row {
 		display: grid;
-		grid-template-columns: 80px 1.6fr 90px 1.3fr 1.4fr 60px;
-		gap: 16px;
+		grid-template-columns: 80px 1.6fr 90px 1.4fr 1.3fr 60px 20px;
+		gap: 14px;
 		align-items: center;
 		padding: 10px 16px;
 		border-bottom: 1px solid var(--line);
+		background: transparent;
+		border-left: none;
+		border-right: none;
+		border-top: none;
+		cursor: pointer;
+		text-align: left;
+		width: 100%;
+		font-family: inherit;
+		color: inherit;
+		transition: background 0.12s;
 	}
-	.row:last-child {
-		border-bottom: none;
-	}
-	.row-ready {
-		background: var(--red-soft);
-	}
-	.row-scheduled {
-		opacity: 0.85;
-	}
-	.row-completed {
-		opacity: 0.75;
-	}
+	.row:last-child { border-bottom: none; }
+	.row:hover { background: rgba(28, 26, 22, 0.02); }
+	.row-ready { background: var(--red-soft); }
+	.row-ready:hover { background: rgba(197, 57, 44, 0.12); }
+	.row-scheduled { opacity: 0.85; }
+	.row-completed { opacity: 0.72; }
 
 	.paint-tile {
 		width: 68px;
@@ -1246,8 +1882,7 @@
 		flex-direction: column;
 		justify-content: space-between;
 		overflow: hidden;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
-			inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 		border: 1px solid rgba(0, 0, 0, 0.15);
 	}
 	.paint-brand {
@@ -1263,7 +1898,6 @@
 		letter-spacing: 0.1em;
 		font-weight: 600;
 	}
-
 	.member-name {
 		font-family: 'Spectral', serif;
 		font-weight: 500;
@@ -1278,7 +1912,6 @@
 		margin-top: 3px;
 		font-variant-numeric: tabular-nums;
 	}
-
 	.col-lbl {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 9px;
@@ -1294,12 +1927,10 @@
 		color: var(--red);
 		letter-spacing: 0.02em;
 	}
-	.row-scheduled .col-spot .spot-val,
-	.row-completed .col-spot .spot-val {
+	.row-scheduled .col-spot .spot-val, .row-completed .col-spot .spot-val {
 		color: var(--ink);
 		font-size: 13px;
 	}
-
 	.col-status {
 		display: flex;
 		flex-direction: column;
@@ -1335,17 +1966,405 @@
 		letter-spacing: -0.02em;
 		text-align: right;
 	}
+	.col-chev {
+		color: var(--ink-3);
+		font-size: 18px;
+		font-weight: 400;
+	}
+	.stars { display: inline-flex; gap: 1px; }
+	.star { color: var(--ink-4); font-size: 13px; }
+	.star.filled { color: var(--gold); }
 
-	.stars {
-		display: inline-flex;
-		gap: 1px;
+	.empty {
+		background: var(--paper);
+		border: 1px dashed var(--line-2);
+		border-radius: 12px;
+		padding: 60px 30px;
+		text-align: center;
 	}
-	.star {
-		color: var(--ink-4);
+	.empty-h {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 20px;
+		color: var(--ink);
+		margin-bottom: 6px;
+	}
+	.empty-sub { color: var(--ink-3); font-size: 13px; }
+
+	/* ═══════════════ DETAIL DRAWER ═══════════════ */
+	.drawer-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(28, 26, 22, 0.4);
+		z-index: 60;
+	}
+	.drawer {
+		position: fixed;
+		top: 0;
+		right: 0;
+		width: 480px;
+		max-width: 100vw;
+		height: 100vh;
+		background: var(--cream);
+		box-shadow: -20px 0 40px rgba(28, 26, 22, 0.14);
+		z-index: 61;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.drawer-head {
+		padding: 24px 26px 16px;
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		border-bottom: 1px solid var(--line);
+	}
+	.drawer-eyebrow {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		letter-spacing: 0.28em;
+		color: var(--ink-3);
+		font-weight: 600;
+		margin-bottom: 4px;
+	}
+	.drawer-title {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 22px;
+		color: var(--ink);
+		letter-spacing: -0.01em;
+		line-height: 1.15;
+	}
+	.drawer-close {
+		width: 32px;
+		height: 32px;
+		border: 1px solid var(--line-2);
+		background: transparent;
+		color: var(--ink);
+		border-radius: 8px;
+		font-size: 20px;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0;
+	}
+	.drawer-close:hover { background: rgba(28, 26, 22, 0.05); }
+
+	.drawer-status {
+		background: var(--paper);
+		padding: 18px 26px;
+		border-bottom: 1px solid var(--line);
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+	.ds-left { display: flex; align-items: center; gap: 12px; }
+	.ds-lbl {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 9px;
+		letter-spacing: 0.22em;
+		color: var(--ink-3);
+		font-weight: 600;
+	}
+	.ds-actions { display: flex; flex-direction: column; gap: 8px; }
+	.btn-advance {
+		background: var(--red);
+		color: var(--cream);
+		border: none;
+		padding: 12px 18px;
+		border-radius: 10px;
+		font-family: inherit;
 		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s;
+		box-shadow: 0 4px 12px rgba(197, 57, 44, 0.28);
 	}
-	.star.filled {
-		color: var(--gold);
+	.btn-advance:hover { background: #a32a1e; }
+	.btn-revert {
+		background: transparent;
+		color: var(--ink-2);
+		border: 1px solid var(--line-2);
+		padding: 8px 14px;
+		border-radius: 999px;
+		font-family: inherit;
+		font-size: 12px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+	}
+	.btn-revert:hover { background: rgba(28, 26, 22, 0.05); color: var(--ink); }
+	.ds-done {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 11px;
+		letter-spacing: 0.16em;
+		color: var(--green);
+		font-weight: 600;
+		background: var(--green-soft);
+		padding: 10px 14px;
+		border-radius: 8px;
+		text-align: center;
+	}
+
+	.drawer-section {
+		padding: 18px 26px;
+		border-bottom: 1px solid var(--line);
+	}
+	.drawer-section.danger { border-bottom: none; }
+	.ds-h {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		letter-spacing: 0.28em;
+		color: var(--ink-3);
+		font-weight: 600;
+		margin-bottom: 12px;
+	}
+	.ds-h.danger { color: var(--red); }
+	.ds-rows { display: flex; flex-direction: column; }
+	.ds-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		padding: 6px 0;
+		border-bottom: 1px solid var(--line);
+	}
+	.ds-row:last-child { border-bottom: none; }
+	.ds-k { color: var(--ink-3); font-size: 12px; }
+	.ds-v { color: var(--ink); font-size: 13px; font-weight: 500; text-align: right; }
+	.ds-v.mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em; }
+	.price-accent { color: var(--red); font-size: 15px !important; font-weight: 600 !important; }
+	.spot-accent { color: var(--red); font-weight: 600 !important; }
+
+	.drawer-action {
+		width: 100%;
+		background: var(--ink);
+		color: var(--cream);
+		border: none;
+		padding: 12px 16px;
+		border-radius: 10px;
+		font-family: inherit;
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+		margin-top: 12px;
+		transition: background 0.15s;
+	}
+	.drawer-action:hover { background: #000; }
+	.drawer-action.danger-action {
+		background: transparent;
+		border: 1px solid var(--red);
+		color: var(--red);
+	}
+	.drawer-action.danger-action:hover { background: var(--red-soft); }
+	.ds-note { font-size: 11px; color: var(--ink-3); margin-top: 8px; line-height: 1.5; }
+
+	.drawer-vehicle {
+		display: grid;
+		grid-template-columns: 92px 1fr;
+		gap: 14px;
+		align-items: center;
+	}
+	.dv-paint {
+		width: 92px;
+		height: 58px;
+		border-radius: 8px;
+		padding: 7px 10px;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(0, 0, 0, 0.15);
+	}
+	.dv-brand {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 11px;
+		letter-spacing: 0.05em;
+	}
+	.dv-sub {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 8px;
+		letter-spacing: 0.1em;
+		font-weight: 600;
+	}
+	.dv-name {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 15px;
+		color: var(--ink);
+	}
+	.dv-meta { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+	.mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.03em; }
+
+	.crew-line {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.link-btn {
+		background: transparent;
+		border: none;
+		color: var(--red);
+		font-family: inherit;
+		font-size: 12px;
+		font-weight: 600;
+		cursor: pointer;
+		padding: 4px 8px;
+	}
+	.link-btn:hover { text-decoration: underline; }
+	.crew-menu {
+		margin-top: 10px;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		overflow: hidden;
+	}
+	.crew-menu button {
+		background: transparent;
+		border: none;
+		text-align: left;
+		padding: 10px 14px;
+		font-family: inherit;
+		font-size: 13px;
+		color: var(--ink);
+		cursor: pointer;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.crew-menu button:hover { background: rgba(28, 26, 22, 0.05); }
+	.crew-menu button.current { color: var(--red); font-weight: 600; }
+	.check-inline { color: var(--red); }
+
+	/* Timeline */
+	.timeline {
+		display: flex;
+		flex-direction: column;
+		position: relative;
+	}
+	.tl-row {
+		display: grid;
+		grid-template-columns: 20px 1fr;
+		gap: 12px;
+		padding: 8px 0;
+		opacity: 0.5;
+		position: relative;
+	}
+	.tl-row.done { opacity: 1; }
+	.tl-row:not(:last-child)::before {
+		content: '';
+		position: absolute;
+		left: 9px;
+		top: 24px;
+		bottom: -4px;
+		width: 2px;
+		background: var(--line);
+	}
+	.tl-row.done:not(:last-child)::before { background: var(--ink); }
+	.tl-dot {
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		background: var(--ink-4);
+		margin-top: 4px;
+		z-index: 1;
+	}
+	.tl-row.done .tl-dot { background: var(--ink); }
+	.tl-lbl {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		letter-spacing: 0.16em;
+		font-weight: 700;
+		color: var(--ink);
+	}
+	.tl-time { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+	.stars-lg .star { font-size: 15px; }
+
+	/* ═══════════════ CONFIRM DIALOGS ═══════════════ */
+	.dialog-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(28, 26, 22, 0.5);
+		z-index: 80;
+	}
+	.dialog {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 420px;
+		max-width: calc(100vw - 40px);
+		background: var(--paper);
+		border-radius: 14px;
+		box-shadow: 0 20px 60px rgba(28, 26, 22, 0.24);
+		z-index: 81;
+		padding: 26px;
+	}
+	.dialog-h {
+		font-family: 'Spectral', serif;
+		font-weight: 500;
+		font-size: 20px;
+		color: var(--ink);
+		margin-bottom: 10px;
+		letter-spacing: -0.01em;
+	}
+	.dialog-body { font-size: 13px; color: var(--ink-2); line-height: 1.5; margin-bottom: 18px; }
+	.dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
+	.dialog-btn {
+		background: transparent;
+		border: 1px solid var(--line-2);
+		color: var(--ink);
+		padding: 10px 18px;
+		border-radius: 999px;
+		font-family: inherit;
+		font-size: 13px;
+		font-weight: 500;
+		cursor: pointer;
+	}
+	.dialog-btn:hover { background: rgba(28, 26, 22, 0.05); }
+	.dialog-btn.warn { background: var(--amber); color: white; border-color: var(--amber); }
+	.dialog-btn.warn:hover { background: #935e1a; }
+	.dialog-btn.danger { background: var(--red); color: white; border-color: var(--red); }
+	.dialog-btn.danger:hover { background: #a32a1e; }
+
+	/* ═══════════════ TOASTS ═══════════════ */
+	.toasts {
+		position: fixed;
+		bottom: 24px;
+		right: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		z-index: 90;
+		max-width: 360px;
+	}
+	.toast {
+		background: var(--ink);
+		color: var(--cream);
+		padding: 12px 16px 12px 14px;
+		border-radius: 10px;
+		box-shadow: 0 12px 28px rgba(28, 26, 22, 0.24);
+		font-size: 13px;
+		font-weight: 500;
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		border-left: 3px solid var(--ink-3);
+	}
+	.toast.success { border-left-color: #9bc28a; }
+	.toast.warning { border-left-color: var(--amber); }
+	.toast.error { border-left-color: var(--red); }
+	.toast-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: currentColor;
+		opacity: 0.7;
+		flex-shrink: 0;
 	}
 
 	/* ═══════════════ EARNINGS ═══════════════ */
@@ -1376,12 +2395,7 @@
 		line-height: 1;
 		color: var(--cream);
 	}
-	.eh-sub {
-		font-size: 14px;
-		color: rgba(241, 236, 225, 0.65);
-		margin-top: 12px;
-		line-height: 1.5;
-	}
+	.eh-sub { font-size: 14px; color: rgba(241, 236, 225, 0.65); margin-top: 12px; line-height: 1.5; }
 	.eh-chart {
 		display: grid;
 		grid-template-columns: repeat(6, 1fr);
@@ -1417,19 +2431,13 @@
 		font-weight: 600;
 		text-align: center;
 	}
-
 	.earnings-grid {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		gap: 12px;
 		margin-bottom: 28px;
 	}
-	.stat-card {
-		background: var(--paper);
-		border: 1px solid var(--line);
-		border-radius: 12px;
-		padding: 16px 18px;
-	}
+	.stat-card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
 	.stat-lbl {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 9px;
@@ -1446,32 +2454,10 @@
 		letter-spacing: -0.02em;
 		line-height: 1;
 	}
-	.stat-sub {
-		font-size: 11px;
-		color: var(--ink-3);
-		margin-top: 4px;
-	}
-
-	.tier-breakdown {
-		background: var(--paper);
-		border: 1px solid var(--line);
-		border-radius: 12px;
-		padding: 20px 24px;
-	}
-	.tier-breakdown h3 {
-		font-family: 'Spectral', serif;
-		font-weight: 500;
-		font-size: 15px;
-		color: var(--ink);
-		margin: 0 0 12px;
-	}
-	.tier-bar {
-		display: flex;
-		height: 34px;
-		border-radius: 8px;
-		overflow: hidden;
-		border: 1px solid var(--line);
-	}
+	.stat-sub { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+	.tier-breakdown { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; }
+	.tier-breakdown h3 { font-family: 'Spectral', serif; font-weight: 500; font-size: 15px; color: var(--ink); margin: 0 0 12px; }
+	.tier-bar { display: flex; height: 34px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
 	.tb-slice {
 		display: flex;
 		align-items: center;
@@ -1483,18 +2469,9 @@
 		color: white;
 		overflow: hidden;
 	}
-	.tb-slice.express {
-		background: var(--blue);
-	}
-	.tb-slice.full {
-		background: var(--ink);
-	}
-	.tb-slice.signature {
-		background: var(--gold);
-	}
-	.tb-slice span {
-		white-space: nowrap;
-	}
+	.tb-slice.express { background: var(--blue); }
+	.tb-slice.full { background: var(--ink); }
+	.tb-slice.signature { background: var(--gold); }
 	.tier-notes {
 		margin-top: 12px;
 		display: flex;
@@ -1506,12 +2483,7 @@
 	}
 
 	/* ═══════════════ SETTINGS ═══════════════ */
-	.settings-list {
-		background: var(--paper);
-		border: 1px solid var(--line);
-		border-radius: 12px;
-		overflow: hidden;
-	}
+	.settings-list { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 	.setting-row {
 		display: flex;
 		align-items: center;
@@ -1519,19 +2491,9 @@
 		padding: 14px 20px;
 		border-bottom: 1px solid var(--line);
 	}
-	.setting-row:last-child {
-		border-bottom: none;
-	}
-	.setting-name {
-		font-weight: 600;
-		color: var(--ink);
-		font-size: 14px;
-	}
-	.setting-sub {
-		font-size: 12px;
-		color: var(--ink-3);
-		margin-top: 3px;
-	}
+	.setting-row:last-child { border-bottom: none; }
+	.setting-name { font-weight: 600; color: var(--ink); font-size: 14px; }
+	.setting-sub { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
 	.verified {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 10px;
@@ -1552,27 +2514,16 @@
 		font-size: 12px;
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 0.15s;
 	}
-	.edit-btn:hover {
-		background: rgba(28, 26, 22, 0.06);
-	}
+	.edit-btn:hover { background: rgba(28, 26, 22, 0.06); }
 
 	/* ═══════════════ Responsive ═══════════════ */
 	@media (max-width: 1080px) {
-		.kpi-grid,
-		.earnings-grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
-		.row {
-			grid-template-columns: 68px 1.6fr 80px 1.2fr 1fr 50px;
-			gap: 10px;
-		}
+		.kpi-grid, .earnings-grid { grid-template-columns: repeat(2, 1fr); }
+		.row { grid-template-columns: 68px 1.6fr 80px 1.3fr 1fr 50px 20px; gap: 10px; }
 	}
 	@media (max-width: 820px) {
-		.console {
-			grid-template-columns: 1fr;
-		}
+		.console { grid-template-columns: 1fr; }
 		.sidebar {
 			position: static;
 			height: auto;
@@ -1581,31 +2532,12 @@
 			padding: 14px 18px;
 			gap: 10px;
 		}
-		.brand,
-		.club-card,
-		.side-foot {
-			flex: 1;
-			min-width: 160px;
-		}
-		.sidebar nav {
-			flex-direction: row;
-			flex-wrap: wrap;
-			flex-basis: 100%;
-		}
-		.content {
-			padding: 20px 20px 40px;
-		}
-		.row {
-			grid-template-columns: 60px 1.4fr 70px 1fr;
-			gap: 10px;
-		}
-		.col-tier,
-		.col-price {
-			display: none;
-		}
-		.earnings-hero {
-			grid-template-columns: 1fr;
-			padding: 24px;
-		}
+		.brand, .club-card, .autosim, .side-foot { flex: 1; min-width: 160px; }
+		.sidebar nav { flex-direction: row; flex-wrap: wrap; flex-basis: 100%; }
+		.content { padding: 20px 20px 40px; }
+		.row { grid-template-columns: 60px 1.4fr 70px 1fr 20px; gap: 10px; }
+		.col-tier, .col-price { display: none; }
+		.earnings-hero { grid-template-columns: 1fr; padding: 24px; }
+		.drawer { width: 100%; }
 	}
 </style>
