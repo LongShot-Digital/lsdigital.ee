@@ -76,6 +76,8 @@
 			<p class="cta-sub">Drop your email — we'll only use it for the launch.</p>
 		{/if}
 
+		<a href="/app/marco/organizers" class="org-link">Hosting events? Marco for Organizers →</a>
+
 		<a href="/" class="back">← from LongShot Digital</a>
 	</section>
 </main>
@@ -277,6 +279,17 @@
 		color: #ffffff;
 		font-size: 0.78rem;
 		font-weight: 700;
+	}
+
+	.org-link {
+		margin-top: 20px;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: #2d63f5;
+		text-decoration: none;
+	}
+	.org-link:hover {
+		text-decoration: underline;
 	}
 
 	.back {
