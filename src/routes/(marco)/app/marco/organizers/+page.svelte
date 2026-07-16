@@ -6,7 +6,7 @@
 	let submitted = $state(false);
 	let error = $state(false);
 
-	async function submitPilot(e: SubmitEvent) {
+	async function requestCall(e: SubmitEvent) {
 		e.preventDefault();
 		if (submitting) return;
 		submitting = true;
@@ -19,7 +19,7 @@
 				headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 				body: JSON.stringify({
 					access_key: WEB3FORMS_KEY,
-					subject: `Marco organizer pilot — ${data.org ?? data.name}`,
+					subject: `Marco organizer pilot — ${data.org ?? ''}`,
 					from_name: 'Marco for Organizers',
 					...data
 				})
@@ -35,106 +35,135 @@
 </script>
 
 <svelte:head>
-	<title>Marco for Organizers — put your events where the night starts</title>
+	<title>Marco for Organizers — your events, on the map where tonight gets decided</title>
 	<meta
 		name="description"
-		content="Marco puts your events on the map young people actually check. Poster pins, RSVP analytics, and a console built for event teams. Join the pilot."
+		content="Marco is where groups of friends pick their plan. Verified organizers put real events on that map — and pulse when someone's friends are going. Apply for the pilot."
 	/>
 </svelte:head>
 
 <main class="org">
-	<section class="stage">
+	<!-- nav -->
+	<nav class="nav">
 		<a href="/app/marco" class="brandline">
-			<svg class="mark" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-				<rect width="1024" height="1024" rx="228" ry="228" fill="#F4F1EA" />
-				<circle cx="512" cy="512" r="298" fill="#2D63F5" />
-				<circle cx="512" cy="512" r="172" fill="#F4F1EA" />
-				<circle cx="600" cy="446" r="70" fill="#18B26B" />
-			</svg>
-			<span class="brand">Marco</span>
-			<span class="for-tag">FOR ORGANIZERS</span>
+			<span class="aperture" aria-hidden="true"></span>
+			<span class="wordmark">marco <span class="for-tag">for organizers</span></span>
 		</a>
+		<a href="#apply" class="apply-btn">Apply for the pilot</a>
+	</nav>
 
-		<h1 class="headline">
-			Put your events where<br />the night <em>starts.</em>
-		</h1>
-
+	<!-- hero: the map IS the pitch -->
+	<header class="org-hero">
+		<h1 class="headline">Your events, on the map where tonight gets decided.</h1>
 		<p class="sub">
-			Marco is a live map of what people's friends are doing tonight. Your events sit on it
-			as poster pins — right where the "what are we doing?" decision happens.
+			Marco is where groups of friends pick their plan. Verified organizers put real events on
+			that map — and pulse when someone&rsquo;s friends are going.
 		</p>
 
-		<div class="cards">
-			<div class="card">
-				<div class="card-icon">📍</div>
-				<h3>On the map, as posters</h3>
-				<p>
-					Not a listing in a feed — a poster pinned to your venue on the map everyone
-					opens first. Friends going make it pulse.
-				</p>
+		<!-- map product shot -->
+		<div class="map-shot" role="img" aria-label="A Marco poster pin on the dark map, pulsing because friends are going">
+			<div class="street street-h"></div>
+			<div class="street street-v"></div>
+			<div class="pin-wrap">
+				<div class="pin">
+					<div class="sonar" aria-hidden="true"></div>
+					<div class="poster">
+						<img src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=300&q=70&auto=format&fit=crop" alt="" loading="lazy" />
+						<div class="poster-scrim"></div>
+						<div class="poster-title">Vinyl night</div>
+						<div class="poster-going">4 GOING</div>
+					</div>
+					<span class="pin-seal" aria-hidden="true">
+						<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#F5F6F8" stroke-width="3" stroke-linecap="round"><path d="M4.5 12.5l5 5L19.5 7" /></svg>
+					</span>
+				</div>
+				<div class="pin-tip" aria-hidden="true"></div>
 			</div>
-			<div class="card">
-				<div class="card-icon">📊</div>
-				<h3>Know your crowd</h3>
-				<p>
-					RSVPs, reach, and who-brought-whom in a web console built for event teams —
-					publish once, update everywhere, notify everyone who's going.
-				</p>
+			<div class="friends" aria-hidden="true">
+				<span class="friend live">J</span>
+				<span class="friend">L</span>
 			</div>
-			<div class="card">
-				<div class="card-icon">✓</div>
-				<h3>Verified, not spam</h3>
-				<p>
-					Organizer accounts are verified by us — a short call, once. Your events carry
-					the badge; the map stays trustworthy.
-				</p>
+			<span class="shot-caption">Live product shot — the Poster Field map</span>
+		</div>
+	</header>
+
+	<!-- proof strip -->
+	<section class="proof">
+		<div class="proof-cell">
+			<span class="proof-numeral cobalt">68%</span>
+			<span class="proof-caption">of RSVPs arrive through a friend&rsquo;s plan — crowds that multiply themselves</span>
+		</div>
+		<div class="proof-cell">
+			<span class="proof-numeral">0 ads</span>
+			<span class="proof-caption">your event is a poster on the map, never an interruption — friends&rsquo; plans always rank first</span>
+		</div>
+		<div class="proof-cell">
+			<span class="proof-label">PILOT VENUES — SLOT</span>
+			<div class="logo-slots" aria-hidden="true">
+				<span class="logo-slot">LOGO</span>
+				<span class="logo-slot">LOGO</span>
+				<span class="logo-slot">LOGO</span>
 			</div>
 		</div>
+	</section>
 
-		<div class="pilot" id="pilot">
-			<div class="pilot-head">
-				<span class="pilot-dot"></span>
-				<span class="pilot-label">EARLY PARTNER PILOT</span>
-			</div>
-			<p class="pilot-sub">
-				We're onboarding a small group of venues, promoters, and community hosts before the
-				public launch. Pilot partners get free access, a direct line to the founders, and a
-				say in what the console becomes.
+	<!-- console + verification + apply -->
+	<section class="bottom">
+		<div class="console-col">
+			<h2 class="section-title">A console, not a dashboard farm.</h2>
+			<a class="console-shot" href="/app/marco/console" aria-label="Open the Marco console">
+				<div class="mini-sidebar" aria-hidden="true"></div>
+				<div class="mini-title">Events</div>
+				<div class="mini-cards" aria-hidden="true">
+					<div class="mini-card">
+						<img src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=300&q=60&auto=format&fit=crop" alt="" loading="lazy" />
+						<div class="mini-going green">86 going</div>
+					</div>
+					<div class="mini-card">
+						<img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=300&q=60&auto=format&fit=crop" alt="" loading="lazy" />
+						<div class="mini-going">142 going</div>
+					</div>
+					<div class="mini-card dashed"></div>
+				</div>
+				<span class="mini-caption">Product shot — the events board</span>
+			</a>
+			<p class="section-body">
+				Publish in two minutes, duplicate your weekly night as a template, watch RSVPs live.
+				Aggregate analytics only — you see how your crowd grows, never your guests&rsquo;
+				private lives.
 			</p>
+		</div>
 
+		<div class="verify-col" id="apply">
+			<h2 class="section-title">We verify every organizer.</h2>
+			<p class="section-body">
+				A short call with the founders, then you&rsquo;re on the map with the seal. No spam, no
+				ghost listings — that&rsquo;s why people trust the pins, and why your pin is worth
+				something.
+			</p>
 			{#if submitted}
 				<div class="success">
 					<span class="check">✓</span>
-					Got it — we'll reach out to set up a short intro call.
+					Got it — we&rsquo;ll reach out to book your call.
 				</div>
 			{:else}
-				<form class="pilot-form" onsubmit={submitPilot}>
-					<div class="row">
-						<input name="name" type="text" placeholder="Your name" required autocomplete="name" />
-						<input name="org" type="text" placeholder="Venue / organization" required autocomplete="organization" />
-					</div>
-					<div class="row">
-						<input name="email" type="email" placeholder="Work email" required autocomplete="email" />
-						<input name="city" type="text" placeholder="City" required autocomplete="address-level2" />
-					</div>
-					<input
-						name="events"
-						type="text"
-						placeholder="What do you host, and how often? (e.g. club nights, weekly)"
-					/>
+				<form class="apply-card" onsubmit={requestCall}>
+					<span class="apply-label">APPLY — 2 MINUTES</span>
+					<input name="org" type="text" placeholder="Organization name" required autocomplete="organization" />
+					<input name="details" type="text" placeholder="City · Instagram or website" required />
+					<input name="email" type="email" placeholder="Work email — where we book the call" required autocomplete="email" />
 					<button class="cta" type="submit" disabled={submitting}>
-						{submitting ? 'Sending…' : 'Apply for the pilot'}
+						{submitting ? 'Sending…' : 'Request a call'}
 					</button>
 					{#if error}
 						<p class="error">Something went wrong — email us at info@lsdigital.ee instead.</p>
 					{/if}
-					<p class="cta-sub">We reply to every application. No newsletters, no spam.</p>
 				</form>
 			{/if}
 		</div>
-
-		<a href="/app/marco" class="back">← Marco for humans</a>
 	</section>
+
+	<a href="/app/marco" class="back">← Marco for humans</a>
 </main>
 
 <style>
@@ -144,231 +173,488 @@
 	}
 
 	.org {
-		position: relative;
 		min-height: 100vh;
 		min-height: 100dvh;
-		display: flex;
-		justify-content: center;
-		padding: 56px 24px 72px;
+		max-width: 960px;
+		margin: 0 auto;
 		background: #f4f1ea;
-		overflow: hidden;
 		font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
-		color: #1c1d1f;
-	}
-
-	.org::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background-image:
-			linear-gradient(to right, rgba(28, 29, 31, 0.04) 1px, transparent 1px),
-			linear-gradient(to bottom, rgba(28, 29, 31, 0.04) 1px, transparent 1px);
-		background-size: 64px 64px;
-		mask-image: radial-gradient(ellipse 75% 65% at 50% 40%, #000 30%, transparent 82%);
-		-webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 40%, #000 30%, transparent 82%);
-		pointer-events: none;
-	}
-
-	.stage {
-		position: relative;
-		z-index: 1;
-		max-width: 720px;
-		width: 100%;
+		color: #1c1b18;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		gap: 22px;
 	}
 
-	.brandline {
-		display: inline-flex;
+	/* nav */
+	.nav {
+		display: flex;
 		align-items: center;
-		gap: 12px;
+		justify-content: space-between;
+		padding: 20px 44px;
+		border-bottom: 1px solid rgba(28, 27, 24, 0.1);
+		gap: 14px;
+	}
+	.brandline {
+		display: flex;
+		align-items: center;
+		gap: 10px;
 		text-decoration: none;
 		color: inherit;
 	}
-	.mark {
-		width: 44px;
-		height: 44px;
-		border-radius: 11px;
-		box-shadow: 0 8px 22px rgba(45, 99, 245, 0.16);
+	.aperture {
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
+		border: 4.5px solid #2d63f5;
+		position: relative;
+		flex: none;
 	}
-	.brand {
+	.aperture::after {
+		content: '';
+		position: absolute;
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background: #18b26b;
+		right: -1px;
+		bottom: -1px;
+	}
+	.wordmark {
 		font-family: 'Space Grotesk', system-ui, sans-serif;
 		font-weight: 600;
-		font-size: 1.5rem;
+		font-size: 19px;
 		letter-spacing: -0.02em;
 	}
 	.for-tag {
-		padding: 5px 11px;
-		border-radius: 999px;
-		background: rgba(45, 99, 245, 0.1);
-		color: #2d63f5;
-		font-size: 0.68rem;
+		color: rgba(28, 27, 24, 0.45);
+		font-weight: 500;
+	}
+	.apply-btn {
+		padding: 9px 18px;
+		border-radius: 11px;
+		background: #1c1b18;
 		font-weight: 700;
-		letter-spacing: 0.14em;
+		font-size: 13px;
+		color: #f4f1ea;
+		text-decoration: none;
+		flex: none;
+	}
+	.apply-btn:hover {
+		background: #33312c;
 	}
 
+	/* hero */
+	.org-hero {
+		padding: 52px 44px 40px;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
 	.headline {
 		font-family: 'Space Grotesk', system-ui, sans-serif;
 		font-weight: 600;
-		font-size: clamp(2rem, 6vw, 3.2rem);
-		line-height: 1.08;
-		letter-spacing: -0.025em;
-		margin: 10px 0 0;
+		font-size: clamp(30px, 5.4vw, 44px);
+		line-height: 1.05;
+		letter-spacing: -0.03em;
+		max-width: 600px;
+		text-wrap: balance;
+		margin: 0;
 	}
-	.headline em {
-		font-style: italic;
-		color: #2d63f5;
-	}
-
 	.sub {
-		font-size: 1.02rem;
-		line-height: 1.65;
-		color: #6f6b61;
-		max-width: 52ch;
+		font-weight: 400;
+		font-size: 17px;
+		line-height: 1.55;
+		color: rgba(28, 27, 24, 0.6);
+		max-width: 540px;
 		margin: 0;
 	}
 
-	.cards {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 14px;
+	/* map product shot */
+	.map-shot {
+		height: 300px;
+		border-radius: 20px;
+		background: #101115;
+		position: relative;
+		overflow: hidden;
+		border: 1px solid rgba(28, 27, 24, 0.15);
+	}
+	.street-h {
+		position: absolute;
+		left: -40px;
+		top: 120px;
+		width: 150%;
+		height: 7px;
+		background: rgba(245, 246, 248, 0.06);
+		transform: rotate(-5deg);
+	}
+	.street-v {
+		position: absolute;
+		left: 200px;
+		top: -30px;
+		width: 5px;
+		height: 130%;
+		background: rgba(245, 246, 248, 0.05);
+		transform: rotate(5deg);
+	}
+	.pin-wrap {
+		position: absolute;
+		left: 90px;
+		top: 60px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.pin {
+		position: relative;
+	}
+	.sonar {
+		position: absolute;
+		inset: -5px;
+		border-radius: 16px;
+		border: 2px solid rgba(24, 178, 107, 0.5);
+		animation: sonar 1.8s ease-out infinite;
+	}
+	@keyframes sonar {
+		0% {
+			transform: scale(1);
+			opacity: 1;
+		}
+		100% {
+			transform: scale(1.35);
+			opacity: 0;
+		}
+	}
+	.poster {
+		width: 82px;
+		height: 104px;
+		border-radius: 12px;
+		overflow: hidden;
+		position: relative;
+		box-shadow:
+			0 0 0 2px #101115,
+			0 0 0 3.5px rgba(195, 168, 240, 0.55),
+			0 14px 30px -10px rgba(0, 0, 0, 0.8);
+	}
+	.poster img {
 		width: 100%;
-		margin-top: 14px;
-		text-align: left;
+		height: 100%;
+		object-fit: cover;
+		filter: saturate(0.82) contrast(1.06);
+		display: block;
 	}
-	.card {
-		background: #ffffff;
-		border: 1px solid rgba(28, 29, 31, 0.07);
-		border-radius: 18px;
-		padding: 22px 20px;
-		box-shadow: 0 6px 22px rgba(28, 29, 31, 0.05);
+	.poster-scrim {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(180deg, rgba(15, 16, 19, 0.05) 30%, rgba(15, 16, 19, 0.9) 100%);
 	}
-	.card-icon {
-		font-size: 1.3rem;
-		margin-bottom: 10px;
-	}
-	.card h3 {
+	.poster-title {
+		position: absolute;
+		left: 7px;
+		bottom: 18px;
+		right: 7px;
 		font-family: 'Space Grotesk', system-ui, sans-serif;
 		font-weight: 600;
-		font-size: 1.02rem;
-		letter-spacing: -0.01em;
-		margin: 0 0 6px;
+		font-size: 11px;
+		color: #f5f6f8;
 	}
-	.card p {
-		font-size: 0.86rem;
+	.poster-going {
+		position: absolute;
+		left: 7px;
+		bottom: 6px;
+		font-weight: 700;
+		font-size: 8px;
+		letter-spacing: 0.1em;
+		color: #2bce85;
+		white-space: nowrap;
+	}
+	.pin-seal {
+		position: absolute;
+		right: -8px;
+		top: -8px;
+		width: 21px;
+		height: 21px;
+		border-radius: 50%;
+		background: #17181d;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		box-shadow: 0 0 0 2px #101115;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.pin-tip {
+		width: 8px;
+		height: 8px;
+		background: rgba(195, 168, 240, 0.55);
+		transform: rotate(45deg);
+		margin-top: -2px;
+		border-radius: 1.5px;
+	}
+	.friends {
+		position: absolute;
+		left: 290px;
+		top: 110px;
+		display: flex;
+	}
+	.friend {
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		background: radial-gradient(120% 120% at 76% 6%, rgba(228, 156, 66, 0.5), transparent 62%), #17181d;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		box-shadow: 0 0 0 2px #101115;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 700;
+		font-size: 13px;
+		color: #e3b678;
+	}
+	.friend + .friend {
+		margin-left: -10px;
+		background: radial-gradient(120% 120% at 76% 6%, rgba(223, 106, 152, 0.5), transparent 62%), #17181d;
+		color: #e59fbe;
+	}
+	.friend.live {
+		box-shadow:
+			0 0 0 2px #101115,
+			0 0 0 4px #18b26b;
+		z-index: 2;
+	}
+	.shot-caption {
+		position: absolute;
+		right: 26px;
+		bottom: 22px;
+		padding: 8px 15px;
+		border-radius: 999px;
+		background: rgba(23, 24, 29, 0.92);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		font-weight: 600;
+		font-size: 12.5px;
+		color: #f5f6f8;
+	}
+
+	/* proof strip */
+	.proof {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		border-top: 1px solid rgba(28, 27, 24, 0.1);
+		border-bottom: 1px solid rgba(28, 27, 24, 0.1);
+	}
+	.proof-cell {
+		padding: 26px 30px;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.proof-cell:not(:last-child) {
+		border-right: 1px solid rgba(28, 27, 24, 0.1);
+	}
+	.proof-numeral {
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 700;
+		font-size: 30px;
+		letter-spacing: -0.02em;
+	}
+	.proof-numeral.cobalt {
+		color: #2d63f5;
+	}
+	.proof-caption {
+		font-weight: 500;
+		font-size: 13px;
+		line-height: 1.45;
+		color: rgba(28, 27, 24, 0.6);
+	}
+	.proof-label {
+		font-weight: 700;
+		font-size: 10.5px;
+		letter-spacing: 0.16em;
+		color: rgba(28, 27, 24, 0.4);
+		margin-bottom: 4px;
+	}
+	.logo-slots {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+	.logo-slot {
+		width: 78px;
+		height: 30px;
+		border-radius: 8px;
+		border: 1.5px dashed rgba(28, 27, 24, 0.25);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		font-size: 10px;
+		color: rgba(28, 27, 24, 0.4);
+	}
+
+	/* bottom: console + verify + CTA */
+	.bottom {
+		padding: 40px 44px 46px;
+		display: flex;
+		gap: 30px;
+		align-items: flex-start;
+	}
+	.console-col {
+		flex: 1.3;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+	.verify-col {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+	.section-title {
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 600;
+		font-size: 23px;
+		letter-spacing: -0.02em;
+		margin: 0;
+	}
+	.section-body {
+		font-weight: 400;
+		font-size: 14px;
 		line-height: 1.55;
-		color: #6f6b61;
+		color: rgba(28, 27, 24, 0.6);
 		margin: 0;
 	}
 
-	.pilot {
-		width: 100%;
-		max-width: 560px;
-		margin-top: 22px;
-		background: #ffffff;
-		border: 1px solid rgba(45, 99, 245, 0.22);
-		border-radius: 22px;
-		padding: 28px 26px;
-		box-shadow: 0 14px 40px rgba(45, 99, 245, 0.1);
-		text-align: left;
+	.console-shot {
+		display: block;
+		height: 190px;
+		border-radius: 16px;
+		background: #0f1013;
+		border: 1px solid rgba(28, 27, 24, 0.15);
+		position: relative;
+		overflow: hidden;
+		text-decoration: none;
 	}
-	.pilot-head {
+	.mini-sidebar {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 70px;
+		background: #101115;
+		border-right: 1px solid rgba(255, 255, 255, 0.07);
+	}
+	.mini-title {
+		position: absolute;
+		left: 86px;
+		top: 18px;
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 600;
+		font-size: 16px;
+		color: #f5f6f8;
+	}
+	.mini-cards {
+		position: absolute;
+		left: 86px;
+		top: 48px;
 		display: flex;
-		align-items: center;
-		gap: 8px;
+		gap: 10px;
 	}
-	.pilot-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background: #18b26b;
-		box-shadow: 0 0 0 0 rgba(24, 178, 107, 0.5);
-		animation: pulse 2s ease-out infinite;
+	.mini-card {
+		width: 120px;
+		height: 110px;
+		border-radius: 12px;
+		background: #17181d;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		overflow: hidden;
 	}
-	@keyframes pulse {
-		0%   { box-shadow: 0 0 0 0 rgba(24, 178, 107, 0.6); }
-		70%  { box-shadow: 0 0 0 9px rgba(24, 178, 107, 0); }
-		100% { box-shadow: 0 0 0 0 rgba(24, 178, 107, 0); }
+	.mini-card img {
+		width: 100%;
+		height: 62px;
+		object-fit: cover;
+		filter: saturate(0.82) contrast(1.06);
+		display: block;
 	}
-	.pilot-label {
-		font-size: 0.72rem;
+	.mini-card.dashed {
+		background: #101115;
+		border: 1px dashed rgba(255, 255, 255, 0.2);
+	}
+	.mini-going {
+		padding: 7px 9px;
+		font-family: 'Space Grotesk', system-ui, sans-serif;
 		font-weight: 700;
-		letter-spacing: 0.15em;
-		color: #2d63f5;
+		font-size: 11px;
+		color: rgba(245, 246, 248, 0.75);
 	}
-	.pilot-sub {
-		font-size: 0.9rem;
-		line-height: 1.6;
-		color: #6f6b61;
-		margin: 10px 0 18px;
+	.mini-going.green {
+		color: #2bce85;
+	}
+	.mini-caption {
+		position: absolute;
+		right: 16px;
+		bottom: 14px;
+		font-weight: 600;
+		font-size: 11.5px;
+		color: rgba(245, 246, 248, 0.5);
 	}
 
-	.pilot-form {
+	/* apply card */
+	.apply-card {
+		padding: 18px 20px;
+		border-radius: 14px;
+		background: #fff;
+		border: 1px solid rgba(28, 27, 24, 0.12);
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
 	}
-	.row {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 10px;
+	.apply-label {
+		font-weight: 700;
+		font-size: 10.5px;
+		letter-spacing: 0.16em;
+		color: rgba(28, 27, 24, 0.4);
 	}
-	input {
-		width: 100%;
-		border: 1px solid rgba(28, 29, 31, 0.12);
-		border-radius: 12px;
-		background: #faf8f4;
-		padding: 13px 14px;
+	.apply-card input {
+		height: 40px;
+		border-radius: 10px;
+		border: 1px solid rgba(28, 27, 24, 0.18);
+		padding: 0 13px;
 		font-family: inherit;
-		font-size: 0.92rem;
-		color: #1c1d1f;
+		font-weight: 500;
+		font-size: 13.5px;
+		color: #1c1b18;
 		outline: none;
+		background: #fff;
 		transition: border-color 0.15s ease, box-shadow 0.15s ease;
 	}
-	input:focus {
+	.apply-card input:focus {
 		border-color: #2d63f5;
 		box-shadow: 0 0 0 3px rgba(45, 99, 245, 0.12);
 	}
-	input::placeholder {
-		color: #9a958a;
+	.apply-card input::placeholder {
+		color: rgba(28, 27, 24, 0.45);
 	}
-
 	.cta {
-		margin-top: 4px;
+		height: 44px;
+		border-radius: 10px;
 		border: 0;
 		background: #2d63f5;
-		color: #ffffff;
 		font-family: inherit;
-		font-size: 1rem;
-		font-weight: 600;
-		padding: 14px 28px;
-		border-radius: 13px;
+		font-weight: 700;
+		font-size: 14px;
+		color: #fff;
 		cursor: pointer;
-		box-shadow: 0 10px 28px rgba(45, 99, 245, 0.22);
-		transition: background 0.15s ease, transform 0.08s ease;
+		transition: background 0.15s ease;
 	}
 	.cta:hover:not(:disabled) {
 		background: #1f51d6;
-		transform: translateY(-1px);
 	}
 	.cta:disabled {
 		opacity: 0.6;
 		cursor: default;
 	}
-	.cta-sub {
-		font-size: 0.76rem;
-		color: #8593ac;
-		margin: 2px 0 0;
-		text-align: center;
-	}
 	.error {
-		font-size: 0.82rem;
+		font-size: 12.5px;
 		color: #c2402a;
 		margin: 0;
-		text-align: center;
 	}
 
 	.success {
@@ -380,7 +666,7 @@
 		background: rgba(24, 178, 107, 0.1);
 		border: 1px solid rgba(24, 178, 107, 0.28);
 		color: #0f6e56;
-		font-size: 0.95rem;
+		font-size: 14.5px;
 		font-weight: 500;
 	}
 	.success .check {
@@ -391,29 +677,49 @@
 		height: 22px;
 		border-radius: 50%;
 		background: #18b26b;
-		color: #ffffff;
-		font-size: 0.78rem;
+		color: #fff;
+		font-size: 12px;
 		font-weight: 700;
 		flex: none;
 	}
 
 	.back {
-		margin-top: 24px;
-		font-size: 0.82rem;
-		color: #9a958a;
+		padding: 0 44px 40px;
+		font-size: 13px;
+		color: rgba(28, 27, 24, 0.45);
 		text-decoration: none;
-		transition: color 0.2s ease;
 	}
 	.back:hover {
 		color: #2d63f5;
 	}
 
-	@media (max-width: 640px) {
-		.cards {
+	@media (max-width: 760px) {
+		.nav,
+		.hero,
+		.bottom {
+			padding-left: 22px;
+			padding-right: 22px;
+		}
+		.proof {
 			grid-template-columns: 1fr;
 		}
-		.row {
-			grid-template-columns: 1fr;
+		.proof-cell:not(:last-child) {
+			border-right: 0;
+			border-bottom: 1px solid rgba(28, 27, 24, 0.1);
+		}
+		.bottom {
+			flex-direction: column;
+		}
+		.bottom > * {
+			width: 100%;
+		}
+		.friends {
+			left: auto;
+			right: 40px;
+			top: 60px;
+		}
+		.back {
+			padding: 0 22px 40px;
 		}
 	}
 </style>
