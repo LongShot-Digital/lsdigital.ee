@@ -28,6 +28,13 @@
 </script>
 
 <svelte:head>
+	<style>
+		html,
+		body {
+			background: #f4f1ea;
+		}
+	</style>
+
 	<title>Marco — coming soon</title>
 	<meta
 		name="description"
@@ -83,11 +90,6 @@
 </main>
 
 <style>
-	:global(html),
-	:global(body) {
-		background: #f4f1ea;
-	}
-
 	.marco {
 		position: relative;
 		min-height: 100vh;

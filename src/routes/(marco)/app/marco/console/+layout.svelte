@@ -11,6 +11,12 @@
 
 <svelte:head>
 	<title>Le Motel — Marco console</title>
+	<style>
+		html,
+		body {
+			background: #0f1013;
+		}
+	</style>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -59,11 +65,6 @@
 </div>
 
 <style>
-	:global(html),
-	:global(body) {
-		background: #0f1013;
-	}
-
 	.console {
 		display: flex;
 		min-height: 100vh;

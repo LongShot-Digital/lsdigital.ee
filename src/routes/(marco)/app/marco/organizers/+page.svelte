@@ -35,6 +35,13 @@
 </script>
 
 <svelte:head>
+	<style>
+		html,
+		body {
+			background: #f4f1ea;
+		}
+	</style>
+
 	<title>Marco for Organizers — your events, on the map where tonight gets decided</title>
 	<meta
 		name="description"
@@ -49,7 +56,10 @@
 			<span class="aperture" aria-hidden="true"></span>
 			<span class="wordmark">marco <span class="for-tag">for organizers</span></span>
 		</a>
-		<a href="#apply" class="apply-btn">Apply for the pilot</a>
+		<div class="nav-actions">
+			<a href="/app/marco/console" class="signin">Sign in</a>
+			<a href="#apply" class="apply-btn">Apply for the pilot</a>
+		</div>
 	</nav>
 
 	<!-- hero: the map IS the pitch -->
@@ -94,8 +104,8 @@
 			<span class="proof-caption">of RSVPs arrive through a friend&rsquo;s plan — crowds that multiply themselves</span>
 		</div>
 		<div class="proof-cell">
-			<span class="proof-numeral">0 ads</span>
-			<span class="proof-caption">your event is a poster on the map, never an interruption — friends&rsquo; plans always rank first</span>
+			<span class="proof-numeral">0 spam</span>
+			<span class="proof-caption">every pin is a hand-verified organizer — your poster never competes with ghost listings or clutter</span>
 		</div>
 		<div class="proof-cell">
 			<span class="proof-label">PILOT VENUES — SLOT</span>
@@ -167,11 +177,6 @@
 </main>
 
 <style>
-	:global(html),
-	:global(body) {
-		background: #f4f1ea;
-	}
-
 	.org {
 		min-height: 100vh;
 		min-height: 100dvh;
@@ -227,6 +232,21 @@
 	.for-tag {
 		color: rgba(28, 27, 24, 0.45);
 		font-weight: 500;
+	}
+	.nav-actions {
+		display: flex;
+		align-items: center;
+		gap: 18px;
+		flex: none;
+	}
+	.signin {
+		font-weight: 600;
+		font-size: 13.5px;
+		color: rgba(28, 27, 24, 0.6);
+		text-decoration: none;
+	}
+	.signin:hover {
+		color: #2d63f5;
 	}
 	.apply-btn {
 		padding: 9px 18px;
