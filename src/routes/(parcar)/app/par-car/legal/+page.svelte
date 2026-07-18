@@ -9,7 +9,7 @@
 <div class="legal">
 	<nav>
 		<a href="/app/par-car" class="nav-logo">
-			<img src="/app/par-car/app-icon.png" alt="Par Car" class="nav-logo-icon" />
+			<img src="/app/par-car/app-icon.png" alt="Par Car" class="nav-logo-icon" width="32" height="32" />
 			<span class="nav-logo-text">
 				<span>PAR</span>
 				<span class="flag">

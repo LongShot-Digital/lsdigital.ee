@@ -108,7 +108,7 @@
 	<nav class:scrolled>
 		<div class="nav-inner">
 			<a class="logo" href="/app/par-car">
-				<img src="/app/par-car/app-icon.png" alt="Par Car" class="logo-icon" />
+				<img src="/app/par-car/app-icon.png" alt="Par Car" class="logo-icon" width="30" height="30" />
 				<span class="logo-text">
 					<span>PAR</span>
 					<span class="flag">
