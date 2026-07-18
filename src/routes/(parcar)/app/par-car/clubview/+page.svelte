@@ -810,6 +810,11 @@
 		);
 	}
 
+	/// First token of the model — "911 Carrera" → "911" (plaque thumb label).
+	function modelShort(m: string): string {
+		return m.split(' ')[0] || m;
+	}
+
 	function parseHHMM(s: string): Date | null {
 		if (!s) return null;
 		const m = s.match(/(\d+):(\d+)\s*(AM|PM)/i);
@@ -1090,12 +1095,15 @@
 									out:fade={{ duration: 140 }}
 									onclick={() => selectBooking(b.id)}
 								>
-									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
-										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
-											{b.vehicleMake.toUpperCase()}
-										</div>
-										<div class="paint-sub" style:color={isPaintLight(b.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
-											'{String(b.vehicleYear).slice(-2)} {b.vehicleModel.toUpperCase()}
+									<div class="paint-tile">
+										<div
+											class="pt-bar"
+											class:light={isPaintLight(b.vehicleColor)}
+											style="background: {paintColor(b.vehicleColor)}"
+										></div>
+										<div class="pt-bd">
+											<span class="pt-l1">{modelShort(b.vehicleModel)}</span>
+											<span class="pt-l2">{b.plate}</span>
 										</div>
 									</div>
 									<div class="col-member">
@@ -1141,12 +1149,15 @@
 									out:fade={{ duration: 140 }}
 									onclick={() => selectBooking(b.id)}
 								>
-									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
-										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
-											{b.vehicleMake.toUpperCase()}
-										</div>
-										<div class="paint-sub" style:color={isPaintLight(b.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
-											'{String(b.vehicleYear).slice(-2)} {b.vehicleModel.toUpperCase()}
+									<div class="paint-tile">
+										<div
+											class="pt-bar"
+											class:light={isPaintLight(b.vehicleColor)}
+											style="background: {paintColor(b.vehicleColor)}"
+										></div>
+										<div class="pt-bd">
+											<span class="pt-l1">{modelShort(b.vehicleModel)}</span>
+											<span class="pt-l2">{b.plate}</span>
 										</div>
 									</div>
 									<div class="col-member">
@@ -1192,12 +1203,15 @@
 									out:fade={{ duration: 140 }}
 									onclick={() => selectBooking(b.id)}
 								>
-									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
-										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
-											{b.vehicleMake.toUpperCase()}
-										</div>
-										<div class="paint-sub" style:color={isPaintLight(b.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
-											'{String(b.vehicleYear).slice(-2)} {b.vehicleModel.toUpperCase()}
+									<div class="paint-tile">
+										<div
+											class="pt-bar"
+											class:light={isPaintLight(b.vehicleColor)}
+											style="background: {paintColor(b.vehicleColor)}"
+										></div>
+										<div class="pt-bd">
+											<span class="pt-l1">{modelShort(b.vehicleModel)}</span>
+											<span class="pt-l2">{b.plate}</span>
 										</div>
 									</div>
 									<div class="col-member">
@@ -1243,12 +1257,15 @@
 									out:fade={{ duration: 140 }}
 									onclick={() => selectBooking(b.id)}
 								>
-									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
-										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
-											{b.vehicleMake.toUpperCase()}
-										</div>
-										<div class="paint-sub" style:color={isPaintLight(b.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
-											'{String(b.vehicleYear).slice(-2)} {b.vehicleModel.toUpperCase()}
+									<div class="paint-tile">
+										<div
+											class="pt-bar"
+											class:light={isPaintLight(b.vehicleColor)}
+											style="background: {paintColor(b.vehicleColor)}"
+										></div>
+										<div class="pt-bd">
+											<span class="pt-l1">{modelShort(b.vehicleModel)}</span>
+											<span class="pt-l2">{b.plate}</span>
 										</div>
 									</div>
 									<div class="col-member">
@@ -1294,12 +1311,15 @@
 									out:fade={{ duration: 140 }}
 									onclick={() => selectBooking(b.id)}
 								>
-									<div class="paint-tile" style="background: {paintColor(b.vehicleColor)}">
-										<div class="paint-brand" style:color={isPaintLight(b.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
-											{b.vehicleMake.toUpperCase()}
-										</div>
-										<div class="paint-sub" style:color={isPaintLight(b.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
-											'{String(b.vehicleYear).slice(-2)} {b.vehicleModel.toUpperCase()}
+									<div class="paint-tile">
+										<div
+											class="pt-bar"
+											class:light={isPaintLight(b.vehicleColor)}
+											style="background: {paintColor(b.vehicleColor)}"
+										></div>
+										<div class="pt-bd">
+											<span class="pt-l1">{modelShort(b.vehicleModel)}</span>
+											<span class="pt-l2">{b.plate}</span>
 										</div>
 									</div>
 									<div class="col-member">
@@ -1660,12 +1680,15 @@
 			<section class="drawer-section">
 				<div class="ds-h">VEHICLE</div>
 				<div class="drawer-vehicle">
-					<div class="dv-paint" style="background: {paintColor(selectedBooking.vehicleColor)}">
-						<div class="dv-brand" style:color={isPaintLight(selectedBooking.vehicleColor) ? '#1c1a16' : 'rgba(255,255,255,0.95)'}>
-							{selectedBooking.vehicleMake.toUpperCase()}
-						</div>
-						<div class="dv-sub" style:color={isPaintLight(selectedBooking.vehicleColor) ? '#595650' : 'rgba(255,255,255,0.62)'}>
-							'{String(selectedBooking.vehicleYear).slice(-2)} {selectedBooking.vehicleModel.toUpperCase()}
+					<div class="dv-paint">
+						<div
+							class="pt-bar"
+							class:light={isPaintLight(selectedBooking.vehicleColor)}
+							style="background: {paintColor(selectedBooking.vehicleColor)}"
+						></div>
+						<div class="pt-bd">
+							<span class="dv-l1">{modelShort(selectedBooking.vehicleModel)}</span>
+							<span class="dv-l2">{selectedBooking.plate}</span>
 						</div>
 					</div>
 					<div class="dv-info">
@@ -2422,30 +2445,57 @@
 	.row-scheduled { opacity: 0.85; }
 	.row-completed { opacity: 0.72; }
 
+	/* Plaque thumbnail (VehicleArt approach E): warm-white spec plate,
+	   paint present only as the lacquered edge bar. */
 	.paint-tile {
 		width: 68px;
 		height: 42px;
 		border-radius: 6px;
-		padding: 5px 7px;
+		overflow: hidden;
+		display: flex;
+		background: var(--paper);
+		box-shadow: inset 0 0 0 1px var(--line-2);
+	}
+	.pt-bar {
+		width: 7px;
+		flex: none;
+		position: relative;
+	}
+	.pt-bar::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%);
+	}
+	.pt-bar.light {
+		box-shadow: inset 0 0 0 1px rgba(28, 26, 22, 0.14);
+	}
+	.pt-bd {
+		flex: 1;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
-		overflow: hidden;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-		border: 1px solid rgba(0, 0, 0, 0.15);
+		justify-content: center;
+		padding: 0 8px;
+		min-width: 0;
 	}
-	.paint-brand {
+	.pt-l1 {
 		font-family: 'Spectral', serif;
 		font-weight: 500;
-		font-size: 9px;
-		letter-spacing: 0.05em;
-		line-height: 1;
+		font-size: 11px;
+		color: var(--ink);
+		line-height: 1.1;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
-	.paint-sub {
+	.pt-l2 {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 6.5px;
 		letter-spacing: 0.1em;
+		color: rgba(28, 26, 22, 0.5);
 		font-weight: 600;
+		margin-top: 2px;
+		white-space: nowrap;
 	}
 	.member-name {
 		font-family: 'Spectral', serif;
@@ -2717,24 +2767,28 @@
 		width: 92px;
 		height: 58px;
 		border-radius: 8px;
-		padding: 7px 10px;
+		overflow: hidden;
 		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-		border: 1px solid rgba(0, 0, 0, 0.15);
+		background: var(--paper);
+		box-shadow: inset 0 0 0 1px var(--line-2);
 	}
-	.dv-brand {
+	.dv-paint .pt-bar {
+		width: 9px;
+	}
+	.dv-l1 {
 		font-family: 'Spectral', serif;
 		font-weight: 500;
-		font-size: 11px;
-		letter-spacing: 0.05em;
+		font-size: 13px;
+		color: var(--ink);
+		line-height: 1.1;
 	}
-	.dv-sub {
+	.dv-l2 {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 8px;
-		letter-spacing: 0.1em;
+		letter-spacing: 0.12em;
+		color: rgba(28, 26, 22, 0.5);
 		font-weight: 600;
+		margin-top: 3px;
 	}
 	.dv-name {
 		font-family: 'Spectral', serif;

@@ -237,8 +237,11 @@
 										     VehicleArt default. User can replace with their own photo
 										     via Edit Vehicle in the real app. -->
 										<div class="vehicle-paint">
-											<div class="paint-brand">RANGE ROVER</div>
-											<div class="paint-sub">'24 VELAR</div>
+											<div class="vp-bar"></div>
+											<div class="vp-bd">
+												<span class="vp-l1">Velar</span>
+												<span class="vp-l2">0418 EE</span>
+											</div>
 										</div>
 										<div class="vehicle-info">
 											<div class="vehicle-name">Range Rover</div>
@@ -1128,31 +1131,50 @@
 		padding: 8px;
 		border-radius: 12px;
 	}
+	/* Plaque thumb (VehicleArt approach E) */
 	.pc .vehicle-paint {
 		width: 64px;
 		height: 38px;
 		border-radius: 7px;
-		background: linear-gradient(135deg, #14141a 0%, #2a2a2e 100%);
-		padding: 5px 7px;
+		overflow: hidden;
+		display: flex;
+		background: var(--paper);
+		box-shadow: inset 0 0 0 1px var(--line);
+	}
+	.pc .vp-bar {
+		width: 6px;
+		flex: none;
+		background: linear-gradient(180deg, #23232c, #14141a 55%, #0c0c11);
+		position: relative;
+	}
+	.pc .vp-bar::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 55%);
+	}
+	.pc .vp-bd {
+		flex: 1;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
-		overflow: hidden;
+		justify-content: center;
+		padding: 0 7px;
+		min-width: 0;
 	}
-	.pc .paint-brand {
+	.pc .vp-l1 {
 		font-family: 'Spectral', serif;
 		font-weight: 500;
-		font-size: 8px;
-		letter-spacing: 0.06em;
-		color: rgba(255, 255, 255, 0.95);
-		line-height: 1;
+		font-size: 10px;
+		color: var(--ink);
+		line-height: 1.1;
 	}
-	.pc .paint-sub {
+	.pc .vp-l2 {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 6px;
 		letter-spacing: 0.12em;
-		color: rgba(255, 255, 255, 0.55);
+		color: rgba(28, 26, 22, 0.5);
 		font-weight: 600;
+		margin-top: 2px;
 	}
 	.pc .vehicle-info {
 		min-width: 0;
