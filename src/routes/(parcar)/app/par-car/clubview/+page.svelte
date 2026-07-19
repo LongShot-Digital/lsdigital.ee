@@ -1378,10 +1378,12 @@
 						<div class="eh-sub">20% of €34,710 gross across 412 washes this month</div>
 					</div>
 					<div class="eh-right">
+						<!-- Estonian season: Jan–Mar the course is closed, April is the
+						     soft opening, June is peak. No revenue bars in winter. -->
 						<div class="eh-chart">
-							{#each [4200, 5100, 5800, 6100, 6480, 6942] as v, i}
-								<div class="bar" style="height: {(v / 7000) * 100}%">
-									<div class="bar-val">€{(v / 1000).toFixed(1)}k</div>
+							{#each [0, 0, 0, 2100, 5400, 6942] as v}
+								<div class="bar" class:off={v === 0} style="height: {(v / 7000) * 100}%">
+									<div class="bar-val">{v === 0 ? '—' : `€${(v / 1000).toFixed(1)}k`}</div>
 								</div>
 							{/each}
 						</div>
@@ -3101,6 +3103,9 @@
 		border-radius: 4px 4px 0 0;
 		position: relative;
 		min-height: 20px;
+	}
+	.bar.off {
+		opacity: 0.22;
 	}
 	.bar-val {
 		position: absolute;

@@ -90,7 +90,10 @@
 
 	let monthlySpend = $derived(calcWashes * calcTicket);
 	let monthlyClub = $derived(Math.round(monthlySpend * 0.2));
-	let annualClub = $derived(monthlyClub * 12);
+	// Nordic golf season isn't 12 months — season total is month × active
+	// months (~5, May–September), never month × 12.
+	const seasonMonths = 5;
+	let seasonClub = $derived(monthlyClub * seasonMonths);
 
 	const fmt = (n: number) => n.toLocaleString('en-US');
 </script>
@@ -557,8 +560,8 @@
 							<span class="val">€{fmt(monthlyClub)}</span>
 						</div>
 						<div class="calc-result-row">
-							<span class="lbl">Club share / year</span>
-							<span class="val">€{fmt(annualClub)}</span>
+							<span class="lbl">Club share / season · ≈5 mo</span>
+							<span class="val">€{fmt(seasonClub)}</span>
 						</div>
 						<div class="calc-result-row dim">
 							<span class="lbl">Total member spend / month</span>
@@ -568,6 +571,7 @@
 
 					<p class="calc-note">
 						Illustrative only. Real numbers depend on actual member adoption at your club.
+						Season total assumes a ~5-month Nordic season (May–September).
 					</p>
 				</aside>
 			</div>
