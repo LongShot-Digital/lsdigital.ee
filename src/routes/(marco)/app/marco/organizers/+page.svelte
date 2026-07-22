@@ -38,7 +38,10 @@
 	<style>
 		html,
 		body {
-			background: #f4f1ea;
+			background: #f4f1ea !important;
+		}
+		body::before {
+			display: none;
 		}
 	</style>
 
@@ -50,309 +53,456 @@
 </svelte:head>
 
 <main class="org">
-	<!-- nav -->
+	<!-- ── nav ── -->
 	<nav class="nav">
-		<a href="/app/marco" class="brandline">
-			<span class="aperture" aria-hidden="true"></span>
-			<span class="wordmark">marco <span class="for-tag">for organizers</span></span>
-		</a>
-		<div class="nav-actions">
-			<a href="/app/marco/console" class="signin">Sign in</a>
-			<a href="#apply" class="apply-btn">Apply for the pilot</a>
+		<div class="shell nav-inner">
+			<a href="/app/marco" class="brandline">
+				<svg width="34" height="34" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-label="Marco" style="border-radius: 8px; display: block;">
+					<rect width="1024" height="1024" rx="228" ry="228" fill="#F4F1EA" />
+					<circle cx="512" cy="512" r="298" fill="#2D63F5" />
+					<circle cx="512" cy="512" r="172" fill="#F4F1EA" />
+					<circle cx="600" cy="446" r="70" fill="#18B26B" />
+				</svg>
+				<span class="wordmark-sm">Marco</span>
+				<span class="for-tag">FOR ORGANIZERS</span>
+			</a>
+			<div class="nav-actions">
+				<a href="/app/marco/console" class="nav-link">Sign in</a>
+				<a href="#apply" class="nav-cta">Apply for the pilot</a>
+			</div>
 		</div>
 	</nav>
 
-	<!-- hero: the map IS the pitch -->
-	<header class="org-hero">
-		<h1 class="headline">Your events, on the map where tonight gets decided.</h1>
-		<p class="sub">
-			Marco is where groups of friends pick their plan. Verified organizers put real events on
-			that map — and pulse when someone&rsquo;s friends are going.
-		</p>
-
-		<!-- map product shot -->
-		<div class="map-shot" role="img" aria-label="A Marco poster pin on the dark map, pulsing because friends are going">
-			<div class="street street-h"></div>
-			<div class="street street-v"></div>
-			<div class="pin-wrap">
-				<div class="pin">
-					<div class="sonar" aria-hidden="true"></div>
-					<div class="poster">
-						<img src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=300&q=70&auto=format&fit=crop" alt="" loading="lazy" />
-						<div class="poster-scrim"></div>
-						<div class="poster-title">Vinyl night</div>
-						<div class="poster-going">4 GOING</div>
-					</div>
-					<span class="pin-seal" aria-hidden="true">
-						<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#F5F6F8" stroke-width="3" stroke-linecap="round"><path d="M4.5 12.5l5 5L19.5 7" /></svg>
-					</span>
+	<!-- ── hero ── -->
+	<header class="hero-band">
+		<div class="shell hero-inner">
+			<div class="hero-copy">
+				<span class="status"><span class="dot"></span>Pilot open · first cities</span>
+				<h1 class="headline">Your events, on the map where tonight gets decided.</h1>
+				<p class="sub">
+					Marco is where groups of friends pick their plan. Verified organizers put real
+					events on that map — and pulse when someone&rsquo;s friends are going.
+				</p>
+				<div class="cta-stack">
+					<a href="#apply" class="cta">Apply for the pilot</a>
+					<span class="cta-sub">A short call with the founders — then you&rsquo;re on the map.</span>
 				</div>
-				<div class="pin-tip" aria-hidden="true"></div>
 			</div>
-			<div class="friends" aria-hidden="true">
-				<span class="friend live">J</span>
-				<span class="friend">L</span>
+
+			<!-- map product shot: the sealed pin, pulsing -->
+			<div class="shot-wrap" role="img" aria-label="A verified organizer's poster pin pulsing on the Marco map because friends are going">
+				<div class="map-shot">
+					<div class="street s1"></div>
+					<div class="street s2"></div>
+					<div class="street s3"></div>
+
+					<div class="pin pin-main">
+						<div class="sonar" aria-hidden="true"></div>
+						<div class="poster">
+							<img src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=300&q=75&auto=format&fit=crop" alt="" loading="lazy" />
+							<div class="poster-scrim"></div>
+							<div class="poster-text">
+								<span class="poster-title">Vinyl night</span>
+								<span class="poster-going">4 GOING</span>
+							</div>
+						</div>
+						<span class="pin-seal" aria-hidden="true">
+							<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#F5F6F8" stroke-width="3.2" stroke-linecap="round"><path d="M4.5 12.5l5 5L19.5 7" /></svg>
+						</span>
+						<div class="pin-tip violet" aria-hidden="true"></div>
+					</div>
+
+					<div class="friends" aria-hidden="true">
+						<span class="friend live">J</span>
+						<span class="friend f2">L</span>
+					</div>
+
+					<span class="you-dot" aria-hidden="true"></span>
+
+					<span class="shot-caption">The Poster Field — your pin, where the night starts</span>
+				</div>
 			</div>
-			<span class="shot-caption">Live product shot — the Poster Field map</span>
 		</div>
 	</header>
 
-	<!-- proof strip -->
-	<section class="proof">
-		<div class="proof-cell">
-			<span class="proof-numeral cobalt">68%</span>
-			<span class="proof-caption">of RSVPs arrive through a friend&rsquo;s plan — crowds that multiply themselves</span>
-		</div>
-		<div class="proof-cell">
-			<span class="proof-numeral">0 spam</span>
-			<span class="proof-caption">every pin is a hand-verified organizer — your poster never competes with ghost listings or clutter</span>
-		</div>
-		<div class="proof-cell">
-			<span class="proof-label">PILOT VENUES — SLOT</span>
-			<div class="logo-slots" aria-hidden="true">
-				<span class="logo-slot">LOGO</span>
-				<span class="logo-slot">LOGO</span>
-				<span class="logo-slot">LOGO</span>
+	<!-- ── proof strip ── -->
+	<section class="proof-band">
+		<div class="shell proof">
+			<div class="proof-cell">
+				<span class="proof-numeral cobalt">68%</span>
+				<span class="proof-caption">of RSVPs arrive through a friend&rsquo;s plan — crowds that multiply themselves</span>
+			</div>
+			<div class="proof-cell">
+				<span class="proof-numeral">0 spam</span>
+				<span class="proof-caption">every pin is a hand-verified organizer — your poster never competes with ghost listings or clutter</span>
+			</div>
+			<div class="proof-cell">
+				<span class="proof-label">PILOT VENUES — SLOT</span>
+				<div class="logo-slots" aria-hidden="true">
+					<span class="logo-slot">LOGO</span>
+					<span class="logo-slot">LOGO</span>
+					<span class="logo-slot">LOGO</span>
+				</div>
 			</div>
 		</div>
 	</section>
 
-	<!-- console + verification + apply -->
-	<section class="bottom">
-		<div class="console-col">
-			<h2 class="section-title">A console, not a dashboard farm.</h2>
-			<a class="console-shot" href="/app/marco/console" aria-label="Open the Marco console">
-				<div class="mini-sidebar" aria-hidden="true"></div>
-				<div class="mini-title">Events</div>
-				<div class="mini-cards" aria-hidden="true">
-					<div class="mini-card">
-						<img src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=300&q=60&auto=format&fit=crop" alt="" loading="lazy" />
-						<div class="mini-going green">86 going</div>
-					</div>
-					<div class="mini-card">
-						<img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=300&q=60&auto=format&fit=crop" alt="" loading="lazy" />
-						<div class="mini-going">142 going</div>
-					</div>
-					<div class="mini-card dashed"></div>
-				</div>
-				<span class="mini-caption">Product shot — the events board</span>
-			</a>
-			<p class="section-body">
-				Publish in two minutes, duplicate your weekly night as a template, watch RSVPs live.
-				Aggregate analytics only — you see how your crowd grows, never your guests&rsquo;
-				private lives.
+	<!-- ── dark console band ── -->
+	<section class="console-band">
+		<div class="shell console-inner">
+			<h2 class="console-headline">A console, not a dashboard farm.</h2>
+			<p class="console-sub">
+				Publish in two minutes, duplicate your weekly night as a template, watch RSVPs
+				live. Aggregate analytics only — you see how your crowd grows, never your
+				guests&rsquo; private lives.
 			</p>
-		</div>
 
-		<div class="verify-col" id="apply">
-			<h2 class="section-title">We verify every organizer.</h2>
-			<p class="section-body">
-				A short call with the founders, then you&rsquo;re on the map with the seal. No spam, no
-				ghost listings — that&rsquo;s why people trust the pins, and why your pin is worth
-				something.
-			</p>
-			{#if submitted}
-				<div class="success">
-					<span class="check">✓</span>
-					Got it — we&rsquo;ll reach out to book your call.
+			<!-- console mock, drawn from the real thing -->
+			<div class="console-shot" role="img" aria-label="The Marco console: events board with live, published and draft cards">
+				<div class="cs-sidebar">
+					<div class="cs-org">
+						<span class="cs-tile">LM
+							<span class="cs-seal"><svg width="6" height="6" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M4.5 12.5l5 5L19.5 7" /></svg></span>
+						</span>
+						<span class="cs-org-meta"><strong>Le Motel</strong><em>Venue · Paris</em></span>
+					</div>
+					<span class="cs-nav active">Events</span>
+					<span class="cs-nav">Analytics</span>
+					<span class="cs-nav">Settings</span>
+					<span class="cs-verified"><span class="cs-vdot"></span>Verified organizer</span>
 				</div>
-			{:else}
-				<form class="apply-card" onsubmit={requestCall}>
-					<span class="apply-label">APPLY — 2 MINUTES</span>
-					<input name="org" type="text" placeholder="Organization name" required autocomplete="organization" />
-					<input name="details" type="text" placeholder="City · Instagram or website" required />
-					<input name="email" type="email" placeholder="Work email — where we book the call" required autocomplete="email" />
-					<button class="cta" type="submit" disabled={submitting}>
-						{submitting ? 'Sending…' : 'Request a call'}
-					</button>
-					{#if error}
-						<p class="error">Something went wrong — email us at info@lsdigital.ee instead.</p>
-					{/if}
-				</form>
-			{/if}
+				<div class="cs-main">
+					<div class="cs-head">
+						<span class="cs-title">Events</span>
+						<span class="cs-tabs"><span class="cs-tab on">Upcoming · 6</span><span class="cs-tab">Drafts · 2</span><span class="cs-tab">Past · 48</span></span>
+						<span class="cs-new">+ New event</span>
+					</div>
+					<div class="cs-grid">
+						<div class="cs-card">
+							<div class="cs-photo">
+								<img src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=400&q=70&auto=format&fit=crop" alt="" loading="lazy" />
+								<span class="cs-chip live"><span class="cs-chipdot"></span>LIVE TONIGHT</span>
+								<span class="cs-card-title">Vinyl night</span>
+							</div>
+							<div class="cs-counts"><strong class="green">86</strong> going · <strong>31</strong> maybe</div>
+						</div>
+						<div class="cs-card">
+							<div class="cs-photo">
+								<img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=70&auto=format&fit=crop" alt="" loading="lazy" />
+								<span class="cs-chip">PUBLISHED</span>
+								<span class="cs-card-title">Modular synth live set</span>
+							</div>
+							<div class="cs-counts"><strong>142</strong> going · <strong>58</strong> maybe</div>
+						</div>
+						<div class="cs-card draft">
+							<div class="cs-photo dashed">
+								<span class="cs-chip dashedchip">DRAFT</span>
+								<span class="cs-card-title dim">NYE — save the date</span>
+							</div>
+							<div class="cs-counts dim">Missing: photo, end time</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<a href="/app/marco/console" class="console-link">Explore the demo console →</a>
 		</div>
 	</section>
 
-	<a href="/app/marco" class="back">← Marco for humans</a>
+	<!-- ── verify + apply ── -->
+	<section class="apply-band" id="apply">
+		<div class="shell apply-inner">
+			<div class="verify-copy">
+				<h2>We verify every organizer.</h2>
+				<p>
+					A short call with the founders, then you&rsquo;re on the map with the seal. No
+					spam, no ghost listings — that&rsquo;s why people trust the pins, and why your
+					pin is worth something.
+				</p>
+				<ul class="verify-list">
+					<li><strong>15 minutes.</strong> We confirm your venue and switch you on.</li>
+					<li><strong>Free for the pilot.</strong> Plus a direct line to the founders.</li>
+					<li><strong>Draft before the call.</strong> Your events go live the moment you&rsquo;re verified.</li>
+				</ul>
+			</div>
+			<div class="apply-col">
+				{#if submitted}
+					<div class="success">
+						<span class="check">✓</span>
+						Got it — we&rsquo;ll reach out to book your call.
+					</div>
+				{:else}
+					<form class="apply-card" onsubmit={requestCall}>
+						<span class="apply-label">APPLY — 2 MINUTES</span>
+						<input name="org" type="text" placeholder="Organization name" required autocomplete="organization" />
+						<input name="details" type="text" placeholder="City · Instagram or website" required />
+						<input name="email" type="email" placeholder="Work email — where we book the call" required autocomplete="email" />
+						<button class="cta form-cta" type="submit" disabled={submitting}>
+							{submitting ? 'Sending…' : 'Request a call'}
+						</button>
+						{#if error}
+							<p class="error">Something went wrong — email us at info@lsdigital.ee instead.</p>
+						{/if}
+					</form>
+				{/if}
+			</div>
+		</div>
+	</section>
+
+	<footer class="footer">
+		<div class="shell footer-inner">
+			<a href="/app/marco" class="footer-link">← Marco for humans</a>
+			<a href="/" class="footer-link">from LongShot Digital</a>
+		</div>
+	</footer>
 </main>
 
 <style>
 	.org {
+		width: 100%;
 		min-height: 100vh;
 		min-height: 100dvh;
-		max-width: 960px;
-		margin: 0 auto;
 		background: #f4f1ea;
 		font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
 		color: #1c1b18;
-		display: flex;
-		flex-direction: column;
+	}
+	.shell {
+		max-width: 1040px;
+		margin: 0 auto;
+		padding-left: 32px;
+		padding-right: 32px;
 	}
 
-	/* nav */
+	/* ── nav ── */
 	.nav {
+		border-bottom: 1px solid rgba(28, 27, 24, 0.1);
+		background: #f4f1ea;
+		position: sticky;
+		top: 0;
+		z-index: 20;
+	}
+	.nav-inner {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 20px 44px;
-		border-bottom: 1px solid rgba(28, 27, 24, 0.1);
 		gap: 14px;
+		height: 66px;
 	}
 	.brandline {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: 11px;
 		text-decoration: none;
 		color: inherit;
 	}
-	.aperture {
-		width: 26px;
-		height: 26px;
-		border-radius: 50%;
-		border: 4.5px solid #2d63f5;
-		position: relative;
-		flex: none;
-	}
-	.aperture::after {
-		content: '';
-		position: absolute;
-		width: 9px;
-		height: 9px;
-		border-radius: 50%;
-		background: #18b26b;
-		right: -1px;
-		bottom: -1px;
-	}
-	.wordmark {
+	.wordmark-sm {
 		font-family: 'Space Grotesk', system-ui, sans-serif;
 		font-weight: 600;
-		font-size: 19px;
+		font-size: 20px;
 		letter-spacing: -0.02em;
 	}
 	.for-tag {
-		color: rgba(28, 27, 24, 0.45);
-		font-weight: 500;
+		padding: 5px 11px;
+		border-radius: 999px;
+		background: rgba(45, 99, 245, 0.1);
+		color: #2d63f5;
+		font-size: 10.5px;
+		font-weight: 700;
+		letter-spacing: 0.13em;
 	}
 	.nav-actions {
 		display: flex;
 		align-items: center;
-		gap: 18px;
+		gap: 20px;
 		flex: none;
 	}
-	.signin {
+	.nav-link {
 		font-weight: 600;
 		font-size: 13.5px;
 		color: rgba(28, 27, 24, 0.6);
 		text-decoration: none;
 	}
-	.signin:hover {
+	.nav-link:hover {
 		color: #2d63f5;
 	}
-	.apply-btn {
-		padding: 9px 18px;
+	.nav-cta {
+		padding: 10px 18px;
 		border-radius: 11px;
 		background: #1c1b18;
 		font-weight: 700;
 		font-size: 13px;
 		color: #f4f1ea;
 		text-decoration: none;
-		flex: none;
 	}
-	.apply-btn:hover {
+	.nav-cta:hover {
 		background: #33312c;
 	}
 
-	/* hero */
-	.org-hero {
-		padding: 52px 44px 40px;
+	/* ── hero ── */
+	.hero-band {
+		position: relative;
+		overflow: hidden;
+	}
+	.hero-band::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image:
+			linear-gradient(to right, rgba(28, 27, 24, 0.045) 1px, transparent 1px),
+			linear-gradient(to bottom, rgba(28, 27, 24, 0.045) 1px, transparent 1px);
+		background-size: 56px 56px;
+		mask-image: radial-gradient(ellipse 75% 70% at 62% 45%, #000 25%, transparent 80%);
+		-webkit-mask-image: radial-gradient(ellipse 75% 70% at 62% 45%, #000 25%, transparent 80%);
+		pointer-events: none;
+	}
+	.hero-inner {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 48px;
+		padding-top: 64px;
+		padding-bottom: 72px;
+	}
+	.hero-copy {
+		flex: 1.15;
 		display: flex;
 		flex-direction: column;
-		gap: 20px;
+		align-items: flex-start;
+		gap: 18px;
+	}
+	.status {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 14px;
+		border-radius: 999px;
+		background: rgba(45, 99, 245, 0.1);
+		color: #2d63f5;
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+	.dot {
+		display: inline-block;
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: #18b26b;
+		box-shadow: 0 0 0 0 rgba(24, 178, 107, 0.5);
+		animation: pulse 2s ease-out infinite;
+	}
+	@keyframes pulse {
+		0%   { box-shadow: 0 0 0 0 rgba(24, 178, 107, 0.6); }
+		70%  { box-shadow: 0 0 0 10px rgba(24, 178, 107, 0); }
+		100% { box-shadow: 0 0 0 0 rgba(24, 178, 107, 0); }
 	}
 	.headline {
 		font-family: 'Space Grotesk', system-ui, sans-serif;
 		font-weight: 600;
-		font-size: clamp(30px, 5.4vw, 44px);
+		font-size: clamp(32px, 5vw, 46px);
 		line-height: 1.05;
 		letter-spacing: -0.03em;
-		max-width: 600px;
-		text-wrap: balance;
 		margin: 0;
+		text-wrap: balance;
 	}
 	.sub {
-		font-weight: 400;
-		font-size: 17px;
+		font-size: 16.5px;
 		line-height: 1.55;
 		color: rgba(28, 27, 24, 0.6);
-		max-width: 540px;
+		max-width: 46ch;
 		margin: 0;
 	}
+	.cta-stack {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin-top: 6px;
+	}
+	.cta {
+		display: inline-block;
+		border: 0;
+		background: #2d63f5;
+		color: #fff;
+		font-family: inherit;
+		font-size: 16px;
+		font-weight: 700;
+		padding: 15px 30px;
+		border-radius: 13px;
+		cursor: pointer;
+		text-align: center;
+		text-decoration: none;
+		box-shadow: 0 10px 28px rgba(45, 99, 245, 0.22);
+		transition: background 0.15s ease, transform 0.08s ease;
+	}
+	.cta:hover {
+		background: #1f51d6;
+		transform: translateY(-1px);
+	}
+	.cta:active {
+		transform: scale(0.98);
+	}
+	.cta-sub {
+		font-size: 12.5px;
+		color: rgba(28, 27, 24, 0.45);
+	}
 
-	/* map product shot */
+	/* ── map shot ── */
+	.shot-wrap {
+		flex: 1;
+		display: flex;
+		justify-content: center;
+		min-width: 0;
+	}
 	.map-shot {
-		height: 300px;
-		border-radius: 20px;
-		background: #101115;
 		position: relative;
+		width: 100%;
+		max-width: 420px;
+		height: 380px;
+		border-radius: 24px;
+		background: #14161b;
 		overflow: hidden;
-		border: 1px solid rgba(28, 27, 24, 0.15);
+		box-shadow:
+			0 40px 80px -30px rgba(28, 27, 24, 0.45),
+			0 0 0 1px rgba(28, 27, 24, 0.15);
 	}
-	.street-h {
+	.street {
 		position: absolute;
-		left: -40px;
-		top: 120px;
-		width: 150%;
-		height: 7px;
-		background: rgba(245, 246, 248, 0.06);
-		transform: rotate(-5deg);
+		background: rgba(245, 246, 248, 0.055);
 	}
-	.street-v {
+	.s1 { left: -30px; top: 150px; width: 150%; height: 6px; transform: rotate(-6deg); }
+	.s2 { left: 90px; top: -30px; width: 4px; height: 120%; transform: rotate(5deg); }
+	.s3 { left: 280px; top: -30px; width: 4px; height: 120%; transform: rotate(5deg); background: rgba(245, 246, 248, 0.04); }
+
+	.pin {
 		position: absolute;
-		left: 200px;
-		top: -30px;
-		width: 5px;
-		height: 130%;
-		background: rgba(245, 246, 248, 0.05);
-		transform: rotate(5deg);
-	}
-	.pin-wrap {
-		position: absolute;
-		left: 90px;
-		top: 60px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 	}
-	.pin {
-		position: relative;
-	}
+	.pin-main { left: 64px; top: 64px; }
 	.sonar {
 		position: absolute;
-		inset: -5px;
+		inset: -6px 0 auto -6px;
+		width: calc(100% + 12px);
+		height: 128px;
 		border-radius: 16px;
 		border: 2px solid rgba(24, 178, 107, 0.5);
 		animation: sonar 1.8s ease-out infinite;
 	}
 	@keyframes sonar {
-		0% {
-			transform: scale(1);
-			opacity: 1;
-		}
-		100% {
-			transform: scale(1.35);
-			opacity: 0;
-		}
+		0%   { transform: scale(1); opacity: 1; }
+		100% { transform: scale(1.3); opacity: 0; }
 	}
 	.poster {
-		width: 82px;
-		height: 104px;
-		border-radius: 12px;
+		width: 92px;
+		height: 116px;
+		border-radius: 13px;
 		overflow: hidden;
 		position: relative;
 		box-shadow:
-			0 0 0 2px #101115,
+			0 0 0 2px #14161b,
 			0 0 0 3.5px rgba(195, 168, 240, 0.55),
-			0 14px 30px -10px rgba(0, 0, 0, 0.8);
+			0 16px 34px -12px rgba(0, 0, 0, 0.85);
 	}
 	.poster img {
 		width: 100%;
@@ -364,27 +514,28 @@
 	.poster-scrim {
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(180deg, rgba(15, 16, 19, 0.05) 30%, rgba(15, 16, 19, 0.9) 100%);
+		background: linear-gradient(180deg, rgba(15, 16, 19, 0.05) 30%, rgba(15, 16, 19, 0.92) 100%);
+	}
+	.poster-text {
+		position: absolute;
+		left: 8px;
+		right: 8px;
+		bottom: 7px;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
 	}
 	.poster-title {
-		position: absolute;
-		left: 7px;
-		bottom: 18px;
-		right: 7px;
 		font-family: 'Space Grotesk', system-ui, sans-serif;
 		font-weight: 600;
-		font-size: 11px;
+		font-size: 11.5px;
 		color: #f5f6f8;
 	}
 	.poster-going {
-		position: absolute;
-		left: 7px;
-		bottom: 6px;
 		font-weight: 700;
-		font-size: 8px;
-		letter-spacing: 0.1em;
+		font-size: 7.5px;
+		letter-spacing: 0.09em;
 		color: #2bce85;
-		white-space: nowrap;
 	}
 	.pin-seal {
 		position: absolute;
@@ -395,76 +546,92 @@
 		border-radius: 50%;
 		background: #17181d;
 		border: 1px solid rgba(255, 255, 255, 0.2);
-		box-shadow: 0 0 0 2px #101115;
+		box-shadow: 0 0 0 2px #14161b;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		z-index: 2;
 	}
 	.pin-tip {
 		width: 8px;
 		height: 8px;
-		background: rgba(195, 168, 240, 0.55);
 		transform: rotate(45deg);
-		margin-top: -2px;
+		margin-top: -1px;
 		border-radius: 1.5px;
 	}
+	.pin-tip.violet { background: rgba(195, 168, 240, 0.55); }
+
 	.friends {
 		position: absolute;
-		left: 290px;
-		top: 110px;
+		right: 76px;
+		top: 168px;
 		display: flex;
 	}
 	.friend {
 		width: 34px;
 		height: 34px;
 		border-radius: 50%;
-		background: radial-gradient(120% 120% at 76% 6%, rgba(228, 156, 66, 0.5), transparent 62%), #17181d;
-		border: 1px solid rgba(255, 255, 255, 0.14);
-		box-shadow: 0 0 0 2px #101115;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		font-family: 'Space Grotesk', system-ui, sans-serif;
 		font-weight: 700;
 		font-size: 13px;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		box-shadow: 0 0 0 2px #14161b;
+		background: radial-gradient(120% 120% at 76% 6%, rgba(228, 156, 66, 0.5), transparent 62%), #17181d;
 		color: #e3b678;
-	}
-	.friend + .friend {
-		margin-left: -10px;
-		background: radial-gradient(120% 120% at 76% 6%, rgba(223, 106, 152, 0.5), transparent 62%), #17181d;
-		color: #e59fbe;
 	}
 	.friend.live {
 		box-shadow:
-			0 0 0 2px #101115,
+			0 0 0 2px #14161b,
 			0 0 0 4px #18b26b;
 		z-index: 2;
 	}
+	.friend.f2 {
+		margin-left: -10px;
+		background: radial-gradient(120% 120% at 76% 6%, rgba(154, 111, 225, 0.5), transparent 62%), #17181d;
+		color: #c3a8f0;
+	}
+	.you-dot {
+		position: absolute;
+		left: 200px;
+		bottom: 92px;
+		width: 15px;
+		height: 15px;
+		border-radius: 50%;
+		background: #18b26b;
+		box-shadow:
+			0 0 0 4px rgba(24, 178, 107, 0.22),
+			0 0 0 8px rgba(24, 178, 107, 0.08);
+	}
 	.shot-caption {
 		position: absolute;
-		right: 26px;
-		bottom: 22px;
-		padding: 8px 15px;
+		right: 16px;
+		bottom: 14px;
+		padding: 7px 13px;
 		border-radius: 999px;
 		background: rgba(23, 24, 29, 0.92);
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		font-weight: 600;
-		font-size: 12.5px;
+		font-size: 11.5px;
 		color: #f5f6f8;
 	}
 
-	/* proof strip */
-	.proof {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
+	/* ── proof strip ── */
+	.proof-band {
 		border-top: 1px solid rgba(28, 27, 24, 0.1);
 		border-bottom: 1px solid rgba(28, 27, 24, 0.1);
 	}
+	.proof {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+	}
 	.proof-cell {
-		padding: 26px 30px;
+		padding: 30px;
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 5px;
 	}
 	.proof-cell:not(:last-child) {
 		border-right: 1px solid rgba(28, 27, 24, 0.1);
@@ -489,7 +656,7 @@
 		font-size: 10.5px;
 		letter-spacing: 0.16em;
 		color: rgba(28, 27, 24, 0.4);
-		margin-bottom: 4px;
+		margin-bottom: 6px;
 	}
 	.logo-slots {
 		display: flex;
@@ -509,119 +676,376 @@
 		color: rgba(28, 27, 24, 0.4);
 	}
 
-	/* bottom: console + verify + CTA */
-	.bottom {
-		padding: 40px 44px 46px;
-		display: flex;
-		gap: 30px;
-		align-items: flex-start;
-	}
-	.console-col {
-		flex: 1.3;
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-	}
-	.verify-col {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-	}
-	.section-title {
-		font-family: 'Space Grotesk', system-ui, sans-serif;
-		font-weight: 600;
-		font-size: 23px;
-		letter-spacing: -0.02em;
-		margin: 0;
-	}
-	.section-body {
-		font-weight: 400;
-		font-size: 14px;
-		line-height: 1.55;
-		color: rgba(28, 27, 24, 0.6);
-		margin: 0;
-	}
-
-	.console-shot {
-		display: block;
-		height: 190px;
-		border-radius: 16px;
+	/* ── console band (dark) ── */
+	.console-band {
 		background: #0f1013;
-		border: 1px solid rgba(28, 27, 24, 0.15);
-		position: relative;
-		overflow: hidden;
-		text-decoration: none;
-	}
-	.mini-sidebar {
-		position: absolute;
-		left: 0;
-		top: 0;
-		bottom: 0;
-		width: 70px;
-		background: #101115;
-		border-right: 1px solid rgba(255, 255, 255, 0.07);
-	}
-	.mini-title {
-		position: absolute;
-		left: 86px;
-		top: 18px;
-		font-family: 'Space Grotesk', system-ui, sans-serif;
-		font-weight: 600;
-		font-size: 16px;
 		color: #f5f6f8;
 	}
-	.mini-cards {
-		position: absolute;
-		left: 86px;
-		top: 48px;
+	.console-inner {
+		padding-top: 72px;
+		padding-bottom: 72px;
 		display: flex;
-		gap: 10px;
+		flex-direction: column;
+		align-items: center;
+		gap: 14px;
+		text-align: center;
 	}
-	.mini-card {
-		width: 120px;
-		height: 110px;
-		border-radius: 12px;
+	.console-headline {
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 600;
+		font-size: clamp(28px, 4.4vw, 38px);
+		letter-spacing: -0.025em;
+		margin: 0;
+	}
+	.console-sub {
+		font-size: 15.5px;
+		line-height: 1.6;
+		color: rgba(236, 237, 240, 0.55);
+		max-width: 58ch;
+		margin: 0;
+	}
+	.console-shot {
+		width: 100%;
+		margin-top: 26px;
+		border-radius: 18px;
+		background: #101115;
+		border: 1px solid rgba(255, 255, 255, 0.09);
+		display: flex;
+		overflow: hidden;
+		text-align: left;
+		box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.8);
+	}
+	.cs-sidebar {
+		width: 190px;
+		flex: none;
+		border-right: 1px solid rgba(255, 255, 255, 0.07);
+		background: #101115;
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		padding: 18px 13px 15px;
+	}
+	.cs-org {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		padding: 0 6px 14px;
+	}
+	.cs-tile {
+		width: 32px;
+		height: 32px;
+		border-radius: 9px;
+		background: radial-gradient(120% 120% at 76% 6%, rgba(154, 111, 225, 0.4), transparent 62%), #17181d;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 700;
+		font-size: 12px;
+		color: #c3a8f0;
+		position: relative;
+		flex: none;
+	}
+	.cs-seal {
+		position: absolute;
+		right: -4px;
+		bottom: -4px;
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		background: #2d63f5;
+		box-shadow: 0 0 0 2px #101115;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.cs-org-meta {
+		display: flex;
+		flex-direction: column;
+	}
+	.cs-org-meta strong {
+		font-weight: 700;
+		font-size: 12.5px;
+		color: #f5f6f8;
+	}
+	.cs-org-meta em {
+		font-style: normal;
+		font-weight: 400;
+		font-size: 10px;
+		color: rgba(236, 237, 240, 0.4);
+	}
+	.cs-nav {
+		padding: 8px 10px;
+		border-radius: 10px;
+		font-weight: 600;
+		font-size: 12px;
+		color: rgba(236, 237, 240, 0.55);
+	}
+	.cs-nav.active {
+		background: rgba(45, 99, 245, 0.13);
+		border: 1px solid rgba(45, 99, 245, 0.35);
+		font-weight: 700;
+		color: #f5f6f8;
+	}
+	.cs-verified {
+		margin-top: auto;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px;
+		border-radius: 10px;
+		background: rgba(24, 178, 107, 0.08);
+		border: 1px solid rgba(24, 178, 107, 0.3);
+		font-weight: 700;
+		font-size: 10.5px;
+		color: #2bce85;
+	}
+	.cs-vdot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: #18b26b;
+		flex: none;
+	}
+	.cs-main {
+		flex: 1;
+		min-width: 0;
+		padding: 20px 22px;
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+	.cs-head {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		flex-wrap: wrap;
+	}
+	.cs-title {
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 600;
+		font-size: 21px;
+		letter-spacing: -0.02em;
+		color: #f5f6f8;
+	}
+	.cs-tabs {
+		display: flex;
+		gap: 3px;
+		padding: 3px;
+		border-radius: 9px;
+		background: #17181d;
+		border: 1px solid rgba(255, 255, 255, 0.07);
+	}
+	.cs-tab {
+		padding: 5px 11px;
+		border-radius: 7px;
+		font-weight: 600;
+		font-size: 10.5px;
+		color: rgba(236, 237, 240, 0.55);
+	}
+	.cs-tab.on {
+		background: #2d63f5;
+		font-weight: 700;
+		color: #fff;
+	}
+	.cs-new {
+		margin-left: auto;
+		padding: 8px 14px;
+		border-radius: 9px;
+		background: #2d63f5;
+		font-weight: 700;
+		font-size: 11px;
+		color: #fff;
+		box-shadow: 0 8px 20px -6px rgba(45, 99, 245, 0.6);
+	}
+	.cs-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 12px;
+	}
+	.cs-card {
+		border-radius: 13px;
 		background: #17181d;
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		overflow: hidden;
 	}
-	.mini-card img {
+	.cs-card.draft {
+		background: #101115;
+		border: 1px dashed rgba(255, 255, 255, 0.18);
+	}
+	.cs-photo {
+		height: 96px;
+		position: relative;
+		background: #101115;
+	}
+	.cs-photo img {
 		width: 100%;
-		height: 62px;
+		height: 100%;
 		object-fit: cover;
 		filter: saturate(0.82) contrast(1.06);
 		display: block;
 	}
-	.mini-card.dashed {
-		background: #101115;
-		border: 1px dashed rgba(255, 255, 255, 0.2);
+	.cs-photo::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(180deg, rgba(15, 16, 19, 0.1) 30%, rgba(15, 16, 19, 0.9) 100%);
 	}
-	.mini-going {
-		padding: 7px 9px;
-		font-family: 'Space Grotesk', system-ui, sans-serif;
+	.cs-photo.dashed {
+		background:
+			radial-gradient(120% 70% at 85% -8%, rgba(201, 141, 60, 0.28), rgba(201, 141, 60, 0) 58%),
+			#17181d;
+	}
+	.cs-photo.dashed::after {
+		display: none;
+	}
+	.cs-chip {
+		position: absolute;
+		left: 9px;
+		top: 8px;
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		padding: 3.5px 8px;
+		border-radius: 999px;
+		background: rgba(15, 16, 19, 0.55);
 		font-weight: 700;
-		font-size: 11px;
-		color: rgba(245, 246, 248, 0.75);
+		font-size: 7.5px;
+		letter-spacing: 0.12em;
+		color: #f5f6f8;
+		z-index: 2;
 	}
-	.mini-going.green {
+	.cs-chip.live {
+		background: rgba(24, 178, 107, 0.16);
+		border: 1px solid rgba(24, 178, 107, 0.45);
 		color: #2bce85;
 	}
-	.mini-caption {
+	.cs-chip.dashedchip {
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px dashed rgba(255, 255, 255, 0.25);
+		color: rgba(236, 237, 240, 0.55);
+	}
+	.cs-chipdot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: #18b26b;
+	}
+	.cs-card-title {
 		position: absolute;
-		right: 16px;
-		bottom: 14px;
+		left: 10px;
+		right: 10px;
+		bottom: 8px;
+		font-family: 'Space Grotesk', system-ui, sans-serif;
 		font-weight: 600;
-		font-size: 11.5px;
-		color: rgba(245, 246, 248, 0.5);
+		font-size: 13px;
+		letter-spacing: -0.015em;
+		color: #f5f6f8;
+		z-index: 2;
+	}
+	.cs-card-title.dim {
+		color: rgba(245, 246, 248, 0.8);
+	}
+	.cs-counts {
+		padding: 10px 12px 12px;
+		font-weight: 600;
+		font-size: 11px;
+		color: rgba(236, 237, 240, 0.5);
+	}
+	.cs-counts strong {
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 700;
+		font-size: 15px;
+		color: #f5f6f8;
+	}
+	.cs-counts strong.green {
+		color: #2bce85;
+	}
+	.cs-counts.dim {
+		font-weight: 400;
+		color: rgba(236, 237, 240, 0.45);
+	}
+	.console-link {
+		margin-top: 18px;
+		font-weight: 700;
+		font-size: 14px;
+		color: #5b85f7;
+		text-decoration: none;
+	}
+	.console-link:hover {
+		text-decoration: underline;
 	}
 
-	/* apply card */
+	/* ── verify + apply ── */
+	.apply-inner {
+		display: flex;
+		gap: 56px;
+		align-items: flex-start;
+		padding-top: 64px;
+		padding-bottom: 72px;
+	}
+	.verify-copy {
+		flex: 1.1;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+	.verify-copy h2 {
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 600;
+		font-size: clamp(26px, 4vw, 34px);
+		letter-spacing: -0.025em;
+		margin: 0;
+	}
+	.verify-copy p {
+		font-size: 15.5px;
+		line-height: 1.6;
+		color: rgba(28, 27, 24, 0.6);
+		max-width: 48ch;
+		margin: 0;
+	}
+	.verify-list {
+		list-style: none;
+		margin: 6px 0 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.verify-list li {
+		position: relative;
+		padding-left: 26px;
+		font-size: 14px;
+		line-height: 1.5;
+		color: rgba(28, 27, 24, 0.6);
+	}
+	.verify-list li strong {
+		color: #1c1b18;
+	}
+	.verify-list li::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 3px;
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		background: #2d63f5;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round'%3E%3Cpath d='M4.5 12.5l5 5L19.5 7'/%3E%3C/svg%3E");
+		background-size: 9px;
+		background-repeat: no-repeat;
+		background-position: center;
+	}
+	.apply-col {
+		flex: 1;
+	}
 	.apply-card {
-		padding: 18px 20px;
-		border-radius: 14px;
+		padding: 22px;
+		border-radius: 16px;
 		background: #fff;
 		border: 1px solid rgba(28, 27, 24, 0.12);
+		box-shadow: 0 20px 50px rgba(28, 27, 24, 0.08);
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
@@ -633,10 +1057,10 @@
 		color: rgba(28, 27, 24, 0.4);
 	}
 	.apply-card input {
-		height: 40px;
-		border-radius: 10px;
+		height: 44px;
+		border-radius: 11px;
 		border: 1px solid rgba(28, 27, 24, 0.18);
-		padding: 0 13px;
+		padding: 0 14px;
 		font-family: inherit;
 		font-weight: 500;
 		font-size: 13.5px;
@@ -652,36 +1076,20 @@
 	.apply-card input::placeholder {
 		color: rgba(28, 27, 24, 0.45);
 	}
-	.cta {
-		height: 44px;
-		border-radius: 10px;
-		border: 0;
-		background: #2d63f5;
-		font-family: inherit;
-		font-weight: 700;
-		font-size: 14px;
-		color: #fff;
-		cursor: pointer;
-		transition: background 0.15s ease;
-	}
-	.cta:hover:not(:disabled) {
-		background: #1f51d6;
-	}
-	.cta:disabled {
-		opacity: 0.6;
-		cursor: default;
+	.form-cta {
+		width: 100%;
+		padding: 14px 0;
 	}
 	.error {
 		font-size: 12.5px;
 		color: #c2402a;
 		margin: 0;
 	}
-
 	.success {
 		display: inline-flex;
 		align-items: center;
 		gap: 10px;
-		padding: 12px 18px;
+		padding: 14px 18px;
 		border-radius: 14px;
 		background: rgba(24, 178, 107, 0.1);
 		border: 1px solid rgba(24, 178, 107, 0.28);
@@ -703,22 +1111,51 @@
 		flex: none;
 	}
 
-	.back {
-		padding: 0 44px 40px;
-		font-size: 13px;
+	/* ── footer ── */
+	.footer {
+		/* app.css styles the bare <footer> element (900px, centered, big
+		   padding) — reset it so this one is ours. */
+		max-width: none;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+		text-align: left;
+		border-top: 1px solid rgba(28, 27, 24, 0.1);
+	}
+	.footer-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 14px;
+		padding-top: 22px;
+		padding-bottom: 30px;
+	}
+	.footer-link {
+		font-size: 12.5px;
+		font-weight: 600;
 		color: rgba(28, 27, 24, 0.45);
 		text-decoration: none;
 	}
-	.back:hover {
+	.footer-link:hover {
 		color: #2d63f5;
 	}
 
-	@media (max-width: 760px) {
-		.nav,
-		.hero,
-		.bottom {
+	/* ── responsive ── */
+	@media (max-width: 900px) {
+		.shell {
 			padding-left: 22px;
 			padding-right: 22px;
+		}
+		.hero-inner {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 40px;
+			padding-top: 44px;
+			padding-bottom: 56px;
+		}
+		.shot-wrap {
+			align-self: center;
+			width: 100%;
 		}
 		.proof {
 			grid-template-columns: 1fr;
@@ -727,19 +1164,49 @@
 			border-right: 0;
 			border-bottom: 1px solid rgba(28, 27, 24, 0.1);
 		}
-		.bottom {
+		.console-shot {
 			flex-direction: column;
 		}
-		.bottom > * {
+		.cs-sidebar {
+			width: 100%;
+			flex-direction: row;
+			align-items: center;
+			border-right: 0;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+			padding: 12px 13px;
+		}
+		.cs-org {
+			padding: 0 6px 0 0;
+		}
+		.cs-verified {
+			margin-top: 0;
+			margin-left: auto;
+		}
+		.cs-grid {
+			grid-template-columns: 1fr;
+		}
+		.apply-inner {
+			flex-direction: column;
+			gap: 40px;
+		}
+		.apply-col {
 			width: 100%;
 		}
-		.friends {
-			left: auto;
-			right: 40px;
-			top: 60px;
+		.cta {
+			width: 100%;
 		}
-		.back {
-			padding: 0 22px 40px;
+		.cta-stack {
+			width: 100%;
+		}
+		.for-tag {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.dot,
+		.sonar {
+			animation: none;
 		}
 	}
 </style>
