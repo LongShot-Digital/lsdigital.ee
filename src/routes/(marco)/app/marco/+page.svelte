@@ -77,6 +77,7 @@
 {/snippet}
 
 <main class="marco">
+	<div class="page-backdrop" aria-hidden="true"></div>
 	<!-- ── nav ── -->
 	<nav class="nav">
 		<div class="shell nav-inner">
@@ -413,6 +414,16 @@
 </main>
 
 <style>
+	/* Structural fix for the recurring "different-colored sidebars": a fixed
+	   full-viewport layer painted by US, immune to any global stylesheet
+	   ordering, body rules, or grain overlays — forever. */
+	.page-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		background: #f4f1ea;
+	}
+
 	.marco {
 		width: 100%;
 		min-height: 100vh;

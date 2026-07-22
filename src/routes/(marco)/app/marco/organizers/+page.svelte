@@ -53,6 +53,7 @@
 </svelte:head>
 
 <main class="org">
+	<div class="page-backdrop" aria-hidden="true"></div>
 	<!-- ── nav ── -->
 	<nav class="nav">
 		<div class="shell nav-inner">
@@ -208,6 +209,75 @@
 		</div>
 	</section>
 
+	<!-- ── roadmap: the venue toolkit, honestly dashed ── -->
+	<section class="roadmap-band">
+		<div class="shell roadmap-inner">
+			<h2>Where this is going.</h2>
+			<p class="roadmap-sub">
+				The pilot ships the console. The venue toolkit comes next — built with pilot
+				partners, dashed until it&rsquo;s real. That&rsquo;s the house rule: we never fake a
+				number, and we never sell your guests.
+			</p>
+			<div class="roadmap-grid">
+				<div class="roadmap-card">
+					<div class="roadmap-head">
+						<span class="roadmap-icon">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d63f5" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5" /><path d="M3 19c1-3.5 11-3.5 12 0" /><path d="M17 5v0M19.5 9a6.5 6.5 0 0 0-1.2-3.8" /><path d="M16 8.5a3 3 0 1 1 3 5" /></svg>
+						</span>
+						<span class="roadmap-tag">IN THE PIPELINE</span>
+					</div>
+					<h3>Audience insights</h3>
+					<p>
+						The average night at your venue: age bands, how far people travel, first-timers
+						vs regulars. Aggregate always — never individuals.
+					</p>
+				</div>
+				<div class="roadmap-card">
+					<div class="roadmap-head">
+						<span class="roadmap-icon">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d63f5" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3.5 2" /></svg>
+						</span>
+						<span class="roadmap-tag">IN THE PIPELINE</span>
+					</div>
+					<h3>Ticket timing</h3>
+					<p>
+						When your crowd commits: RSVP and ticket curves by day and hour, so you know
+						exactly when to push a night — and when to hold.
+					</p>
+				</div>
+				<div class="roadmap-card">
+					<div class="roadmap-head">
+						<span class="roadmap-icon">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d63f5" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="3" /><path d="M3 10.5h18M7 15h4" /></svg>
+						</span>
+						<span class="roadmap-tag">IN THE PIPELINE</span>
+					</div>
+					<h3>Membership passes</h3>
+					<p>
+						Venue passes sold inside Marco — your regulars, subscribed. Recurring revenue
+						for you, a home venue for them.
+					</p>
+				</div>
+				<div class="roadmap-card">
+					<div class="roadmap-head">
+						<span class="roadmap-icon">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d63f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11v3l4 1 9 5V4L8 9l-4 2z" /><path d="M18 9.5a3.5 3.5 0 0 1 0 4" /></svg>
+						</span>
+						<span class="roadmap-tag">IN THE PIPELINE</span>
+					</div>
+					<h3>Promotion, not ads</h3>
+					<p>
+						Boost a night to nearby people with matching taste — clearly marked, capped,
+						and friends&rsquo; plans always rank first.
+					</p>
+				</div>
+			</div>
+			<p class="roadmap-note">
+				Pilot partners vote on the order. That&rsquo;s half the point of being early.
+			</p>
+		</div>
+	</section>
+
 	<!-- ── verify + apply ── -->
 	<section class="apply-band" id="apply">
 		<div class="shell apply-inner">
@@ -257,6 +327,16 @@
 </main>
 
 <style>
+	/* Structural fix for the recurring "different-colored sidebars": a fixed
+	   full-viewport layer painted by US, immune to any global stylesheet
+	   ordering, body rules, or grain overlays — forever. */
+	.page-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		background: #f4f1ea;
+	}
+
 	.org {
 		width: 100%;
 		min-height: 100vh;
@@ -977,6 +1057,90 @@
 		text-decoration: underline;
 	}
 
+	/* ── roadmap ── */
+	.roadmap-band {
+		border-top: 1px solid rgba(28, 27, 24, 0.1);
+	}
+	.roadmap-inner {
+		padding-top: 60px;
+		padding-bottom: 64px;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+	.roadmap-inner h2 {
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 600;
+		font-size: clamp(26px, 4vw, 34px);
+		letter-spacing: -0.025em;
+		margin: 0;
+	}
+	.roadmap-sub {
+		font-size: 15px;
+		line-height: 1.6;
+		color: rgba(28, 27, 24, 0.6);
+		max-width: 62ch;
+		margin: 0;
+	}
+	.roadmap-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 16px;
+		margin-top: 14px;
+	}
+	.roadmap-card {
+		border: 1.5px dashed rgba(28, 27, 24, 0.22);
+		border-radius: 18px;
+		padding: 22px 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		background: rgba(255, 255, 255, 0.4);
+	}
+	.roadmap-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 4px;
+	}
+	.roadmap-icon {
+		width: 34px;
+		height: 34px;
+		border-radius: 10px;
+		background: rgba(45, 99, 245, 0.1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.roadmap-tag {
+		font-weight: 700;
+		font-size: 9.5px;
+		letter-spacing: 0.14em;
+		color: rgba(28, 27, 24, 0.4);
+		padding: 4px 10px;
+		border-radius: 999px;
+		border: 1px dashed rgba(28, 27, 24, 0.25);
+	}
+	.roadmap-card h3 {
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		font-weight: 600;
+		font-size: 18px;
+		letter-spacing: -0.015em;
+		margin: 0;
+	}
+	.roadmap-card p {
+		font-size: 13.5px;
+		line-height: 1.55;
+		color: rgba(28, 27, 24, 0.6);
+		margin: 0;
+	}
+	.roadmap-note {
+		font-size: 13px;
+		font-weight: 600;
+		color: rgba(28, 27, 24, 0.45);
+		margin: 6px 0 0;
+	}
+
 	/* ── verify + apply ── */
 	.apply-inner {
 		display: flex;
@@ -1183,6 +1347,9 @@
 			margin-left: auto;
 		}
 		.cs-grid {
+			grid-template-columns: 1fr;
+		}
+		.roadmap-grid {
 			grid-template-columns: 1fr;
 		}
 		.apply-inner {

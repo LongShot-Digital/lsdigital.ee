@@ -20,6 +20,7 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
+<div class="page-backdrop" aria-hidden="true"></div>
 <div class="console">
 	<aside class="sidebar">
 		<div class="org">
@@ -65,6 +66,13 @@
 </div>
 
 <style>
+	.page-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		background: #0f1013;
+	}
+
 	.console {
 		display: flex;
 		min-height: 100vh;
