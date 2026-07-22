@@ -1,29 +1,44 @@
 <script lang="ts">
-	// Tally captures emails via its own popup modal (loaded from tally.so/widgets/embed.js).
-	// Form ID is the 6-char string at the end of tally.so/r/<id>.
-	const TALLY_FORM_ID = 'Y5gJgB';
+	// Waitlist signups land in the same Web3Forms inbox as organizer
+	// applications (info@lsdigital.ee) — one pipeline, no third-party popup.
+	const WEB3FORMS_KEY = '74131967-39f2-4010-b10e-4769f4aa0303';
 
+	let submitting = $state(false);
 	let submitted = $state(false);
+	let error = $state(false);
 
-	function openWaitlist() {
-		// Tally's embed.js attaches itself to window.Tally once loaded.
-		// Falls back to a direct link if for any reason the script didn't load.
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const Tally = (typeof window !== 'undefined' ? (window as any).Tally : undefined);
-		if (Tally?.openPopup) {
-			Tally.openPopup(TALLY_FORM_ID, {
-				layout: 'modal',
-				width: 460,
-				hideTitle: true,
-				autoClose: 1500,
-				emoji: { text: '👋', animation: 'wave' },
-				onSubmit: () => {
-					submitted = true;
-				}
+	async function joinWaitlist(e: SubmitEvent) {
+		e.preventDefault();
+		if (submitting) return;
+		submitting = true;
+		error = false;
+		const form = e.target as HTMLFormElement;
+		const data = Object.fromEntries(new FormData(form).entries());
+		try {
+			const res = await fetch('https://api.web3forms.com/submit', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+				body: JSON.stringify({
+					access_key: WEB3FORMS_KEY,
+					subject: `Marco waitlist — ${data.email ?? ''}`,
+					from_name: 'Marco waitlist',
+					...data
+				})
 			});
-		} else {
-			window.open(`https://tally.so/r/${TALLY_FORM_ID}`, '_blank');
+			submitted = res.ok;
+			error = !res.ok;
+		} catch {
+			error = true;
+		} finally {
+			submitting = false;
 		}
+	}
+
+	/// Nav CTA: bring the hero form into view and put the cursor in it.
+	function focusWaitlist() {
+		const input = document.querySelector<HTMLInputElement>('.wl-form input[name="email"]');
+		input?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		setTimeout(() => input?.focus({ preventScroll: true }), 350);
 	}
 </script>
 
@@ -43,7 +58,6 @@
 		name="description"
 		content="See what friends are planning, say Marco, decide in minutes. A live map of your people's nights — coming soon, built for iPhone."
 	/>
-	<script src="https://tally.so/widgets/embed.js"></script>
 </svelte:head>
 
 {#snippet appIcon(size: number)}
@@ -72,7 +86,7 @@
 			</span>
 			<div class="nav-actions">
 				<a href="/app/marco/organizers" class="nav-link">For organizers</a>
-				<button class="nav-cta" onclick={openWaitlist}>Get early access</button>
+				<button class="nav-cta" onclick={focusWaitlist}>Get early access</button>
 			</div>
 		</div>
 	</nav>
@@ -94,8 +108,17 @@
 					</div>
 				{:else}
 					<div class="cta-stack">
-						<button class="cta" onclick={openWaitlist}>Get early access</button>
-						<span class="cta-sub">Drop your email — we&rsquo;ll only use it for the launch.</span>
+						<form class="wl-form" onsubmit={joinWaitlist}>
+							<input name="email" type="email" placeholder="you@email.com" required autocomplete="email" aria-label="Your email address" />
+							<button class="cta wl-btn" type="submit" disabled={submitting}>
+								{submitting ? 'Adding…' : 'Get early access'}
+							</button>
+						</form>
+						{#if error}
+							<span class="wl-error">Something went wrong — email us at info@lsdigital.ee instead.</span>
+						{:else}
+							<span class="cta-sub">Just your email — we&rsquo;ll only use it for the launch.</span>
+						{/if}
 					</div>
 				{/if}
 			</div>
@@ -366,8 +389,17 @@
 					You&rsquo;re on the list. We&rsquo;ll let you know when Marco opens.
 				</div>
 			{:else}
-				<button class="cta" onclick={openWaitlist}>Get early access</button>
-				<span class="cta-sub">Built for iPhone · launching with the first cities soon</span>
+				<form class="wl-form" onsubmit={joinWaitlist}>
+					<input name="email" type="email" placeholder="you@email.com" required autocomplete="email" aria-label="Your email address" />
+					<button class="cta wl-btn" type="submit" disabled={submitting}>
+						{submitting ? 'Adding…' : 'Get early access'}
+					</button>
+				</form>
+				{#if error}
+					<span class="wl-error">Something went wrong — email us at info@lsdigital.ee instead.</span>
+				{:else}
+					<span class="cta-sub">Built for iPhone · launching with the first cities soon</span>
+				{/if}
 			{/if}
 		</div>
 	</section>
@@ -562,6 +594,47 @@
 	.cta-sub {
 		font-size: 12.5px;
 		color: rgba(28, 27, 24, 0.45);
+	}
+	.wl-form {
+		display: flex;
+		gap: 10px;
+		width: 100%;
+		max-width: 460px;
+	}
+	.wl-form input {
+		flex: 1;
+		min-width: 0;
+		height: 52px;
+		border-radius: 13px;
+		border: 1px solid rgba(28, 27, 24, 0.18);
+		background: #fff;
+		padding: 0 16px;
+		font-family: inherit;
+		font-weight: 500;
+		font-size: 15px;
+		color: #1c1b18;
+		outline: none;
+		transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	}
+	.wl-form input:focus {
+		border-color: #2d63f5;
+		box-shadow: 0 0 0 3px rgba(45, 99, 245, 0.12);
+	}
+	.wl-form input::placeholder {
+		color: rgba(28, 27, 24, 0.4);
+	}
+	.wl-btn {
+		flex: none;
+		padding: 0 22px;
+		height: 52px;
+	}
+	.wl-btn:disabled {
+		opacity: 0.6;
+		cursor: default;
+	}
+	.wl-error {
+		font-size: 12.5px;
+		color: #c2402a;
 	}
 	.success {
 		display: inline-flex;
@@ -1429,6 +1502,9 @@
 		letter-spacing: -0.028em;
 		margin: 0;
 	}
+	.final-inner .wl-form {
+		justify-content: center;
+	}
 
 	/* ── footer ── */
 	.footer {
@@ -1496,6 +1572,13 @@
 			width: 100%;
 		}
 		.cta-stack {
+			width: 100%;
+		}
+		.wl-form {
+			flex-direction: column;
+			max-width: none;
+		}
+		.wl-btn {
 			width: 100%;
 		}
 		.field-stage {
