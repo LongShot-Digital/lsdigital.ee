@@ -409,6 +409,8 @@
 		<div class="shell footer-inner">
 			<a href="/" class="footer-link">← from LongShot Digital</a>
 			<a href="/app/marco/organizers" class="footer-link">Marco for Organizers</a>
+			<a href="/app/marco/privacy" class="footer-link">Privacy</a>
+			<a href="/app/marco/terms" class="footer-link">Terms</a>
 		</div>
 	</footer>
 </main>
