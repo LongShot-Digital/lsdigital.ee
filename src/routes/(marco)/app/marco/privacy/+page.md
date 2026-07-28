@@ -60,6 +60,18 @@ Verifying a phone number is optional. If you do, we store the number and a salte
 - [Unsplash](https://unsplash.com/privacy) — event artwork images are loaded from Unsplash's servers, which involves standard web request data
 - **Nobody else.** No data brokers, no ad networks, no analytics companies.
 
+## Aggregate insights for organizers
+
+Verified organizers can see how their events perform — always as aggregate, de-identified statistics (for example: total RSVPs over time). Organizers never receive your identity beyond what an event's own visibility already shows (such as an RSVP list you chose to join), and never your browsing behaviour. If we ever introduce optional profile fields (such as age) to make these aggregates more useful, they will be optional, used only in de-identified aggregate form, and this policy will be updated first.
+
+## Payments and tickets (planned)
+
+Marco does not process payments today. When ticketing launches, payments will be handled by a certified payment provider — we will never see or store card numbers — and transaction records will be retained as Estonian accounting law requires. This policy will be updated with the specifics before the feature goes live.
+
+## One more promise
+
+Your live GPS position is not collected, and if we ever offer optional live-location sharing between friends, it will be strictly opt-in per feature — and announced in this policy before it exists.
+
 ## Your rights under GDPR
 
 As a Marco user in the EU, you have the right to:
@@ -80,6 +92,10 @@ To exercise any of these rights, email [info@letsmarco.com](mailto:info@letsmarc
 - **Events** — an event you hosted is removed when you delete it or your account; your RSVPs and invitations are removed with your account
 - **Server logs** — kept briefly for security and operations, then deleted
 - **Push tokens** — removed when you disable notifications or delete the app
+
+## Where your data lives
+
+Our servers are located in Tallinn, Estonia. Your data is stored and processed inside the European Union.
 
 ## Security
 

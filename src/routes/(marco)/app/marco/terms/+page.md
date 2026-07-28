@@ -59,9 +59,9 @@ The verified seal means we checked that an organizer is who they claim to be. It
 - Hold whatever licences and permissions their events require
 - Accept that the seal can be revoked at our discretion
 
-## 9. Price
+## 9. Price, payments and tickets
 
-Marco is currently free. If paid features arrive, they will come with their own clear terms — nothing you have will silently become paid.
+Marco is currently free. When ticket sales launch — whether an organizer's event or a neighbour's five-euro barbecue — the host of a paid event acts as the seller; Marco facilitates the transaction through a certified payment provider and is not a party to the sale. Pricing, fees, and refund terms will be published before paid features go live, and nothing you have will silently become paid.
 
 ## 10. Intellectual property
 
