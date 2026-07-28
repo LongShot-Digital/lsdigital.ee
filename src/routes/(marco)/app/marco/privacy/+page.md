@@ -62,7 +62,11 @@ Verifying a phone number is optional. If you do, we store the number and a salte
 
 ## Aggregate insights for organizers
 
-Verified organizers can see how their events perform — always as aggregate, de-identified statistics (for example: total RSVPs over time). Organizers never receive your identity beyond what an event's own visibility already shows (such as an RSVP list you chose to join), and never your browsing behaviour. If we ever introduce optional profile fields (such as age) to make these aggregates more useful, they will be optional, used only in de-identified aggregate form, and this policy will be updated first.
+Verified organizers can see how their events perform — always as aggregate, de-identified statistics (for example: total RSVPs over time, or how many attendees of one event went on to another). The rule is absolute: organizers and venues receive counts and trends, never individuals. Your identity is never part of what an organizer buys or sees beyond what an event's own visibility already shows (such as an RSVP list you chose to join). If we ever introduce optional profile fields (such as age) to make these aggregates more useful, they will be optional, used only in de-identified aggregate form, and this policy will be updated first.
+
+## Check-ins (planned)
+
+We plan to let you optionally "check in" when you arrive at an event — a deliberate tap, never automatic. A check-in is shared with the same audience as the event itself, and check-in counts may feed aggregate features like busy-right-now indicators on the map and the organizer statistics above. Whether and when you check in is always your choice, and this section will be expanded before the feature ships.
 
 ## Payments and tickets (planned)
 
