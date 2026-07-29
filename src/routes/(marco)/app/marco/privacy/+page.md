@@ -92,7 +92,7 @@ To exercise any of these rights, email [info@letsmarco.com](mailto:info@letsmarc
 
 ## Data retention
 
-- **Account, profile, and social data** — kept while your account is active; deleted within 30 days of account deletion
+- **Account, profile, and social data** — kept while your account is active. Deleting your account removes it from active systems immediately; residual copies are permanently purged within 90 days
 - **Events** — an event you hosted is removed when you delete it or your account; your RSVPs and invitations are removed with your account
 - **Server logs** — kept briefly for security and operations, then deleted
 - **Push tokens** — removed when you disable notifications or delete the app
